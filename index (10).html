@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Economic Profit Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f0f0f;--card:#1a1a1a;--card2:#222;--border:#333;
+  --text:#e8e8e8;--text2:#999;--text3:#666;
+  --accent:#d4a025;--accent2:#f0c040;--accent-dim:#8b6914;
+  --green:#2ecc71;--red:#e74c3c;--blue:#3498db;--orange:#e67e22;--purple:#9b59b6;
+  --radius:12px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:16px;max-width:800px;margin:0 auto}
+h1{font-size:1.6rem;font-weight:700;color:var(--accent2);text-align:center;margin:20px 0 4px}
+.subtitle{text-align:center;color:var(--text2);font-size:.85rem;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h2{font-size:1.05rem;font-weight:600;color:var(--accent);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.card h3{font-size:.9rem;font-weight:600;color:var(--text2);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.82rem;color:var(--text2);margin-bottom:4px;font-weight:500}
+.field input{width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.9rem;transition:border-color .2s}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field .hint{font-size:.72rem;color:var(--text3);margin-top:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+button.calc{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;margin:8px 0 20px;transition:transform .15s,box-shadow .15s}
+button.calc:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,160,37,.3)}
+button.calc:active{transform:translateY(0)}
+button.secondary{width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;margin-bottom:8px;transition:border-color .2s,color .2s}
+button.secondary:hover{border-color:var(--accent);color:var(--text)}
+
+/* JSON modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h3{color:var(--accent2);margin-bottom:12px;font-size:1.1rem}
+.modal textarea{width:100%;height:200px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:12px;resize:vertical}
+.modal textarea:focus{outline:none;border-color:var(--accent)}
+.modal p{font-size:.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+.modal .btn-row{display:flex;gap:8px;margin-top:12px}
+.modal .btn-row button{flex:1;padding:10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;font-size:.9rem}
+.modal .btn-import{background:var(--accent);color:#000;border:none}
+.modal .btn-cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border)}
+.import-status{font-size:.82rem;margin-top:8px;padding:8px 12px;border-radius:6px;display:none}
+.import-status.success{display:block;background:rgba(46,204,113,.1);color:var(--green)}
+.import-status.error{display:block;background:rgba(231,76,60,.1);color:var(--red)}
+
+/* Source badge */
+.source-badge{display:inline-block;font-size:.65rem;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;font-weight:600}
+.source-badge.annual{background:rgba(52,152,219,.15);color:var(--blue)}
+.source-badge.balance{background:rgba(46,204,113,.15);color:var(--green)}
+
+/* Verdict */
+.verdict{text-align:center;padding:24px;border-radius:var(--radius);margin-bottom:16px}
+.verdict .yield-num{font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1.2}
+.verdict .yield-label{font-size:.85rem;color:var(--text2);margin-top:4px}
+.verdict .rating{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:10px}
+.verdict.strong{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3)}
+.verdict.strong .yield-num{color:var(--green)}
+.verdict.strong .rating{background:rgba(46,204,113,.15);color:var(--green)}
+.verdict.fair{background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3)}
+.verdict.fair .yield-num{color:var(--blue)}
+.verdict.fair .rating{background:rgba(52,152,219,.15);color:var(--blue)}
+.verdict.growth{background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3)}
+.verdict.growth .yield-num{color:var(--orange)}
+.verdict.growth .rating{background:rgba(230,126,34,.15);color:var(--orange)}
+.verdict.expensive{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3)}
+.verdict.expensive .yield-num{color:var(--red)}
+.verdict.expensive .rating{background:rgba(231,76,60,.15);color:var(--red)}
+
+/* Metrics grid */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.metric .val{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:600;color:var(--text)}
+.metric .lbl{font-size:.75rem;color:var(--text2);margin-top:2px}
+.metric.highlight .val{color:var(--accent2)}
+
+/* Waterfall */
+.waterfall{margin:16px 0}
+.wf-bar{display:flex;align-items:center;margin-bottom:6px;font-size:.82rem}
+.wf-label{width:130px;text-align:right;padding-right:10px;color:var(--text2);flex-shrink:0;font-size:.78rem}
+.wf-track{flex:1;height:28px;background:var(--bg);border-radius:6px;position:relative;overflow:hidden}
+.wf-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:500;color:#fff;white-space:nowrap;min-width:fit-content;transition:width .4s ease}
+.wf-fill.positive{background:linear-gradient(90deg,#2ecc71,#27ae60)}
+.wf-fill.negative{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+.wf-fill.invest{background:linear-gradient(90deg,var(--blue),#2980b9)}
+.wf-fill.result{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#000}
+
+/* Breakdown table */
+.breakdown{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
+.breakdown th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
+.breakdown td{padding:8px 6px;border-bottom:1px solid rgba(51,51,51,.5)}
+.breakdown td:last-child{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:500}
+.breakdown tr.subtotal td{border-top:2px solid var(--accent-dim);font-weight:600;color:var(--accent2)}
+.breakdown tr.negative td:last-child{color:var(--red)}
+.breakdown tr.positive td:last-child{color:var(--green)}
+
+/* Red flags */
+.flags{margin-top:12px}
+.flag{padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:.82rem;line-height:1.5}
+.flag.warn{background:rgba(231,76,60,.08);border-left:3px solid var(--red);color:#e8b4b0}
+.flag.caution{background:rgba(230,126,34,.08);border-left:3px solid var(--orange);color:#e8cdb0}
+.flag.ok{background:rgba(46,204,113,.08);border-left:3px solid var(--green);color:#b0e8c6}
+.flag.info{background:rgba(52,152,219,.08);border-left:3px solid var(--blue);color:#b0d0e8}
+.flag.growth{background:rgba(155,89,182,.08);border-left:3px solid var(--purple);color:#d0b0e8}
+
+/* Growth projection table */
+.proj-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
+.proj-table th{text-align:center;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;font-size:.75rem}
+.proj-table td{text-align:center;padding:10px 6px;border-bottom:1px solid rgba(51,51,51,.5);font-family:'JetBrains Mono',monospace;font-weight:500}
+.proj-table td:first-child{text-align:left;font-family:'DM Sans',sans-serif;color:var(--text2)}
+.proj-table tr.highlight-row td{color:var(--accent2);font-weight:600}
+
+#results{display:none}
+.section-note{font-size:.75rem;color:var(--text3);font-style:italic;margin-top:4px}
+.tip-box{background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.2);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.78rem;color:var(--text2);line-height:1.6}
+.tip-box strong{color:var(--blue)}
+</style>
+</head>
+<body>
+
+<h1>⚡ Real Economic Profit Analyzer</h1>
+<p class="subtitle">Cut through accounting noise — find the real cash yield of a business</p>
+
+<!-- JSON Import -->
+<button class="secondary" onclick="openImport()">📋 Import JSON from Gemini</button>
+
+<!-- Sourcing tip -->
+<div class="tip-box">
+  <strong>💡 Data sourcing:</strong> Use <strong>annual 10-K</strong> for all cash flow items (CFO, SBC, CapEx, D&A, working capital). Use the <strong>latest 10-Q</strong> for balance sheet items (Debt, Cash, Investments, Shares, Equity). Feed both PDFs to Gemini and paste the JSON here.
+</div>
+
+<!-- Phase 1: Cash Flow -->
+<div class="card">
+  <h2>📊 Phase 1 — Cash Flow <span class="source-badge annual">from 10-K annual</span></h2>
+  <div class="row" style="margin-bottom:12px">
+    <div class="field"><label>Company / Ticker</label><input type="text" id="ticker" placeholder="e.g. AAPL"></div>
+    <div class="field"><label>Current Share Price ($)</label><input type="number" id="price" step="0.01" placeholder="Look up live price"></div>
+  </div>
+  <h3>Operating Cash Flow</h3>
+  <div class="field"><label>Cash From Operations ($M)</label><input type="number" id="cfo" step="1"></div>
+  <div class="row">
+    <div class="field"><label>SBC Expense Addback ($M)</label><input type="number" id="sbc_expense" step="1"><div class="hint">From cash flow statement</div></div>
+    <div class="field"><label>SBC Grant Value ($M)</label><input type="number" id="sbc_grant" step="1"><div class="hint">Notes → RSUs granted × weighted avg grant date FV</div></div>
+  </div>
+  <h3>Capital Expenditures</h3>
+  <div class="row3">
+    <div class="field"><label>Total CapEx ($M)</label><input type="number" id="capex" step="1"></div>
+    <div class="field"><label>D&A ($M)</label><input type="number" id="da" step="1"></div>
+    <div class="field"><label>Maint. CapEx ($M)</label><input type="number" id="maint_capex" step="1" placeholder="If disclosed"><div class="hint">Leave blank or 0 to auto-estimate</div></div>
+  </div>
+  <h3>Other Adjustments</h3>
+  <div class="row">
+    <div class="field"><label>Restructuring Charges ($M)</label><input type="number" id="restructuring" step="1" value="0"></div>
+    <div class="field"><label>Inventory Change ($M)</label><input type="number" id="inv_change" step="1"><div class="hint">Positive = decrease (cash freed) · Negative = increase (cash trapped)</div></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Receivables Change ($M)</label><input type="number" id="recv_change" step="1"><div class="hint">Positive = decrease (cash collected) · Negative = increase (cash not collected)</div></div>
+    <div class="field"><label>Interest Paid ($M)</label><input type="number" id="interest" step="1"><div class="hint">Supplemental disclosure (leave blank if not found)</div></div>
+  </div>
+  <div class="field"><label>Income Tax Paid ($M)</label><input type="number" id="tax_paid" step="1"><div class="hint">Supplemental disclosure</div></div>
+</div>
+
+<!-- Phase 2: Enterprise Value & Balance Sheet -->
+<div class="card">
+  <h2>🏦 Phase 2 — Balance Sheet <span class="source-badge balance">from latest 10-Q</span></h2>
+  <div class="row">
+    <div class="field"><label>Total Debt ($M)</label><input type="number" id="debt" step="1"><div class="hint">Commercial paper + current term + non-current term debt</div></div>
+    <div class="field"><label>Cash & Equivalents ($M)</label><input type="number" id="cash" step="1"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Short-Term Investments ($M)</label><input type="number" id="sti" step="1" value="0"></div>
+    <div class="field"><label>Diluted Shares Outstanding (M)</label><input type="number" id="shares" step="1"></div>
+  </div>
+  <h3>📐 ROIC Inputs</h3>
+  <div class="row">
+    <div class="field"><label>Total Shareholders' Equity ($M)</label><input type="number" id="equity" step="1"><div class="hint">From balance sheet — total stockholders' equity</div></div>
+    <div class="field"><label>Total Assets ($M)</label><input type="number" id="total_assets" step="1"><div class="hint">From balance sheet — used for asset turnover context</div></div>
+  </div>
+  <h3>💰 Investment Portfolio</h3>
+  <div class="row">
+    <div class="field"><label>Non-Cash Long-Term Investments ($M)</label><input type="number" id="lt_investments" step="1" value="0"><div class="hint">Marketable securities, bond portfolios (exclude illiquid/strategic)</div></div>
+    <div class="field"><label>Expected Return on Investments (%)</label><input type="number" id="inv_return_rate" step="0.1" value="4"><div class="hint">Default 4% — adjust to your thesis</div></div>
+  </div>
+  <p class="section-note">Investment income is added to Real Economic Profit as a credit for productive non-operating assets.</p>
+</div>
+
+<button class="calc" onclick="calculate()">⚡ Analyze Real Economic Profit</button>
+
+<!-- Results -->
+<div id="results">
+  <div id="verdict" class="verdict"></div>
+  <div id="metricsGrid" class="metrics"></div>
+  <div class="card">
+    <h2>📉 Profit Waterfall</h2>
+    <div id="waterfall" class="waterfall"></div>
+  </div>
+  <div class="card" id="roicCard" style="display:none">
+    <h2>🔄 ROIC & Growth CapEx Analysis</h2>
+    <div id="roicMetrics" class="metrics" style="margin-bottom:16px"></div>
+    <div id="growthProjection"></div>
+  </div>
+  <div class="card">
+    <h2>📋 Detailed Breakdown</h2>
+    <table id="breakdown" class="breakdown"></table>
+  </div>
+  <div class="card">
+    <h2>🚩 Red Flags & Signals</h2>
+    <div id="flags" class="flags"></div>
+  </div>
+</div>
+
+<!-- JSON Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <h3>📋 Import JSON from Gemini</h3>
+    <p>Paste the JSON output from Gemini below. The app will map fields automatically and strip comments. You'll still need to enter the <strong>current share price</strong> and <strong>ticker</strong> manually.</p>
+    <textarea id="jsonInput" placeholder='Paste Gemini JSON here...'></textarea>
+    <div id="importStatus" class="import-status"></div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeImport()">Cancel</button>
+      <button class="btn-import" onclick="doImport()">Import & Fill</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function v(id){const el=document.getElementById(id);return el.value===''?null:parseFloat(el.value)}
+function fmt(n,dec=0){if(n===null||isNaN(n))return '—';return n<0?'-$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}):'$'+n.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
+function fmtM(n){if(n===null||isNaN(n))return '—';const abs=Math.abs(n);let s;if(abs>=1e6)s=(n/1e6).toFixed(1)+'T';else if(abs>=1e3)s=(n/1e3).toFixed(1)+'B';else s=n.toFixed(0)+'M';return n<0?'-$'+s.replace('-',''):'$'+s}
+function pct(n,dec=2){if(n===null||isNaN(n))return '—';return (n*100).toFixed(dec)+'%'}
+
+// JSON Import
+function openImport(){document.getElementById('importModal').classList.add('active')}
+function closeImport(){document.getElementById('importModal').classList.remove('active');document.getElementById('importStatus').className='import-status'}
+
+function stripJsonComments(str){
+  // Remove // comments (not inside strings)
+  return str.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g,(m,g)=>g||'');
+}
+
+function doImport(){
+  const raw=document.getElementById('jsonInput').value.trim();
+  const statusEl=document.getElementById('importStatus');
+  try{
+    const cleaned=stripJsonComments(raw);
+    const d=JSON.parse(cleaned);
+
+    const map={
+      'cash from operations':'cfo','cash_from_operations':'cfo','cfo':'cfo',
+      'sbc expense addback':'sbc_expense','sbc expense':'sbc_expense','sbc_expense_addback':'sbc_expense',
+      'sbc grant date fair value':'sbc_grant','sbc grant value':'sbc_grant','sbc_grant_value':'sbc_grant',
+      'total capex':'capex','capital expenditures':'capex','capex_total':'capex','capex':'capex',
+      'd&a':'da','da':'da','d_and_a':'da','depreciation & amortization':'da','depreciation and amortization':'da','depreciation_and_amortization':'da',
+      'maintenance capex':'maint_capex','maint capex':'maint_capex','maintenance_capex_explicit':'maint_capex',
+      'restructuring charges':'restructuring','restructuring':'restructuring','restructuring_cash_payments':'restructuring',
+      'inventory change':'inv_change','inventory_change':'inv_change',
+      'receivables change':'recv_change','accounts receivable change':'recv_change','trade receivables change':'recv_change','receivables_change':'recv_change',
+      'interest paid':'interest','cash_interest_paid':'interest','cash interest paid':'interest',
+      'income tax paid':'tax_paid','income taxes paid':'tax_paid','cash_taxes_paid':'tax_paid','cash taxes paid':'tax_paid',
+      'total debt':'debt','total_debt_principal':'debt','total debt principal':'debt',
+      'cash & equivalents':'cash','cash and equivalents':'cash','cash & cash equivalents':'cash','cash and cash equivalents':'cash','cash_and_equivalents':'cash',
+      'short-term investments':'sti','short term investments':'sti','current marketable securities':'sti','short_term_investments':'sti',
+      'non-current marketable securities':'lt_investments','non current marketable securities':'lt_investments','long-term investments':'lt_investments','long term investments':'lt_investments','non_current_marketable_securities':'lt_investments',
+      'diluted shares outstanding':'shares','diluted shares':'shares','shares_outstanding_diluted':'shares',
+      'total shareholders equity':'equity','total stockholders equity':'equity','shareholders_equity':'equity','stockholders_equity':'equity','total_shareholders_equity':'equity','total_stockholders_equity':'equity','equity':'equity',
+      'total assets':'total_assets','total_assets':'total_assets',
+      'ticker':'ticker','company':'ticker',
+      'share price':'price','current share price':'price'
+    };
+
+    function flatten(obj){
+      let flat={};
+      for(const[k,v] of Object.entries(obj)){
+        if(v!==null&&typeof v==='object'&&!Array.isArray(v)){
+          Object.assign(flat,flatten(v));
+        }else{
+          flat[k]=v;
+        }
+      }
+      return flat;
+    }
+    const flat=flatten(d);
+
+    let filled=0;
+    let warnings=[];
+    for(const[key,val] of Object.entries(flat)){
+      const fieldId=map[key.toLowerCase()];
+      if(fieldId&&val!==null&&val!==undefined){
+        const el=document.getElementById(fieldId);
+        if(el){el.value=val;filled++;}
+      }else if(val===null&&map[key.toLowerCase()]){
+        warnings.push(key);
+      }
+    }
+
+    // Post-import fixups
+    const mcEl=document.getElementById('maint_capex');
+    if(mcEl&&(mcEl.value===''||mcEl.value==='0'||parseFloat(mcEl.value)===0))mcEl.value='';
+    const cxEl=document.getElementById('capex');
+    if(cxEl&&parseFloat(cxEl.value)<0)cxEl.value=Math.abs(parseFloat(cxEl.value));
+    const daEl=document.getElementById('da');
+    if(daEl&&parseFloat(daEl.value)<0)daEl.value=Math.abs(parseFloat(daEl.value));
+
+    let msg=`✓ Imported ${filled} fields.`;
+    if(warnings.length>0)msg+=` ⚠ Null: ${warnings.join(', ')}.`;
+    msg+=' Enter ticker & share price, then analyze!';
+    statusEl.className='import-status success';
+    statusEl.textContent=msg;
+    setTimeout(()=>{closeImport()},2800);
+  }catch(e){
+    statusEl.className='import-status error';
+    statusEl.textContent='✗ Invalid JSON — check for trailing commas or formatting issues.';
+  }
+}
+
+function calculate(){
+  const ticker=document.getElementById('ticker').value||'Company';
+  const price=v('price');
+  const cfo=v('cfo');
+  const sbcExp=v('sbc_expense')||0;
+  const sbcGrant=v('sbc_grant')||0;
+  const capex=v('capex')||0;
+  const da=v('da')||0;
+  const maintCapexInput=v('maint_capex');
+  const restructuring=v('restructuring')||0;
+  const invChange=v('inv_change')||0;
+  const recvChange=v('recv_change')||0;
+  const interest=v('interest')||0;
+  const taxPaid=v('tax_paid')||0;
+  const debt=v('debt')||0;
+  const cash=v('cash')||0;
+  const sti=v('sti')||0;
+  const shares=v('shares');
+  const ltInvestments=v('lt_investments')||0;
+  const invReturnRate=(v('inv_return_rate')||4)/100;
+  const equity=v('equity')||0;
+  const totalAssets=v('total_assets')||0;
+
+  if(!price||!cfo||!shares){alert('Please fill in at least: Share Price, CFO, and Diluted Shares.');return;}
+
+  // 1. Real Maintenance CapEx
+  let maintCapex,maintMethod;
+  if(maintCapexInput!==null&&maintCapexInput>0){
+    maintCapex=maintCapexInput;maintMethod='Disclosed';
+  }else{
+    const ratio=da>0?capex/da:999;
+    if(ratio>=0.8&&ratio<=1.2){maintCapex=capex;maintMethod='CapEx ≈ D&A → using total CapEx';}
+    else{maintCapex=da*1.05;maintMethod='D&A + 5% inflation buffer';}
+  }
+
+  // 2. Real SBC Burden
+  const realSBC=Math.max(sbcExp,sbcGrant);
+  const sbcSource=sbcGrant>sbcExp?'Grant Value (higher)':'Expense';
+
+  // 3. Working Capital Drag
+  const wcDrag=invChange+recvChange;
+
+  // 4. Investment Income
+  const investmentIncome=ltInvestments*invReturnRate;
+
+  // 5. Real Economic Profit
+  const realProfit=cfo-realSBC-maintCapex-restructuring+investmentIncome;
+
+  // 6. Unlevered Profit
+  const unleverProfit=realProfit+interest;
+
+  // 7. Enterprise Value
+  const marketCap=price*shares;
+  const ev=marketCap+debt-(cash+sti);
+
+  // 8. Yields
+  const realYield=realProfit/ev;
+  const unleverYield=unleverProfit/ev;
+  const realPE=price/(realProfit/shares);
+  const reportedFCF=cfo-capex;
+  const gap=realProfit-reportedFCF;
+
+  // 9. ROIC & Growth CapEx
+  const growthCapex=Math.max(capex-maintCapex,0);
+  const investedCapital=equity>0?(equity+debt-cash-sti):0;
+  const realROIC=investedCapital>0?realProfit/investedCapital:0;
+
+  // Verdict
+  let rating,ratingClass;
+  if(realYield>=0.07){rating='Strong Value';ratingClass='strong';}
+  else if(realYield>=0.04){rating='Fair Value';ratingClass='fair';}
+  else if(realYield>=0.02){rating='Growth Priced In';ratingClass='growth';}
+  else{rating='Expensive';ratingClass='expensive';}
+
+  document.getElementById('verdict').className='verdict '+ratingClass;
+  document.getElementById('verdict').innerHTML=`
+    <div class="yield-num">${pct(realYield)}</div>
+    <div class="yield-label">Real Cash Yield on EV — ${ticker}</div>
+    <div class="rating">${rating}</div>`;
+
+  // Metrics
+  const metricsData=[
+    {label:'Real Economic Profit',value:fmtM(realProfit),sub:fmt(realProfit/shares,2)+'/share',hl:true},
+    {label:'Unlevered Yield',value:pct(unleverYield)},
+    {label:'Real P/E',value:realPE>0?realPE.toFixed(1)+'x':'N/A'},
+    {label:'Enterprise Value',value:fmtM(ev)},
+    {label:'Reported FCF',value:fmtM(reportedFCF)},
+    {label:'Real vs Reported Gap',value:fmtM(gap),neg:gap<0}
+  ];
+  document.getElementById('metricsGrid').innerHTML=metricsData.map(m=>`
+    <div class="metric${m.hl?' highlight':''}">
+      <div class="val" ${m.neg?'style="color:var(--red)"':''}>${m.value}</div>
+      <div class="lbl">${m.label}${m.sub?' · '+m.sub:''}</div>
+    </div>`).join('');
+
+  // Waterfall
+  const wfItems=[
+    {label:'CFO',value:cfo,type:'positive'},
+    {label:'− Real SBC',value:-realSBC,type:'negative'},
+    {label:'− Maint CapEx',value:-maintCapex,type:'negative'},
+    {label:'− Restructuring',value:-restructuring,type:'negative'},
+  ];
+  if(investmentIncome>0)wfItems.push({label:'+ Invest. Income',value:investmentIncome,type:'invest'});
+  wfItems.push({label:'= Real Profit',value:realProfit,type:'result'});
+
+  const maxVal=Math.max(...wfItems.map(w=>Math.abs(w.value)),1);
+  document.getElementById('waterfall').innerHTML=wfItems.map(w=>{
+    const width=Math.max(Math.abs(w.value)/maxVal*100,8);
+    return `<div class="wf-bar">
+      <span class="wf-label">${w.label}</span>
+      <div class="wf-track"><div class="wf-fill ${w.type}" style="width:${width}%">${fmtM(Math.abs(w.value))}</div></div>
+    </div>`;
+  }).join('');
+
+  // ROIC & Growth CapEx section
+  const roicCard=document.getElementById('roicCard');
+  if(equity>0&&growthCapex>0){
+    roicCard.style.display='block';
+
+    const roicMetrics=[
+      {label:'Real ROIC',value:pct(realROIC),sub:'Real Profit ÷ Invested Capital'},
+      {label:'Invested Capital',value:fmtM(investedCapital),sub:'Equity + Debt − Cash − STI'},
+      {label:'Growth CapEx',value:fmtM(growthCapex),sub:'Total CapEx − Maint CapEx'},
+      {label:'Maint CapEx',value:fmtM(maintCapex),sub:maintMethod},
+    ];
+    document.getElementById('roicMetrics').innerHTML=roicMetrics.map(m=>`
+      <div class="metric">
+        <div class="val">${m.value}</div>
+        <div class="lbl">${m.label} · ${m.sub}</div>
+      </div>`).join('');
+
+    // Growth projection table — what yield looks like in 3/5 years at different ROIC on growth capex
+    const scenarios=[
+      {label:'Bear (10%)',roic:0.10},
+      {label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},
+      {label:'Bull (25%)',roic:0.25},
+    ];
+    // If actual ROIC < 10 or > 25, adjust scenarios
+    if(realROIC<=0.10)scenarios[1]={label:'Base (15%)',roic:0.15};
+    if(realROIC>=0.25)scenarios[1]={label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC};
+
+    let projHTML='<p style="font-size:.82rem;color:var(--text2);margin-bottom:12px">If growth CapEx of <strong style="color:var(--text)">'+fmtM(growthCapex)+'/yr</strong> earns a given return, what will the real yield become?</p>';
+    projHTML+='<table class="proj-table"><tr><th style="text-align:left">Scenario</th><th>New Profit (Yr 3)</th><th>Yield (Yr 3)</th><th>New Profit (Yr 5)</th><th>Yield (Yr 5)</th></tr>';
+
+    scenarios.forEach((s,i)=>{
+      const addl3=growthCapex*s.roic*3;
+      const addl5=growthCapex*s.roic*5;
+      const profit3=realProfit+addl3;
+      const profit5=realProfit+addl5;
+      const yield3=profit3/ev;
+      const yield5=profit5/ev;
+      const cls=i===1?' class="highlight-row"':'';
+      projHTML+=`<tr${cls}><td>${s.label}</td><td>${fmtM(profit3)}</td><td>${pct(yield3)}</td><td>${fmtM(profit5)}</td><td>${pct(yield5)}</td></tr>`;
+    });
+    projHTML+='</table>';
+    projHTML+='<p class="section-note">Assumes constant EV (no price change) and cumulative returns on annual growth CapEx. Shows what current price "implies" about required growth returns.</p>';
+    document.getElementById('growthProjection').innerHTML=projHTML;
+  }else{
+    roicCard.style.display=equity>0?'block':'none';
+    if(equity>0){
+      document.getElementById('roicMetrics').innerHTML=`
+        <div class="metric"><div class="val">${pct(realROIC)}</div><div class="lbl">Real ROIC · Real Profit ÷ Invested Capital</div></div>
+        <div class="metric"><div class="val">${fmtM(investedCapital)}</div><div class="lbl">Invested Capital · Equity + Debt − Cash − STI</div></div>`;
+      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.</p>';
+    }
+  }
+
+  // Breakdown table
+  const rows=[
+    ['Cash From Operations',fmt(cfo,0)+'M',''],
+    ['SBC Expense (addback)',fmt(sbcExp,0)+'M','Included in CFO'],
+    ['SBC Grant Value',fmt(sbcGrant,0)+'M',sbcGrant>0?'From Notes':'Not provided'],
+    ['Real SBC Burden (MAX)',fmt(realSBC,0)+'M',sbcSource,'negative'],
+    ['Total CapEx',fmt(capex,0)+'M',''],
+    ['Depreciation & Amortization',fmt(da,0)+'M',''],
+    ['Real Maintenance CapEx',fmt(maintCapex,0)+'M',maintMethod,'negative'],
+    ['Growth CapEx',fmt(growthCapex,0)+'M','Total CapEx − Maint CapEx'],
+    ['Restructuring',fmt(restructuring,0)+'M',restructuring===0?'None reported':'','negative'],
+    ['Working Capital Drag',fmt(Math.abs(wcDrag),0)+'M',wcDrag<0?'Cash trapped':'Cash released',wcDrag<0?'negative':'positive'],
+    ['Inventory Change',fmt(Math.abs(invChange),0)+'M',invChange<0?'Trapped':'Released'],
+    ['Receivables Change',fmt(Math.abs(recvChange),0)+'M',recvChange<0?'Not collected':'Collected'],
+  ];
+  if(ltInvestments>0){
+    rows.push(['Non-Cash LT Investments',fmt(ltInvestments,0)+'M','Balance']);
+    rows.push(['Expected Return Rate',pct(invReturnRate),'Applied to LT investments']);
+    rows.push(['Investment Income Credit','+'+fmt(investmentIncome,0)+'M','Added to Real Profit','positive']);
+  }
+  rows.push(['','','','']);
+  rows.push(['Real Economic Profit',fmt(realProfit,0)+'M','CFO − SBC − MaintCapex − Restruct' + (investmentIncome>0?' + Invest Income':''),'subtotal']);
+  rows.push(['Reported FCF',fmt(reportedFCF,0)+'M','CFO − Total CapEx']);
+  rows.push(['Gap (Real − Reported)',fmt(gap,0)+'M',gap<0?'Reported overstates profit':'Real exceeds reported',gap<0?'negative':'positive']);
+  rows.push(['Interest Paid',fmt(interest,0)+'M','']);
+  rows.push(['Unlevered Profit',fmt(unleverProfit,0)+'M','Real Profit + Interest']);
+  rows.push(['Enterprise Value',fmtM(ev),'Mkt Cap + Debt − Cash − STI']);
+  rows.push(['Market Cap',fmtM(marketCap),'Price × Shares']);
+  if(equity>0){
+    rows.push(['Shareholders Equity',fmtM(equity),'Balance sheet']);
+    rows.push(['Invested Capital',fmtM(investedCapital),'Equity + Debt − Cash − STI']);
+    rows.push(['Real ROIC',pct(realROIC),'Real Profit ÷ Invested Capital']);
+  }
+
+  let tableHTML='<tr><th>Line Item</th><th>Notes</th><th>Value</th></tr>';
+  rows.forEach(r=>{
+    if(!r[0]&&!r[1])return;
+    let cls='';
+    if(r[3]==='negative')cls=' class="negative"';
+    if(r[3]==='positive')cls=' class="positive"';
+    if(r[3]==='subtotal')cls=' class="subtotal"';
+    tableHTML+=`<tr${cls}><td>${r[0]}</td><td style="color:var(--text3)">${r[2]||''}</td><td>${r[1]}</td></tr>`;
+  });
+  document.getElementById('breakdown').innerHTML=tableHTML;
+
+  // Red Flags
+  let flags=[];
+  if(sbcGrant>0&&sbcGrant>sbcExp*1.2){
+    const ratio=(sbcGrant/sbcExp).toFixed(1);
+    flags.push({type:'warn',text:`<strong>⚠ Hidden SBC Dilution:</strong> Grant Value is ${ratio}x the expensed amount — significant shareholder dilution not reflected in reported earnings.`});
+  }
+  if(sbcGrant>0&&sbcExp>sbcGrant*1.1){
+    flags.push({type:'info',text:`<strong>ℹ SBC Note:</strong> Expense (${fmtM(sbcExp)}) exceeds Grant Value (${fmtM(sbcGrant)}) — older, cheaper grants being amortized. Current dilution is actually less than expensed.`});
+  }
+  const sbcPctCFO=realSBC/cfo;
+  if(sbcPctCFO>0.3){
+    flags.push({type:'warn',text:`<strong>⚠ SBC as % of CFO:</strong> ${pct(sbcPctCFO,1)} — shareholders are funding a large portion of employee compensation.`});
+  }else if(sbcPctCFO>0.15){
+    flags.push({type:'caution',text:`<strong>⚡ SBC as % of CFO:</strong> ${pct(sbcPctCFO,1)} — moderate but worth watching.`});
+  }else{
+    flags.push({type:'ok',text:`<strong>✓ SBC as % of CFO:</strong> ${pct(sbcPctCFO,1)} — reasonable level.`});
+  }
+  if(restructuring>0){
+    const restPct=restructuring/cfo;
+    flags.push({type:restPct>0.05?'warn':'caution',text:`<strong>${restPct>0.05?'⚠':'⚡'} Restructuring:</strong> ${fmt(restructuring,0)}M (${pct(restPct,1)} of CFO) — ${restPct>0.05?'serial restructurer, treat as ongoing cost':'one-time charges reduce real profit'}.`});
+  }
+  if(wcDrag<-1000){
+    flags.push({type:'caution',text:`<strong>⚡ Working Capital Drag:</strong> ${fmt(Math.abs(wcDrag),0)}M consumed — cash trapped in inventory/receivables.`});
+  }else if(wcDrag>1000){
+    flags.push({type:'ok',text:`<strong>✓ Working Capital:</strong> Released ${fmt(wcDrag,0)}M — positive cash conversion.`});
+  }
+  if(debt>0&&realProfit>0){
+    const debtRatio=debt/realProfit;
+    if(debtRatio>8)flags.push({type:'warn',text:`<strong>⚠ High Leverage:</strong> Debt is ${debtRatio.toFixed(1)}x real profit — significant leverage risk.`});
+    else if(debtRatio>4)flags.push({type:'caution',text:`<strong>⚡ Moderate Leverage:</strong> Debt is ${debtRatio.toFixed(1)}x real profit.`});
+    else flags.push({type:'ok',text:`<strong>✓ Leverage:</strong> Debt is ${debtRatio.toFixed(1)}x real profit — manageable.`});
+  }
+  if(ltInvestments>0){
+    const invPctEV=ltInvestments/ev;
+    flags.push({type:'info',text:`<strong>ℹ Investment Portfolio:</strong> ${fmtM(ltInvestments)} in long-term investments (${pct(invPctEV,1)} of EV). Credited ${fmtM(investmentIncome)}/yr at ${pct(invReturnRate)} assumed return.`});
+  }
+  // ROIC flag
+  if(equity>0&&realROIC>0){
+    if(realROIC>0.20)flags.push({type:'ok',text:`<strong>✓ Real ROIC:</strong> ${pct(realROIC)} — exceptional returns on invested capital. Growth CapEx likely value-creating.`});
+    else if(realROIC>0.12)flags.push({type:'ok',text:`<strong>✓ Real ROIC:</strong> ${pct(realROIC)} — solid returns above cost of capital.`});
+    else if(realROIC>0.06)flags.push({type:'caution',text:`<strong>⚡ Real ROIC:</strong> ${pct(realROIC)} — moderate. Growth spending may not create significant value.`});
+    else flags.push({type:'warn',text:`<strong>⚠ Real ROIC:</strong> ${pct(realROIC)} — below typical cost of capital. Growth CapEx may be destroying value.`});
+  }
+  // Growth capex flag
+  if(growthCapex>0&&growthCapex>maintCapex){
+    const growthPct=growthCapex/capex;
+    flags.push({type:'growth',text:`<strong>🚀 Growth Investment:</strong> ${fmtM(growthCapex)} (${pct(growthPct,0)} of total CapEx) is growth spending beyond maintenance. ${realROIC>0.15?'At current ROIC, this should generate '+fmtM(growthCapex*realROIC)+'/yr in new profit.':'See projection table above for return scenarios.'}`});
+  }
+  // Yield assessment
+  if(realYield>=0.07)flags.push({type:'ok',text:`<strong>✓ Yield Assessment:</strong> ${pct(realYield)} real yield is strong — business generating substantial cash relative to its price.`});
+  else if(realYield>=0.04)flags.push({type:'ok',text:`<strong>✓ Yield Assessment:</strong> ${pct(realYield)} real yield is fair — reasonable cash generation for the price.`});
+  else if(realYield>=0.02)flags.push({type:'caution',text:`<strong>⚡ Yield Assessment:</strong> ${pct(realYield)} real yield means growth is priced in — need significant earnings growth to justify.`});
+  else flags.push({type:'warn',text:`<strong>⚠ Yield Assessment:</strong> ${pct(realYield)} real yield is expensive — market pricing in exceptional future growth.`});
+
+  document.getElementById('flags').innerHTML=flags.map(f=>`<div class="flag ${f.type}">${f.text}</div>`).join('');
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+</body>
+</html>
