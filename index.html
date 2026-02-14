@@ -1535,7 +1535,7 @@ function doImport(){
           numVal=Math.round(val*annualize);
         }
         var el=document.getElementById(fieldId);
-        if(el){el.value=numVal;filled++;if(fieldId==='depr_only')console.log('[IMPORT] depr_only filled:',numVal,'from key:',key);}
+        if(el){el.value=numVal;filled++;}
       }else if(val===null&&map[lk]){warnings.push(key);}
     }
 
