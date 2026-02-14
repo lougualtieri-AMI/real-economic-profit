@@ -131,6 +131,31 @@ Shows how much of each year's Real Economic Profit comes from the original organ
 
 ---
 
+## R&D Intensity (New in v3.0)
+
+**R&D Expense**
+Total research and development spending from the income statement. Under US GAAP, R&D is expensed immediately — it flows through the income statement and is already deducted from Cash From Operations. This means R&D is a real cash cost that's invisible to the CapEx-based growth framework.
+
+**R&D / Revenue**
+R&D Expense divided by Revenue. Shows what percentage of revenue is reinvested in research. Typical ranges: 15–25% for semiconductor companies, 10–20% for software, 5–15% for diversified tech, near 0% for financial or service companies.
+
+**R&D / CapEx Ratio**
+R&D Expense divided by Total CapEx. When this exceeds 3x, R&D is the dominant investment channel — the company invests primarily through the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment for these companies because it only sees CapEx.
+
+**R&D / CFO**
+R&D Expense divided by Cash From Operations. Shows what fraction of cash generation is consumed by R&D. High ratios (above 50%) mean the company is plowing most of its cash back into research.
+
+**Total Reinvestment (CapEx + R&D)**
+The full picture of how much a company reinvests in its future. For traditional manufacturers, CapEx dominates. For technology companies, R&D can be 5–20x larger than CapEx. Comparing only CapEx across these company types is misleading.
+
+**R&D-Dominant Investment Model**
+Flagged when R&D exceeds 3x CapEx. Indicates the Growth Decomposition's "Base Erosion" signal may be misleading — the company is investing heavily in growth through a channel the CapEx-based framework can't see. The Asset-Light view typically better reflects economics for these companies.
+
+**Acquisition Amortization Distortion**
+When a company shows negative organic growth in the Growth Decomposition but has massive R&D spending (>3x CapEx), the "Base Erosion" diagnosis is replaced with this more accurate label. The distortion occurs because acquired intangible amortization inflates the Conservative maintenance CapEx estimate while R&D-driven growth is invisible to the framework.
+
+---
+
 ## Red Flags & Signals
 
 **Hidden SBC Dilution**
@@ -150,10 +175,10 @@ Extracted from SEC filing footnotes by Gemini. Covers: SPVs (Special Purpose Veh
 
 **SEC 10-Q**: Quarterly report. Used to update balance sheet items with more current data than the annual filing.
 
-**Gemini Extraction**: Google Gemini processes the full 10-K/10-Q PDF and extracts structured JSON data using a standardized prompt. Its large context window handles entire filings in one pass.
+**Gemini Extraction**: Google Gemini processes the full 10-K/10-Q PDF and extracts structured JSON data using a standardized prompt (v3.1). The prompt uses Chain of Thought prompting — Gemini first produces an Analyst Scratchpad showing its work (sources, math, reasoning), then outputs the final 27-field JSON. One prompt, one response, no follow-up needed.
 
-**Claude Audit**: After Gemini extracts and the app analyzes, Claude cross-checks the extraction against the computed results, explains findings in plain English, and identifies risks or errors.
+**Claude Audit**: The complete Gemini response (scratchpad + JSON) is pasted into a Claude conversation along with the original filing PDF. Claude cross-checks every number against the source document, verifies the scratchpad reasoning, and produces a corrected JSON if needed. One company per conversation for searchability.
 
 ---
 
-*This glossary is current as of February 2026. Definitions reflect the Real Economic Profit Analyzer framework and may differ from standard financial textbook definitions.*
+*This glossary is current as of February 14, 2026 (v3.0). Definitions reflect the Real Economic Profit Analyzer framework and may differ from standard financial textbook definitions.*
