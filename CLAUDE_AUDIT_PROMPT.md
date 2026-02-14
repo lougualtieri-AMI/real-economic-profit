@@ -1,7 +1,7 @@
 # Claude Audit Prompt — Real Economic Profit Analyzer
 
 > **Purpose:** Cross-verify a Gemini extraction against the source SEC filing before importing into the app.
-> **Version:** 3.0 — February 14, 2026
+> **Version:** 3.1 — February 14, 2026
 
 ---
 
@@ -32,7 +32,7 @@ Please perform the following audit:
 - Are the Inventory/Receivables changes calculated correctly (YoY deltas, correct sign convention)?
 
 **2. JSON Verification — Check Every Field**
-For each of the 26 fields in the JSON:
+For each of the 27 fields in the JSON:
 - Confirm the value matches the source filing
 - If a value is wrong, state the correct value and where you found it
 - If a value is null, confirm whether the data truly doesn't exist in the filing or if Gemini missed it

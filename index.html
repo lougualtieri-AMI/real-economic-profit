@@ -217,7 +217,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-02-13';
-  var buildId='v2.9.0';
+  var buildId='v3.0.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -344,6 +344,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
         <div id="yocResults"></div>
       </div>
     </div>
+  </div>
+  <div class="card" id="rdCard" style="display:none">
+    <h2>🔬 R&D Intensity</h2>
+    <div id="rdContent"></div>
   </div>
   <div class="card" id="projCard" style="display:none">
     <h2>🎯 When Does This Investment Work?</h2>
@@ -1451,7 +1455,8 @@ function doImport(){
       'interest paid':1,'cash_interest_paid':1,'cash interest paid':1,'interest_paid':1,'interest_expense':1,'interest expense':1,
       'income tax paid':1,'income taxes paid':1,'cash_taxes_paid':1,'cash taxes paid':1,'income_tax_paid':1,'income_tax_expense':1,'income tax expense':1,
       'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'net_revenue':1,'revenues':1,
-      'net income':1,'net_income':1
+      'net income':1,'net_income':1,
+      'r&d expense':1,'r_and_d_expense':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research, development and engineering':1,'research development and engineering':1
     };
 
     var map={
@@ -1480,12 +1485,12 @@ function doImport(){
     };
     var fyKeys={'fiscal_year_end':1,'fiscal year end':1,'fiscal_year_end_date':1,'fiscal year end date':1,'period_end_date':1,'period end date':1};
     var fyLabelKeys={'fiscal_year_label':1,'fiscal year label':1,'fiscal_year':1,'fy_label':1};
-    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1};
+    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1,'r&d expense':1,'r_and_d_expense':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research, development and engineering':1,'research development and engineering':1};
     // Skip these metadata fields during field mapping
     var skipKeys={'filing_type':1,'filingtype':1,'filing type':1,'quarter':1,'quarter_end_date':1,'quarter end date':1,'quarterenddate':1,'period_reported':1,'period reported':1,'periodreported':1,'diluted_eps':1,'diluted eps':1,'dilutedeps':1,
       'report_type':1,'reporttype':1,'report type':1,'period':1,'period_type':1,'periodtype':1,'period type':1,'months_elapsed':1,'monthselapsed':1,'months elapsed':1,
       'currency':1,'scale':1,'date':1,
-      'cost_of_revenue':1,'cost of revenue':1,'gross_profit':1,'gross profit':1,'research_and_development':1,'research and development':1,
+      'cost_of_revenue':1,'cost of revenue':1,'gross_profit':1,'gross profit':1,
       'selling_general_admin':1,'selling general admin':1,'other_income_expense_net':1,'other income expense net':1,
       'interest_expense':1,'interest expense':1,'pre_tax_income':1,'pre tax income':1,'income_tax_expense':1,'income tax expense':1,
       'restricted_cash':1,'restricted cash':1,'total_cash_and_investments':1,'total cash and investments':1,
@@ -1511,6 +1516,7 @@ function doImport(){
         // Normalize field names
         if(eKey==='revenues')eKey='revenue';
         if(eKey==='total_revenue'||eKey==='net_revenue')eKey='revenue';
+        if(eKey==='r&d_expense'||eKey==='r_and_d_expense'||eKey==='rd_expense'||eKey==='research_and_development'||eKey==='research,_development_and_engineering'||eKey==='research_development_and_engineering')eKey='rd_expense';
         // Annualize revenue and net income if interim
         if(isInterim&&annualize!==1&&annualizeFields[lk]&&val!==null&&typeof val==='number'){
           extra[eKey]=Math.round(val*annualize);
@@ -1672,7 +1678,7 @@ function computeMetrics(entry){
   var impliedGrowth=reinvestRate*realROIC;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null};
+  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null,rd_expense:entry.extra.rd_expense||null};
 }
 
 function renderPills(){
@@ -1846,6 +1852,11 @@ function renderTrend(){
   if(years.some(function(y){return y.revenue})){
     trendRows.unshift({label:'Revenue',key:'revenue',f:fmtM});
   }
+  if(years.some(function(y){return y.rd_expense})){
+    // Insert after Revenue (index 1) or at start
+    var rdIdx=trendRows[0]&&trendRows[0].key==='revenue'?1:0;
+    trendRows.splice(rdIdx,0,{label:'R&D Expense',key:'rd_expense',f:function(v){return v?fmtM(v):'—'},inv:true});
+  }
 
   trendRows.forEach(function(row){
     var vals=years.map(function(y){return y[row.key]});
@@ -1943,7 +1954,15 @@ function renderTrend(){
     }else if(avgOrganicPct>=0){
       narrative2='<strong>Reinvestment-Led Growth:</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) comes from growth CapEx earning returns. The existing base is stable but not expanding much on its own. Growth sustainability depends heavily on continued high-ROIC investment opportunities.';
     }else{
-      narrative2='<strong>Base Erosion Alert:</strong> The organic base is actually shrinking — existing operations are becoming less profitable. Growth CapEx is masking the decline. Watch for competitive pressure or margin compression in the core business.';
+      // Check if R&D-heavy company before declaring Base Erosion
+      var latestYearData=yearStore[currentYearKey];
+      var decompRD=latestYearData&&latestYearData.extra?latestYearData.extra.rd_expense||null:null;
+      var decompCapex=latestYearData&&latestYearData.formData?latestYearData.formData.capex||0:0;
+      if(decompRD&&decompCapex>0&&decompRD/decompCapex>3){
+        narrative2='<strong>Acquisition Amortization Distortion:</strong> The organic base appears to be shrinking, but this company invests '+Math.round(decompRD/decompCapex)+'x more through R&D than CapEx. The Growth Decomposition only sees CapEx-based reinvestment and misses R&D-driven growth entirely. The Asset-Light view and R&D Intensity section provide a more complete picture.';
+      }else{
+        narrative2='<strong>Base Erosion Alert:</strong> The organic base is actually shrinking — existing operations are becoming less profitable. Growth CapEx is masking the decline. Watch for competitive pressure or margin compression in the core business.';
+      }
     }
     if(efficiencyRatio>=1.5){
       narrative2+=' The profit-to-capital growth ratio of '+efficiencyRatio.toFixed(1)+'x is excellent — profit is growing significantly faster than capital deployed.';
@@ -2081,7 +2100,13 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
 
   d+='## Capital & ROIC ('+latest.label+')\n\n| Metric | Value |\n|--------|-------|\n';
   d+='| Total CapEx | '+fmtM(latest.capex)+' |\n| Growth CapEx | '+fmtM(latest.growthCapex)+' |\n| Maint CapEx | '+fmtM(latest.maintCapex)+' |\n';
-  d+='| Real ROIC | '+pct(latest.realROIC)+' |\n| Invested Capital | '+fmtM(latest.investedCapital)+' |\n\n';
+  d+='| Real ROIC | '+pct(latest.realROIC)+' |\n| Invested Capital | '+fmtM(latest.investedCapital)+' |\n';
+  if(latest.rd_expense&&latest.rd_expense>0){
+    d+='| R&D Expense | '+fmtM(latest.rd_expense)+' |\n';
+    d+='| R&D / CapEx | '+(latest.capex>0?(latest.rd_expense/latest.capex).toFixed(1)+'x':'—')+' |\n';
+    d+='| Total Reinvestment (CapEx + R&D) | '+fmtM(latest.capex+latest.rd_expense)+' |\n';
+  }
+  d+='\n';
 
   if(years.length>=2){
     d+='## Historical Trend\n\n| Metric |';
@@ -2338,6 +2363,31 @@ function exportBrief(){
   if(taxPaid>0)h+='<tr><td>Income Tax Paid</td><td>'+fmtM(taxPaid)+'</td></tr>';
   h+='</table>';
 
+  // R&D Intensity (if data available)
+  if(latest.rd_expense&&latest.rd_expense>0){
+    h+='<h2>R&amp;D Intensity</h2>';
+    var bRdRev=latest.revenue?latest.rd_expense/latest.revenue:null;
+    var bRdCapex=latest.capex>0?latest.rd_expense/latest.capex:null;
+    var bRdCfo=latest.cfo>0?latest.rd_expense/latest.cfo:null;
+    var bTotalReinvest=latest.capex+latest.rd_expense;
+
+    h+='<table><tr><th>Metric</th><th>Value</th></tr>';
+    h+='<tr><td>R&amp;D Expense</td><td>'+fmtM(latest.rd_expense)+'</td></tr>';
+    if(bRdRev!==null)h+='<tr><td>R&amp;D / Revenue</td><td>'+pct(bRdRev)+'</td></tr>';
+    if(bRdCapex!==null)h+='<tr><td>R&amp;D / CapEx</td><td>'+bRdCapex.toFixed(1)+'x</td></tr>';
+    if(bRdCfo!==null)h+='<tr><td>R&amp;D / CFO</td><td>'+pct(bRdCfo)+'</td></tr>';
+    h+='<tr><td><strong>Total Reinvestment (CapEx + R&amp;D)</strong></td><td><strong>'+fmtM(bTotalReinvest)+'</strong></td></tr>';
+    h+='<tr><td>CapEx Alone</td><td>'+fmtM(latest.capex)+'</td></tr>';
+    h+='</table>';
+
+    if(bRdCapex!==null&&bRdCapex>3){
+      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The Asset-Light view likely better reflects actual economics.</div>';
+    }else if(bRdCapex!==null&&bRdCapex>1){
+      h+='<div class="flag info"><strong>📊 Significant R&amp;D Investment:</strong> R&amp;D spending is '+bRdCapex.toFixed(1)+'x physical CapEx. Consider R&amp;D alongside CapEx when evaluating total reinvestment.</div>';
+    }
+    h+='<p class="section-note">R&amp;D is already deducted from CFO (expensed under GAAP). Shown here to reveal the full reinvestment picture.</p>';
+  }
+
   // Growth CapEx Scenarios — FIX: always sort Bear < Base < Bull
   if(latest.growthCapex>0){
     h+='<h2>Growth CapEx Return Scenarios</h2>';
@@ -2426,6 +2476,7 @@ function exportBrief(){
 
     var trendRows=[
       {label:'Revenue',key:'revenue',f:fmtM},
+      {label:'R&D Expense',key:'rd_expense',f:function(v){return v?fmtM(v):'—'},inv:true},
       {label:'Real Profit',key:'realProfit',f:fmtM},
       {label:'CFO',key:'cfo',f:fmtM},
       {label:'Real SBC',key:'realSBC',f:fmtM,inv:true},
@@ -2505,7 +2556,14 @@ function exportBrief(){
     }else if(avgOrganicPct>=0){
       narrative='<strong>Growth Assessment: Reinvestment-Led.</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) from growth CapEx earning returns. Sustainability depends on continued investment opportunities.';
     }else{
-      narrative='<strong>Growth Assessment: Base Erosion.</strong> Organic base is shrinking. Growth CapEx masking decline in core profitability.';
+      // Check if R&D-heavy before declaring Base Erosion
+      var briefRD=latest.rd_expense||null;
+      var briefCapex=latest.capex||0;
+      if(briefRD&&briefCapex>0&&briefRD/briefCapex>3){
+        narrative='<strong>Growth Assessment: Acquisition Amortization Distortion.</strong> Organic base appears to shrink, but R&D investment ('+Math.round(briefRD/briefCapex)+'x CapEx) is the primary growth channel — invisible to CapEx-based decomposition. See R&D Intensity and Asset-Light view.';
+      }else{
+        narrative='<strong>Growth Assessment: Base Erosion.</strong> Organic base is shrinking. Growth CapEx masking decline in core profitability.';
+      }
     }
     h+='<div class="narrative">'+narrative+'</div>';
 
@@ -2617,6 +2675,11 @@ function exportBrief(){
   h+='<p><strong>Conservative:</strong> Uses full D&A × 1.05 as maintenance CapEx — includes amortization of acquired intangibles (customer relationships, technology). The tougher test.</p>';
   h+='<p><strong>Asset-Light:</strong> Uses only physical depreciation × 1.05, excluding acquisition amortization. The rationale: acquired intangibles often retain or grow in value even as they amortize to zero on the books. They don\'t require equivalent cash to maintain. This view better reflects actual cash needs for M&A-heavy companies.</p>';
 
+  h+='<h3>R&amp;D Intensity</h3>';
+  h+='<p>For technology and R&amp;D-intensive companies, the traditional CapEx-based framework can miss the primary investment channel. Under GAAP, R&amp;D is expensed immediately — it flows through the income statement, not the balance sheet. This means:</p>';
+  h+='<p>• R&amp;D is already deducted from Cash From Operations (it\'s a real cash cost)<br>• But it doesn\'t appear in CapEx, Growth CapEx, or the Growth Decomposition<br>• Companies spending 5–20x more on R&amp;D than CapEx may show zero "growth investment" despite massive reinvestment</p>';
+  h+='<p>When the R&amp;D Intensity section is present, it reveals the full reinvestment picture: CapEx + R&amp;D combined. If R&amp;D is 3x or more than CapEx, the Growth Decomposition\'s "Base Erosion" signal may be misleading — the company is investing heavily in growth, just through a channel the framework can\'t see.</p>';
+
   h+='<h3>Key Metrics in This Brief</h3>';
   h+='<table><tr><th>Metric</th><th>What It Tells You</th></tr>';
   h+='<tr><td>Real Cash Yield</td><td>Real Profit ÷ Enterprise Value. Your actual cash return at today\'s price. Above 7% = strong value. Below 2% = market pricing exceptional growth.</td></tr>';
@@ -2626,6 +2689,7 @@ function exportBrief(){
   h+='<tr><td>Invested Capital</td><td>Equity + Debt − Cash − Short-Term Investments. Total capital deployed in the business.</td></tr>';
   h+='<tr><td>Enterprise Value (EV)</td><td>Market Cap + Debt − Cash − STI. Total price to acquire the entire business.</td></tr>';
   h+='<tr><td>Growth CapEx</td><td>Total CapEx minus Maintenance CapEx. Investment in future growth beyond maintaining current capacity.</td></tr>';
+  h+='<tr><td>R&amp;D / CapEx</td><td>Ratio of R&amp;D spending to physical CapEx. Above 3x = R&amp;D is the primary investment channel. Growth Decomposition understates reinvestment for these companies.</td></tr>';
   h+='<tr><td>Reinvestment Rate × ROIC</td><td>Implied organic profit growth. Shows whether growth spending is creating or destroying value.</td></tr>';
   h+='</table>';
 
@@ -2824,6 +2888,41 @@ function calculate(){
     }
   }
 
+  // R&D Intensity Card
+  var rdExpense=null;
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
+    rdExpense=yearStore[currentYearKey].extra.rd_expense||null;
+  }
+  var rdCard=document.getElementById('rdCard');
+  if(rdExpense&&rdExpense>0){
+    rdCard.style.display='block';
+    var rdRevenue=yearStore[currentYearKey].extra.revenue||yearStore[currentYearKey].extra.total_revenue||null;
+    var rdRevPct=rdRevenue?rdExpense/rdRevenue:null;
+    var rdCapexRatio=capex>0?rdExpense/capex:null;
+    var rdCfoPct=cfo>0?rdExpense/cfo:null;
+    var totalReinvestment=capex+rdExpense;
+    var rdIsHeavy=rdCapexRatio!==null&&rdCapexRatio>3;
+
+    var rdHTML='<div class="metrics" style="grid-template-columns:1fr 1fr 1fr">';
+    rdHTML+='<div class="metric"><div class="val"'+(rdIsHeavy?' style="color:var(--purple)"':'')+'>'+fmtM(rdExpense)+'</div><div class="lbl">R&D Expense</div></div>';
+    if(rdRevPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdRevPct)+'</div><div class="lbl">R&D / Revenue</div></div>';
+    if(rdCapexRatio!==null)rdHTML+='<div class="metric"><div class="val"'+(rdIsHeavy?' style="color:var(--purple)"':'')+'>'+rdCapexRatio.toFixed(1)+'x</div><div class="lbl">R&D / CapEx</div></div>';
+    if(rdCfoPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdCfoPct)+'</div><div class="lbl">R&D / CFO</div></div>';
+    rdHTML+='<div class="metric"><div class="val" style="color:var(--accent2)">'+fmtM(totalReinvestment)+'</div><div class="lbl">Total Reinvestment (CapEx + R&D)</div></div>';
+    rdHTML+='<div class="metric"><div class="val">'+fmtM(capex)+'</div><div class="lbl">CapEx Alone</div></div>';
+    rdHTML+='</div>';
+
+    if(rdIsHeavy){
+      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The <strong>Asset-Light view</strong> likely better reflects actual economics.</div>';
+    }else if(rdCapexRatio!==null&&rdCapexRatio>1){
+      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 Significant R&D Investment:</strong> R&D spending is '+rdCapexRatio.toFixed(1)+'x physical CapEx. Consider R&D alongside CapEx when evaluating total reinvestment.</div>';
+    }
+    rdHTML+='<p class="section-note" style="margin-top:8px">R&D is already deducted from CFO (expensed under GAAP). Shown here to reveal the full reinvestment picture — CapEx alone understates how much this company invests in future growth.</p>';
+    document.getElementById('rdContent').innerHTML=rdHTML;
+  }else{
+    rdCard.style.display='none';
+  }
+
   // Breakdown table
   var rows=[
     ['Cash From Operations',fmt(cfo,0)+'M',''],
@@ -2833,12 +2932,16 @@ function calculate(){
     ['Total CapEx',fmt(capex,0)+'M',''],
     ['Depreciation & Amortization',fmt(da,0)+'M',''],
     ['Real Maintenance CapEx',fmt(maintCapex,0)+'M',maintMethod,'negative'],
-    ['Growth CapEx',fmt(growthCapex,0)+'M','Total CapEx − Maint CapEx'],
-    ['Restructuring',fmt(restructuring,0)+'M',restructuring===0?'None reported':'','negative'],
-    ['Working Capital Drag',fmt(Math.abs(wcDrag),0)+'M',wcDrag<0?'Cash trapped':'Cash released',wcDrag<0?'negative':'positive'],
-    ['Inventory Change',fmt(Math.abs(invChange),0)+'M',invChange<0?'Trapped':'Released'],
-    ['Receivables Change',fmt(Math.abs(recvChange),0)+'M',recvChange<0?'Not collected':'Collected']
+    ['Growth CapEx',fmt(growthCapex,0)+'M','Total CapEx − Maint CapEx']
   ];
+  if(rdExpense&&rdExpense>0){
+    rows.push(['R&D Expense (memo)',fmt(rdExpense,0)+'M','Already in CFO — shown for context']);
+    rows.push(['Total Reinvestment',fmt(capex+rdExpense,0)+'M','CapEx + R&D']);
+  }
+  rows.push(['Restructuring',fmt(restructuring,0)+'M',restructuring===0?'None reported':'','negative']);
+  rows.push(['Working Capital Drag',fmt(Math.abs(wcDrag),0)+'M',wcDrag<0?'Cash trapped':'Cash released',wcDrag<0?'negative':'positive']);
+  rows.push(['Inventory Change',fmt(Math.abs(invChange),0)+'M',invChange<0?'Trapped':'Released']);
+  rows.push(['Receivables Change',fmt(Math.abs(recvChange),0)+'M',recvChange<0?'Not collected':'Collected']);
   if(ltInvestments>0){
     rows.push(['Non-Cash LT Investments',fmt(ltInvestments,0)+'M','Balance']);
     rows.push(['Expected Return Rate',pct(invReturnRate),'Applied to LT investments']);

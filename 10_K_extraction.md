@@ -2,7 +2,7 @@
 
 > **Purpose:** Extract financial data from SEC 10-K filings for use in the [Real Economic Profit Analyzer](https://yourusername.github.io/real-economic-profit/).
 > **Model Target:** Gemini (or any LLM with document upload capability)
-> **Version:** 3.0 — February 14, 2026
+> **Version:** 3.1 — February 14, 2026
 
 ---
 
@@ -36,10 +36,11 @@ Before generating the JSON, show your work in a scratchpad section. You MUST:
 - Show how you determined Maintenance CapEx (if disclosed; use 0 if not separately disclosed)
 - State which supplemental cash flow lines you used for Interest Paid and Income Tax Paid
 - Note the source for Inventory Change and Receivables Change (balance sheet year-over-year delta; positive = increase = cash use; report the CHANGE not the balance)
+- State the R&D Expense from the income statement (usually "Research and development" or "Research, development and engineering")
 - Draft your Risk Flags summary from Commitments & Contingencies, off-balance-sheet arrangements, and significant debt/lease obligations
 
 **SECTION 2: Final JSON**
-After the scratchpad, output a single flat JSON object with exactly these 26 fields in this order. All dollar values in MILLIONS ($M). Use null ONLY if the data truly does not exist in the filing after thorough checking. Use 0 when the value is genuinely zero.
+After the scratchpad, output a single flat JSON object with exactly these 27 fields in this order. All dollar values in MILLIONS ($M). Use null ONLY if the data truly does not exist in the filing after thorough checking. Use 0 when the value is genuinely zero.
 
 Fields:
 1. "Fiscal Year Label" — e.g., "FY2024"
@@ -68,6 +69,7 @@ Fields:
 24. "Goodwill" — goodwill from balance sheet. 0 if none.
 25. "Intangible Assets" — intangible assets, net (excluding goodwill). 0 if none.
 26. "Risk Flags" — 2-3 sentence summary of material risks: off-balance-sheet items, contingent liabilities, unconsolidated entities, unusual debt structures, pending litigation with quantified exposure. State "None identified beyond standard operational risks" if nothing material.
+27. "R&D Expense" — total research and development expense from the income statement. 0 if none (e.g., financial companies). null only if not separately disclosed.
 ````
 
 ---
@@ -102,6 +104,7 @@ Fields:
 | 24 | Goodwill | Balance sheet | Goodwill line item |
 | 25 | Intangible Assets | Balance sheet | Net of accumulated amortization, ex-goodwill |
 | 26 | Risk Flags | Notes to financial statements | Commitments, contingencies, off-BS items |
+| 27 | R&D Expense | Income statement | "Research and development" line item |
 
 ---
 
@@ -113,6 +116,7 @@ Fields:
 - **Inventory/Receivables:** Report the year-over-year CHANGE, not the balance. Positive = increase = cash consumed.
 - **Total Debt:** Include ALL borrowings — commercial paper, revolving credit, current maturities of LT debt, and long-term debt.
 - **Shares Outstanding:** Use the DILUTED weighted-average from the EPS calculation, not basic shares or shares outstanding at period end.
+- **R&D Expense:** Use the total from the income statement. Some companies label it "Research and development," others "Research, development and engineering." Do NOT use capitalized software costs — use the expensed amount only.
 
 ---
 

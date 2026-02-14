@@ -2,7 +2,7 @@
 
 > **Purpose:** Extract interim financial data from SEC 10-Q filings for use in the [Real Economic Profit Analyzer](https://yourusername.github.io/real-economic-profit/).
 > **Model Target:** Gemini (or any LLM with document upload capability)
-> **Version:** 3.0 — February 14, 2026
+> **Version:** 3.1 — February 14, 2026
 
 ---
 
@@ -46,10 +46,11 @@ Before generating the JSON, show your work in a scratchpad section. You MUST:
 - State the source for Depreciation if available (PP&E footnote or D&A breakout). If not broken out, state that and use null.
 - Note whether supplemental cash flow disclosures (Interest Paid, Income Tax Paid) are present
 - State the source for Inventory and Receivables changes (balance sheet deltas from fiscal year-end to quarter-end)
+- State the R&D Expense from the YTD income statement
 - Draft your Risk Flags summary
 
 **SECTION 2: Final JSON**
-After the scratchpad, output a single flat JSON object with exactly these 26 fields in this order. All dollar values in MILLIONS ($M). Use null ONLY if the data truly does not exist in the filing. Use 0 when the value is genuinely zero.
+After the scratchpad, output a single flat JSON object with exactly these 27 fields in this order. All dollar values in MILLIONS ($M). Use null ONLY if the data truly does not exist in the filing. Use 0 when the value is genuinely zero.
 
 Fields:
 1. "Fiscal Year Label" — Use the fiscal year label this quarter belongs to, e.g., "FY2025" for a Q3 filing in fiscal year 2025
@@ -78,6 +79,7 @@ Fields:
 24. "Goodwill" — quarter-end goodwill. 0 if none.
 25. "Intangible Assets" — quarter-end intangible assets, net (excluding goodwill). 0 if none.
 26. "Risk Flags" — 2-3 sentence summary of material risks from the 10-Q notes.
+27. "R&D Expense" — YTD total research and development expense from the income statement. 0 if none. null only if not separately disclosed.
 ````
 
 ---
@@ -112,6 +114,7 @@ Fields:
 | 24 | Goodwill | Balance sheet | Quarter-end snapshot |
 | 25 | Intangible Assets | Balance sheet | Quarter-end snapshot |
 | 26 | Risk Flags | Notes | Material risks from 10-Q |
+| 27 | R&D Expense | Income statement | YTD cumulative, 0 if none |
 
 ---
 
