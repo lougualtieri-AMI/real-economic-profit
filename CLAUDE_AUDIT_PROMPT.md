@@ -1,57 +1,66 @@
 # Claude Audit Prompt — Real Economic Profit Analyzer
 
-## When to Use
+> **Purpose:** Cross-verify a Gemini extraction against the source SEC filing before importing into the app.
+> **Version:** 3.0 — February 14, 2026
 
-After you've extracted data with Gemini, run the analysis in the app, and exported the brief. Paste both into Claude for a second-opinion review.
+---
 
-## What to Paste into Claude
+## How to Use
 
-1. **The Export Brief** from the app (click "Export Analysis Brief" → copy the contents)
-2. **The Gemini extraction work** — the JSON output AND ideally the "show your work" response where Gemini explains where it found each number. (Copy from your Google Doc for that filing.)
+1. Start a new Claude conversation (one company per chat for searchability)
+2. Upload the same 10-K or 10-Q filing (PDF) that Gemini extracted from
+3. Paste Gemini's **complete response** (scratchpad + JSON) below this prompt
+4. Claude will verify every number against the source document
 
-## Prompt
+Name the conversation clearly for future reference, e.g., **"AVGO FY2025 Audit"** or **"META FY2024 Audit"**
 
-Paste the Export Brief and Gemini work, then add this:
+---
 
-```
-You are a senior financial analyst auditing a "Real Economic Profit" analysis. I'm providing two things:
+## Audit Prompt
 
-1. AN EXPORT BRIEF from my analysis app (the computed results)
-2. THE GEMINI EXTRACTION showing the raw data pulled from SEC filings and how it was derived
+Paste this into Claude, then paste Gemini's full response after it:
 
-Please do the following:
+````
+You are a financial data auditor. I'm going to give you a Gemini AI extraction of an SEC filing. The extraction includes a scratchpad (showing Gemini's work) and a JSON data block. The original filing is attached as a PDF.
 
-PART 1 — DATA INTEGRITY CHECK
-- Cross-check each number in the Export Brief against the Gemini extraction. Flag any mismatches.
-- Check if the Gemini extraction looks reasonable for this type of company. For example: Does CFO make sense relative to Net Income? Is D&A in a reasonable range relative to Total Assets? Does SBC Grant Value make sense relative to SBC Expense?
-- Flag any numbers that seem unusually high, low, or missing.
+Please perform the following audit:
 
-PART 2 — FORMULA VERIFICATION
-- Verify the key calculations: Real Economic Profit, Real ROIC, Invested Capital, Real Cash Yield.
-- Confirm the Maintenance vs Growth CapEx split makes sense for this business.
-- Check if the SBC treatment (MAX of expense vs grant value) is capturing the right number.
+**1. Scratchpad Review**
+- Does Gemini's scratchpad reasoning look correct?
+- Did it identify the right line items from the right statements?
+- Is the SBC Grant Date Fair Value math correct (units × fair value, summed across award types)?
+- Are the Inventory/Receivables changes calculated correctly (YoY deltas, correct sign convention)?
 
-PART 3 — WHAT AM I LOOKING AT? (Plain English)
-Explain what this analysis tells me about the company as if I'm an intelligent person who is NOT a financial analyst. Specifically:
-- Is this company generating real cash for shareholders, or are the numbers misleading?
-- Is the growth spending creating value or destroying it?
-- What are the 2-3 most important things I should take away?
-- What should I watch for going forward?
+**2. JSON Verification — Check Every Field**
+For each of the 26 fields in the JSON:
+- Confirm the value matches the source filing
+- If a value is wrong, state the correct value and where you found it
+- If a value is null, confirm whether the data truly doesn't exist in the filing or if Gemini missed it
 
-PART 4 — RISK FLAGS
-- Review any Risk Flags from the Gemini extraction. Are they material? What should I understand about them?
-- Are there any risks you can infer from the numbers that Gemini may not have flagged? (e.g., rapidly growing SBC, declining ROIC, debt growing faster than earnings)
+**3. Risk Flags Assessment**
+- Are there material risks Gemini missed?
+- Is anything overstated or understated?
 
-PART 5 — QUESTIONS I SHOULD ASK
-- What follow-up questions would a professional analyst ask about this company based on this data?
-- Is there anything in the numbers that doesn't add up or deserves a deeper look?
+**4. Summary**
+Provide a final verdict:
+- ✅ CLEAN — all values verified correct
+- ⚠️ MINOR ISSUES — list corrections needed (typos, rounding differences)
+- ❌ MATERIAL ERRORS — list fields that need re-extraction
 
-Be direct and specific. Use the actual numbers from the analysis. Don't hedge excessively — if something looks good or bad, say so clearly.
-```
+If corrections are needed, output a corrected JSON block I can copy directly into the app.
 
-## Tips
+---
 
-- **One company at a time** — paste the brief and Gemini work for a single company per Claude conversation for the cleanest results.
-- **Multi-year is better** — if you have the Export Brief from a multi-year analysis (with trend data), Claude can spot patterns like declining ROIC or accelerating SBC that single-year analysis misses.
-- **Ask follow-ups** — after the audit, ask Claude things like "How does this compare to a typical company in this sector?" or "If I could only look at one metric to decide whether to own this stock, which would it be and why?"
-- **Compare two companies** — paste Export Briefs for two companies and ask "Which is the better business and why?"
+**GEMINI EXTRACTION (scratchpad + JSON):**
+
+[Paste Gemini's complete response here]
+````
+
+---
+
+## Tips for Effective Audits
+
+- **One company per conversation** — makes it easy to search later ("AVGO FY2025 Audit")
+- **Upload the same filing** — Claude needs the source document to verify against
+- **Paste the full Gemini response** — the scratchpad gives Claude context about where Gemini found each number, making the audit faster and more thorough
+- **If Claude finds errors** — it will produce a corrected JSON you can paste directly into the app. No need to re-run Gemini.
