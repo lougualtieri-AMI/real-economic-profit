@@ -217,7 +217,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-02-13';
-  var buildId='v3.0.0';
+  var buildId='v3.1.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -2083,6 +2083,8 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     else if(realYieldLightMD>=0.02)ratingLightMD='Growth Priced In';
     else ratingLightMD='Expensive';
     d+='Asset-Light Yield on EV (Depreciation Only): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
+    var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
+    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Asset-Light views tell materially different stories for this company. The gap likely reflects significant acquisition amortization. See Capital & ROIC section for details.\n';
   }
   d+='\n';
   d+='| Metric | Value |\n|--------|-------|\n';
@@ -2292,7 +2294,13 @@ function exportBrief(){
     else if(realYieldLight>=0.04){ratingLightBrief='Fair Value';ratingColorLightBrief='#3498db';}
     else if(realYieldLight>=0.02){ratingLightBrief='Growth Priced In';ratingColorLightBrief='#e67e22';}
     else{ratingLightBrief='Expensive';ratingColorLightBrief='#e74c3c';}
-    h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd"><div class="yield" style="color:'+ratingColorLightBrief+';font-size:1.5rem">'+pct(realYieldLight)+'</div>';
+    var briefViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
+    if(briefViewsDiverge){
+      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
+    }else{
+      h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd">';
+    }
+    h+='<div class="yield" style="color:'+ratingColorLightBrief+';font-size:'+(briefViewsDiverge?'1.8rem':'1.5rem')+'">'+pct(realYieldLight)+'</div>';
     h+='<div class="label">Asset-Light Yield on EV (Depreciation Only)</div>';
     h+='<div class="rating" style="background:'+ratingColorLightBrief+'">'+ratingLightBrief+'</div></div>';
   }
@@ -2800,7 +2808,13 @@ function calculate(){
     else if(realYieldLight>=0.04){ratingLight='Fair Value';ratingColorLight='var(--blue)';ratingBgLight='rgba(52,152,219,.15)';}
     else if(realYieldLight>=0.02){ratingLight='Growth Priced In';ratingColorLight='var(--orange)';ratingBgLight='rgba(230,126,34,.15)';}
     else{ratingLight='Expensive';ratingColorLight='var(--red)';ratingBgLight='rgba(231,76,60,.15)';}
-    verdictHTML+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)"><div style="font-family:\'JetBrains Mono\',monospace;font-size:1.6rem;font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Asset-Light Yield on EV (Depreciation Only)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
+    var viewsDiverge=(realProfit<0&&realProfitLight>0)||(realProfit>0&&realProfitLight<0)||Math.abs(realProfitLight-realProfit)>(Math.abs(cfo)*0.3);
+    if(viewsDiverge){
+      verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
+    }else{
+      verdictHTML+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">';
+    }
+    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Asset-Light Yield on EV (Depreciation Only)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
   }
   document.getElementById('verdict').innerHTML=verdictHTML;
 
