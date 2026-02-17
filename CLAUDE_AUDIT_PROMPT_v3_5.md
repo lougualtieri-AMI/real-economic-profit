@@ -1,7 +1,8 @@
 # Claude Audit Prompt — Real Economic Profit Analyzer
 
 > **Purpose:** Cross-verify a Gemini extraction against the source SEC filing, then generate a tailored Gemini research prompt for forward-looking analysis.
-> **Version:** 3.5 — February 16, 2026
+> **Current Version:** 3.5 | **Last Updated:** February 16, 2026
+> **What's New:** Deferred PDF generation to after Part 6. Shareable report is now a clean Investment Brief (Parts 3, 4, 6 — no audit language). Full Audit leads with verdict + filing summary. Google Docs research link in shareable brief.
 
 ---
 
@@ -71,7 +72,7 @@ Provide a final verdict:
 
 If ANY corrections are needed, output a corrected JSON block I can copy directly into the app.
 
-**When the Conservative and Asset-Light views differ significantly** (opposite signs, or gap exceeds ~30% of CFO), show both sets of metrics side by side (Real Profit, ROIC, Yield) and note which view is more informative for this particular company.
+**When the Full Cost and Ex-Amortization views differ significantly** (opposite signs, or gap exceeds ~30% of CFO), show both sets of metrics side by side (Real Profit, ROIC, Yield) and note which view is more informative for this particular company.
 
 PART 5B — GEMINI RESEARCH PROMPT (Auto-Generated)
 After completing Parts 1-5, generate a customized Gemini Deep Research prompt that I can copy-paste directly into Gemini. The prompt must:
@@ -88,7 +89,9 @@ OUTPUT FORMAT FOR PARTS 1–5B
 Output Parts 1–5B as well-formatted text directly in the chat. Use clear headings, tables, and bullet points for readability. Do NOT generate PDF reports at this stage — save the PDF generation for after Part 6 is complete to avoid doing it twice.
 
 PART 6 — GEMINI RESEARCH ASSESSMENT (Complete when research is provided)
-If a Gemini Deep Research report is provided along with or after the extraction data:
+If a Gemini Deep Research report is provided along with or after the extraction data, ask the user for a link to the research report (Google Docs or other URL) to include in the shareable report.
+
+Then:
 - Grade the research quality (Excellent / Good / Fair / Poor)
 - Verify key factual claims against available data
 - Note any post-filing developments that materially affect the analysis
@@ -106,16 +109,29 @@ OUTPUT FORMAT — Two Downloadable PDF Reports (Generate ONLY after Part 6 is co
 
 Produce two separate, well-formatted PDF reports containing ALL Parts (1–6):
 
-**Report 1: Full Audit (Parts 1–6)** — For internal use.
-Contains all parts including field-by-field verification tables, formula checks, analysis, risk flags, verdict, the generated Gemini prompt, and research assessment.
+**Report 1: Full Audit** — For internal use.
+Order the report as follows:
+1. **Data Summary & Verdict (Part 5)** — Lead with the verdict (Clean/Minor Issues/Material Errors), followed by a table listing each SEC filing used: filing type (10-K, 10-Q), fiscal period covered, filing date, and the overall date range covered across all filings. Below the filing table, include: "Qualitative Research Date: [date the Gemini research report was provided]" so the reader knows how current the forward-looking analysis is.
+2. Part 1: Data Integrity Check
+3. Part 2: Formula Verification
+4. Part 3: Plain-English Analysis
+5. Part 4: Risk Flags
+6. Part 5B: Generated Gemini Research Prompt
+7. Part 6: Research Assessment
 
-**Report 2: Shareable Analysis (Parts 3–6)** — For sharing externally.
-Contains only the plain-English analysis (Part 3), risk flags (Part 4), a brief data verification summary (Part 5), and the research assessment (Part 6). Written to stand alone without raw data tables.
+**Report 2: Shareable Investment Brief (Parts 3, 4, 6)** — For sharing externally.
+This should read as a standalone investment brief, NOT an audit report. It contains:
+- Part 3: Plain-English company analysis
+- Part 4: Risk flags
+- Part 6: Research assessment (Profit Momentum drivers, Growth Quality, Forward Outlook, Key Insight)
+- If a research link was provided, display it prominently at the top of the Part 6 section as "Full Research Report: [link]"
+
+Do NOT include in the shareable report: data verification details, verdict/clean status, corrected JSON, formula checks, or any audit-specific language. The reader should never see references to "extraction," "Gemini," "audit," or "JSON."
 
 Both reports must include:
 - A **header banner** with 4 key metrics (Real Profit, Real ROIC, Real Yield, and Verdict/Real P/E) displayed in colored boxes
 - Professional formatting with clear Part headings, styled tables, and bullet points
-- A footer with generation date, source filing, and share price
+- A footer with generation date, source filing, share price, and qualitative research date
 
 **Color Scheme (match exactly):**
 - Green accent (#26ae60) — banner metric boxes, pass/clean indicators, divider lines
@@ -141,3 +157,13 @@ Both reports must include:
 - **Multi-year is better** — if you're auditing multiple years, do them in the same conversation so Claude can spot cross-year patterns
 - **Ask follow-ups** — after the audit, ask things like "How does this compare to a typical company in this sector?" or "Which single metric should I watch most closely?"
 - **Compare two companies** — paste briefs for two companies and ask "Which is the better business and why?"
+
+---
+
+## Version History
+| Version | Date | Changes |
+|---------|------|---------|
+| 3.5 | Feb 16, 2026 | Deferred PDF generation to after Part 6. Shareable report → Investment Brief (Parts 3, 4, 6). Full Audit leads with verdict + filing summary. Google Docs research link. |
+| 3.4 | Feb 16, 2026 | Added Part 5B: auto-generated Gemini research prompt with company-specific numbers. |
+| 3.2 | Feb 15, 2026 | Unit consistency check, Part 6 additions, Ex-Amortization display verification, equity component fixes. |
+| 3.1 | Feb 14, 2026 | Merged two separate audit prompts into one. Added R&D field verification. |
