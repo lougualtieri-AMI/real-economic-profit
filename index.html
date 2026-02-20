@@ -2341,16 +2341,33 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   var mdREP=(latest.realProfitLight!==null)?latest.realProfitLight:latest.realProfit;
   var mdRepPerShare=shares>0?mdREP/shares:0;
   var mdNetIncome=latest.net_income||null;
-  d+='### Three-Tier Yield Analysis\n\n| Tier | Yield | Ratio |\n|------|-------|-------|\n';
+  d+='### Three-Tier Yield Analysis\n\n';
+  d+='Three ways to measure what this stock earns relative to its price — each strips away another layer of distortion.\n\n';
+  d+='| Tier | Yield | Ratio | What It Measures |\n|------|-------|-------|------------------|\n';
   if(mdNetIncome!==null&&marketCap>0){
-    d+='| Wall Street Earnings Yield | '+pct(mdNetIncome/marketCap)+' | P/E '+(mdNetIncome>0?(marketCap/mdNetIncome).toFixed(1)+'x':'N/M')+' |\n';
+    d+='| Wall Street Earnings Yield | '+pct(mdNetIncome/marketCap)+' | P/E '+(mdNetIncome>0?(marketCap/mdNetIncome).toFixed(1)+'x':'N/M')+' | Reported net income vs. stock price — what most investors see |\n';
   }
-  d+='| **Real Earnings Yield** | **'+pct(mdRepPerShare/price)+'** | P/REP '+(mdRepPerShare>0?(price/mdRepPerShare).toFixed(1)+'x':'N/M')+' |\n';
-  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+' |\n\n';
+  d+='| **Real Earnings Yield** | **'+pct(mdRepPerShare/price)+'** | P/REP '+(mdRepPerShare>0?(price/mdRepPerShare).toFixed(1)+'x':'N/M')+' | Same price, but earnings cleaned up — real SBC, true maintenance CapEx, noise removed |\n';
+  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+' | What you\'d earn buying the whole company, debt and all |\n\n';
+  // Bridge explanations
+  var mdNetDebt=debt-cash;
+  var mdNetDebtB=mdNetDebt/1000;
+  if(mdNetIncome!==null&&marketCap>0){
+    var mdWsToReal=mdRepPerShare/price-mdNetIncome/marketCap;
+    d+='**Wall Street → Real** ('+(mdWsToReal>=0?'+':'')+pct(mdWsToReal)+' gap): ';
+    if(mdWsToReal<-0.01) d+='Real yield is lower because true economic profit is less than reported net income. The main driver is that the real SBC cost ('+fmtM(latest.realSBC)+') — using the higher of expense or grant value — exceeds the accounting charge, and maintenance CapEx is estimated conservatively.';
+    else if(mdWsToReal>0.01) d+='Real yield is higher because reported earnings understate the business\'s true earning power. D&A exceeds actual maintenance needs, so Wall Street P/E overstates the true cost of staying in business.';
+    else d+='Minimal gap — reported earnings happen to approximate real economic profit for this company.';
+    d+='\n\n';
+  }
+  d+='**Real Earnings → Real Ownership** ('+(realYield>=mdRepPerShare/price?'higher':'lower')+' yield): ';
+  if(mdNetDebt>0) d+='The company carries '+fmtM(Math.abs(mdNetDebt))+' in net debt. Enterprise value ('+fmtM(ev)+') is larger than market cap ('+fmtM(marketCap)+'), so the same profit is spread across a bigger denominator — the ownership yield is lower.';
+  else d+='The company has '+fmtM(Math.abs(mdNetDebt))+' in net cash. Enterprise value ('+fmtM(ev)+') is smaller than market cap ('+fmtM(marketCap)+') — you\'re effectively getting the business for less than the stock price implies.';
+  d+='\n\n';
   // SBC Value Gap
   if(latest.sbcGrant>0&&latest.sbcExp>0){
     var mdSBCGap=latest.sbcGrant/latest.sbcExp;
-    d+='SBC Value Gap: '+mdSBCGap.toFixed(2)+'x'+(mdSBCGap>1.5?' ⚠ Income statement significantly understates compensation cost':'')+'\n\n';
+    d+='**SBC Value Gap:** '+mdSBCGap.toFixed(2)+'x — Grant Date Fair Value is '+pct(mdSBCGap-1,0)+' higher than the income statement expense.'+(mdSBCGap>1.5?' ⚠ Significant gap; the app uses the higher grant value for its REP calculation.':'')+'\n\n';
   }
   d+='| Metric | Value |\n|--------|-------|\n';
   d+='| Real Economic Profit | '+fmtM(latest.realProfit)+' ('+fmt(latest.realProfit/shares,2)+'/share) |\n';
@@ -2575,17 +2592,34 @@ function exportBrief(){
   var expREP=(latest.realProfitLight!==null)?latest.realProfitLight:latest.realProfit;
   var expRepPerShare=shares>0?expREP/shares:0;
   h+='<h2>Three-Tier Yield Analysis</h2>';
-  h+='<table><tr><th style="text-align:left">Yield Tier</th><th>Yield</th><th>Ratio</th></tr>';
+  h+='<p style="font-size:.9rem;margin-bottom:10px">Three ways to measure what this stock earns relative to its price — each one strips away another layer of distortion.</p>';
+  h+='<table><tr><th style="text-align:left">Yield Tier</th><th>Yield</th><th>Ratio</th><th style="text-align:left">What It Measures</th></tr>';
   if(expNetIncome!==null&&marketCap>0){
-    h+='<tr><td style="text-align:left">Wall Street Earnings Yield</td><td>'+pct(expNetIncome/marketCap)+'</td><td>P/E '+(expNetIncome>0?(marketCap/expNetIncome).toFixed(1)+'x':'N/M')+'</td></tr>';
+    h+='<tr><td style="text-align:left">Wall Street Earnings Yield</td><td>'+pct(expNetIncome/marketCap)+'</td><td>P/E '+(expNetIncome>0?(marketCap/expNetIncome).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Reported net income vs. stock price. What most investors see.</td></tr>';
   }
-  h+='<tr><td style="text-align:left"><strong>Real Earnings Yield</strong></td><td><strong>'+pct(expRepPerShare/price)+'</strong></td><td>P/REP '+(expRepPerShare>0?(price/expRepPerShare).toFixed(1)+'x':'N/M')+'</td></tr>';
-  h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+'</td></tr>';
+  h+='<tr><td style="text-align:left"><strong>Real Earnings Yield</strong></td><td><strong>'+pct(expRepPerShare/price)+'</strong></td><td>P/REP '+(expRepPerShare>0?(price/expRepPerShare).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Same stock price, but earnings cleaned up — real SBC dilution, true maintenance CapEx, and accounting noise removed.</td></tr>';
+  h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">What you\'d actually earn buying the whole company, taking on its debt and keeping its cash.</td></tr>';
   h+='</table>';
+  // Bridge explanations
+  var expNetDebt=debt-cash;
+  var expNetDebtB=expNetDebt/1000;
+  h+='<div style="font-size:.85rem;margin:8px 0 4px;padding:10px 14px;background:#f5f5f5;border-radius:6px;line-height:1.6">';
+  if(expNetIncome!==null&&marketCap>0){
+    var wsToReal=expRepPerShare/price-expNetIncome/marketCap;
+    h+='<strong>Wall Street → Real</strong> ('+(wsToReal>=0?'+':'')+pct(wsToReal)+' gap): ';
+    if(wsToReal<-0.01) h+='Real yield is lower — the cleanup reveals that true economic profit is less than reported net income, primarily because the real SBC cost ('+fmtM(latest.realSBC)+') exceeds the accounting expense.';
+    else if(wsToReal>0.01) h+='Real yield is higher — reported earnings understate the business\'s true earning power. Depreciation and amortization exceed actual maintenance needs.';
+    else h+='Minimal gap — reported earnings happen to approximate real economic profit for this company.';
+    h+='<br>';
+  }
+  h+='<strong>Real Earnings → Real Ownership</strong>: ';
+  if(expNetDebt>0) h+='Ownership yield is '+(realYield<expRepPerShare/price?'lower':'higher')+' because the company carries '+fmtM(Math.abs(expNetDebt))+' in net debt. The enterprise value is larger than the market cap, so the same profit is spread across a bigger denominator.';
+  else h+='Ownership yield is '+(realYield>expRepPerShare/price?'higher':'about the same')+' because the company has '+fmtM(Math.abs(expNetDebt))+' in net cash. The enterprise value is smaller than the market cap — you\'re effectively buying the business at a discount to its stock price.';
+  h+='</div>';
   // SBC Value Gap in export
   if(latest.sbcGrant>0&&latest.sbcExp>0){
     var expSBCGap=latest.sbcGrant/latest.sbcExp;
-    h+='<p style="font-size:.85rem;margin-top:4px">SBC Value Gap: '+expSBCGap.toFixed(2)+'x '+(expSBCGap>1.5?'⚠ Income statement significantly understates compensation cost':'')+'</p>';
+    h+='<p style="font-size:.85rem;margin-top:4px"><strong>SBC Value Gap:</strong> '+expSBCGap.toFixed(2)+'x — Grant Date Fair Value is '+pct(expSBCGap-1,0)+' higher than the income statement expense.'+(expSBCGap>1.5?' ⚠ This is a significant gap; the app uses the higher grant value for its REP calculation.':'')+'</p>';
   }
 
   // Executive Summary
