@@ -160,7 +160,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .decomp-stat .ds-val.reinvest-color{color:var(--purple)}
 .decomp-stat .ds-val.total-color{color:var(--accent2)}
 .decomp-stat .ds-val.neg-color{color:var(--orange)}
-.decomp-stat .ds-val.warn-color{color:#f39c12}
 
 /* Scorecard */
 .scorecard-table{width:100%;border-collapse:collapse;font-size:.82rem}
@@ -206,6 +205,34 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .picker-chip input{display:none}
 .picker-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s}
 .picker-chip.selected .picker-check{border-color:var(--accent);background:var(--accent);color:#000}
+
+/* Year selector */
+.year-selector{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius)}
+.year-selector .ys-label{font-size:.75rem;color:var(--text3);margin-right:4px}
+.year-selector .ys-count{font-size:.72rem;color:var(--text3);margin-left:auto;font-family:'JetBrains Mono',monospace}
+.year-selector .ys-count.ok{color:var(--green)}
+.year-selector .ys-count.warn{color:var(--orange)}
+.ys-chip{display:inline-flex;align-items:center;padding:6px 14px;background:var(--bg);border:2px solid var(--border);border-radius:20px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text3);transition:all .2s;user-select:none}
+.ys-chip:hover{border-color:var(--accent-dim);color:var(--text)}
+.ys-chip.active{border-color:var(--accent);color:var(--accent2);background:rgba(212,160,37,.08)}
+
+/* Three-tier yield */
+.yield-tiers{margin-top:16px;padding:16px;background:var(--bg);border-radius:10px}
+.yield-tier{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.yield-tier:last-child{margin-bottom:0}
+.yield-tier .yt-value{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;min-width:80px}
+.yield-tier .yt-ratio{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--text2)}
+.yield-tier .yt-label{font-size:.78rem;color:var(--text3);flex:1;min-width:200px}
+.yield-bridge{font-size:.75rem;color:var(--text3);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* Target price calculator */
+.target-calc{margin-top:12px}
+.target-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
+.target-table th{text-align:center;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;font-size:.72rem;text-transform:uppercase}
+.target-table td{text-align:center;padding:8px 6px;border-bottom:1px solid rgba(51,51,51,.5);font-family:'JetBrains Mono',monospace;font-size:.82rem}
+.target-table td:first-child{font-family:'DM Sans',sans-serif;color:var(--text2)}
+.target-table td.above{color:var(--green)}
+.target-table td.below{color:var(--red)}
 </style>
 </head>
 <body>
@@ -217,7 +244,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-02-13';
+  var buildDate='2026-02-20';
   var buildId='v3.2.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
@@ -247,6 +274,11 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <button class="secondary" onclick="openImport()">📋 Import Data from Gemini (10-K / 10-Q)</button>
 
 <div id="yearPills" class="year-pills" style="display:none"></div>
+<div id="yearSelector" class="year-selector" style="display:none">
+  <span class="ys-label">Analyze:</span>
+  <div id="yearSelectorChips"></div>
+  <span id="yearSelectorCount" class="ys-count"></span>
+</div>
 
 <div class="tip-box">
   <strong>💡 Data sourcing:</strong> Use <strong>annual 10-K</strong> for all cash flow items. Use the <strong>latest 10-Q</strong> for balance sheet items. Feed both PDFs to Gemini and paste the JSON here. For <strong>multi-year trends</strong>, import each year's 10-K in separate Gemini chats — the fiscal year is auto-detected.
@@ -271,7 +303,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div class="field"><label>Maint. CapEx ($M)</label><input type="number" id="maint_capex" step="1" placeholder="If disclosed"><div class="hint">Leave blank to auto-estimate</div></div>
   </div>
   <div class="row">
-    <div class="field"><label>Depreciation Only ($M)</label><input type="number" id="depr_only" step="1" placeholder="Optional"><div class="hint">Physical depreciation only (excl. intangible amortization). Enables Ex-Amortization view for acquisitive companies.</div></div>
+    <div class="field"><label>Depreciation Only ($M)</label><input type="number" id="depr_only" step="1" placeholder="Optional"><div class="hint">Physical depreciation only (excl. intangible amortization). Enables asset-light view for acquisitive companies.</div></div>
     <div class="field"><label>Amortization ($M)</label><input type="number" id="amort_only" step="1" placeholder="Auto-calculated" readonly style="opacity:.6"><div class="hint">= D&A − Depreciation. Shows acquisition-related portion.</div></div>
   </div>
   <h3>Other Adjustments</h3>
@@ -381,6 +413,15 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <div id="thesisResults"></div>
     </div>
   </div>
+  <div class="card" id="targetCalcCard" style="display:none">
+    <h2>💲 Target Price Calculator</h2>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">What price do you need for the yield you want? Flips the equation: instead of yield-at-price, price-at-yield.</p>
+    <div class="row" style="margin-bottom:12px">
+      <div class="field"><label>Custom Target Yield (%)</label><input type="number" id="targetYieldCustom" step="0.1" placeholder="e.g. 6" oninput="renderTargetCalc()"></div>
+      <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="conservative">Conservative (Full D&A)</option><option value="light">Asset-Light (Depr Only)</option></select></div>
+    </div>
+    <div id="targetCalcContent"></div>
+  </div>
   <div class="card" id="trendCard" style="display:none">
     <h2>📈 Historical Trend</h2>
     <div id="trendContent"></div>
@@ -450,9 +491,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Real ROIC</strong><br>
       Real Economic Profit ÷ Invested Capital. How efficiently the company uses deployed capital. Above 12% is strong; below 6% is concerning.</p>
 
-      <p><strong style="color:var(--accent2)">Full Cost vs. Ex-Amortization Views</strong><br>
-      <em>Full Cost:</em> Full D&A × 1.05 as maintenance CapEx — penalizes acquisitive companies, which may be appropriate.<br>
-      <em>Ex-Amortization:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles (customer relationships, technology) don't require equivalent cash to maintain.</p>
+      <p><strong style="color:var(--accent2)">Conservative vs. Asset-Light Views</strong><br>
+      <em>Conservative:</em> Full D&A × 1.05 as maintenance CapEx — penalizes acquisitive companies, which may be appropriate.<br>
+      <em>Asset-Light:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles (customer relationships, technology) don't require equivalent cash to maintain.</p>
 
       <p><strong style="color:var(--accent2)">Real SBC Burden</strong><br>
       MAX of SBC Expense (cash flow statement) or SBC Grant Date Fair Value (units granted × grant price). Captures true dilution cost — the accounting expense often understates the economic value transferred to employees.</p>
@@ -469,6 +510,26 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Real vs. Reported Gap</strong><br>
       Real Economic Profit minus Reported FCF (CFO − Total CapEx). Negative = reported FCF overstates real earnings, typically because SBC dilution isn't deducted in traditional FCF.</p>
 
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">v3.2 Metrics</h4>
+
+      <p><strong style="color:var(--accent2)">Three-Tier Yield</strong><br>
+      Three earnings yields shown in descending order: (1) <strong>Wall Street Earnings Yield</strong> = Net Income ÷ Market Cap — what reported earnings look like. (2) <strong>Real Earnings Yield</strong> = REP per share ÷ Price — cleaned-up earnings per share. (3) <strong>Real Ownership Yield</strong> = REP ÷ EV — what you'd earn buying the whole company.</p>
+
+      <p><strong style="color:var(--accent2)">REP Per Share</strong><br>
+      Real Economic Profit ÷ Diluted Shares Outstanding. The per-share equivalent of REP, analogous to EPS but using real profit instead of reported net income.</p>
+
+      <p><strong style="color:var(--accent2)">SBC Value Gap</strong><br>
+      SBC Grant Date Fair Value ÷ SBC Expense. How much the income statement understates true compensation cost. ≤1.2 = fair, 1.2–1.5 = moderate gap, >1.5 = significant hidden dilution (red flag).</p>
+
+      <p><strong style="color:var(--accent2)">Dep/NTA Ratio</strong><br>
+      Depreciation ÷ Net Tangible Assets. Proxy for capital intensity. >15% = asset-heavy (Full D&A view more reliable), 8–15% = mixed, <8% = asset-light. Lease-heavy companies may show elevated ratios due to ROU asset depreciation.</p>
+
+      <p><strong style="color:var(--accent2)">Value Leakage</strong><br>
+      SBC Growth ÷ CFO Growth (year-over-year). Shows what fraction of cash flow improvement was absorbed by rising compensation vs. flowing to shareholders. <20% = good, 20–50% = meaningful, >50% = majority of growth consumed by SBC.</p>
+
+      <p><strong style="color:var(--accent2)">Target Price Calculator</strong><br>
+      Inverts the yield equation: Target EV = REP ÷ Target Yield → Target Market Cap = Target EV − Debt + Cash → Target Price = Target Market Cap ÷ Shares. Shows what price you need for the yield you want.</p>
+
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Capital & Growth</h4>
 
       <p><strong style="color:var(--accent2)">Invested Capital (IC)</strong><br>
@@ -484,13 +545,13 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       Total CapEx − Maintenance CapEx. Investment in future growth beyond maintaining current capacity.</p>
 
       <p><strong style="color:var(--accent2)">Maintenance CapEx</strong><br>
-      Annual cash needed to maintain current productive capacity. Auto-estimated as D&A × 1.05 (Full Cost) or Depreciation Only × 1.05 (Ex-Amortization) when not disclosed by the company. The × 1.05 is an inflation adjustment — replacing aging assets costs more today.</p>
+      Annual cash needed to maintain current productive capacity. Auto-estimated as D&A × 1.05 (conservative) or Depreciation Only × 1.05 (asset-light) when not disclosed by the company. The × 1.05 is an inflation adjustment — replacing aging assets costs more today.</p>
 
       <p><strong style="color:var(--accent2)">Reinvestment Rate</strong><br>
-      Growth CapEx ÷ Invested Capital. Fraction of capital being redeployed into physical growth. Note: for low-physical-asset and brand-driven companies, this understates total reinvestment since advertising and R&amp;D flow through the income statement, not CapEx.</p>
+      Growth CapEx ÷ Invested Capital. Fraction of capital being redeployed into growth.</p>
 
-      <p><strong style="color:var(--accent2)">CapEx Coverage Ratio</strong><br>
-      Total CapEx ÷ Maintenance CapEx Estimate. Below 100% = spending less than estimated replacement cost (normal for low-physical-asset businesses). Above 100% = investing in physical capacity expansion.</p>
+      <p><strong style="color:var(--accent2)">Implied Profit Growth</strong><br>
+      Reinvestment Rate × Real ROIC. Organic growth rate assuming reinvested capital earns current returns.</p>
 
       <p><strong style="color:var(--accent2)">Incremental Return</strong><br>
       Year-over-year Δ Real Profit ÷ prior year Growth CapEx. What each dollar of growth spending actually produced.</p>
@@ -501,19 +562,19 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">SBC Expense Addback</strong> — Stock-based compensation added back in CFO section. Non-cash charge.</p>
       <p><strong style="color:var(--accent2)">SBC Grant Date Fair Value</strong> — Units granted × weighted-average grant price. From SBC footnote.</p>
       <p><strong style="color:var(--accent2)">D&A</strong> — Depreciation & Amortization combined. From cash flow adjustments.</p>
-      <p><strong style="color:var(--accent2)">Depreciation Only</strong> — Physical depreciation of PP&E, excluding intangible amortization. Enables Ex-Amortization view.</p>
+      <p><strong style="color:var(--accent2)">Depreciation Only</strong> — Physical depreciation of PP&E, excluding intangible amortization. Enables asset-light view.</p>
       <p><strong style="color:var(--accent2)">Amortization</strong> — D&A minus Depreciation. Acquisition-related intangible write-down. An accounting convention — acquired assets often retain or grow in value even as they amortize to zero on the books.</p>
       <p><strong style="color:var(--accent2)">STI</strong> — Short-Term Investments. Current marketable securities, treated like cash.</p>
       <p><strong style="color:var(--accent2)">Interest Paid</strong> — Cash interest from supplemental disclosures (bottom of cash flow statement).</p>
       <p><strong style="color:var(--accent2)">Income Tax Paid</strong> — Cash taxes from supplemental disclosures. Often very different from tax provision.</p>
 
-      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Profit Momentum (Multi-Year)</h4>
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Growth Decomposition (Multi-Year)</h4>
 
-      <p><strong style="color:var(--accent2)">Profit Momentum</strong> — Measures observed trends in Real Profit, Revenue, CFO, and ROIC across multiple periods. Labels range from "Compounding" (profit growing &gt;5% with stable/rising ROIC) through "Diluting" (profit growing but ROIC declining &gt;4pp — capital-intensive growth) to "Eroding" (profit declining &gt;10% confirmed by CFO decline). Unlike the CapEx-based growth inference, this measures what actually happened.</p>
-      <p><strong style="color:var(--accent2)">Profit CAGR</strong> — Compound Annual Growth Rate of Real Profit across all loaded periods.</p>
-      <p><strong style="color:var(--accent2)">Revenue CAGR</strong> — Compound Annual Growth Rate of Revenue. Comparing Profit CAGR to Revenue CAGR reveals whether margins are expanding or contracting.</p>
-      <p><strong style="color:var(--accent2)">Capital CAGR</strong> — Compound Annual Growth Rate of Invested Capital. When profit grows while capital shrinks, the business is becoming more efficient.</p>
-      <p><strong style="color:var(--accent2)">Qualitative Drivers</strong> — The quantitative trends show <em>what</em> happened; the Gemini Deep Research report provides the <em>why</em> (pricing power, volume, efficiency, mix, one-time factors).</p>
+      <p><strong style="color:var(--accent2)">Organic Growth</strong> — Profit growth from existing base getting more productive (pricing, margins, customers).</p>
+      <p><strong style="color:var(--accent2)">Reinvestment Growth</strong> — Profit from growth CapEx earning returns. Estimated as prior year Growth CapEx × ROIC.</p>
+      <p><strong style="color:var(--accent2)">Profit CAGR</strong> — Compound Annual Growth Rate of Real Profit.</p>
+      <p><strong style="color:var(--accent2)">Capital CAGR</strong> — Compound Annual Growth Rate of Invested Capital.</p>
+      <p><strong style="color:var(--accent2)">Profit / Capital Growth</strong> — Profit CAGR ÷ Capital CAGR. Above 1.0x = increasingly efficient. Below 1.0x = diminishing returns.</p>
 
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Yield-on-Cost Trajectory</h4>
 
@@ -588,6 +649,7 @@ function loadFromPortfolio(){
   // Clear current state
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
+  selectedYears=[];
   // Restore
   var ys=entry.years;
   for(var k in ys){yearStore[k]=ys[k];}
@@ -611,6 +673,7 @@ function onPortfolioSelect(){
 function clearForNewCompany(){
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
+  selectedYears=[];
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
@@ -753,7 +816,7 @@ function runCompare(selectedTickers){
       roicFirst:roicFirst,roicLast:roicLast,
       da:m.da,equity:m.equity,debt:debt,
       reinvestRate:m.investedCapital>0?m.growthCapex/m.investedCapital:0,
-      capexCoverage:m.maintCapex>0?m.capex/m.maintCapex:null,
+      impliedGrowth:m.investedCapital>0?(m.growthCapex/m.investedCapital)*m.realROIC:0,
       organicBase:keys.length>=2?computeMetrics(ys[keys[0]]).realProfit:m.realProfit,
       reinvestLayer:keys.length>=2?m.realProfit-computeMetrics(ys[keys[0]]).realProfit:0,
       nta:m.nta,returnOnNTA:m.returnOnNTA,
@@ -780,7 +843,8 @@ function runCompare(selectedTickers){
     {label:'Real ROIC',f:function(c){return pct(c.realROIC)},hl:true},
     {label:'Return on NTA',f:function(c){return c.nta>0?pct(c.returnOnNTA):'—'},hl:true},
     {label:'Incremental Return',f:function(c){return c.incrementalReturn!==null?pct(c.incrementalReturn):'—'},hl:true},
-    {label:'CapEx Coverage',f:function(c){return c.capexCoverage!==null?pct(c.capexCoverage,0):'—'},hl:true},
+    {label:'Reinvestment Rate',f:function(c){return pct(c.reinvestRate,1)},hl:true},
+    {label:'Implied Profit Growth',f:function(c){return pct(c.impliedGrowth,1)},hl:true},
     {label:'ROIC Trend',f:function(c){
       if(c.roicFirst===null)return '—';
       var ch=c.roicLast-c.roicFirst;
@@ -861,7 +925,7 @@ function runScorecard(selectedTickers){
       ticker:t,realYield:realYield,realPE:realPE,realROIC:m.realROIC,
       returnOnNTA:m.returnOnNTA,nta:m.nta,
       reinvestRate:m.investedCapital>0?m.growthCapex/m.investedCapital:0,
-      capexCoverage:m.maintCapex>0?m.capex/m.maintCapex:null,
+      impliedGrowth:m.investedCapital>0?(m.growthCapex/m.investedCapital)*m.realROIC:0,
       incrementalReturn:incReturn,
       sbcPctCFO:sbcPctCFO,realProfit:m.realProfit,ev:ev
     };
@@ -873,7 +937,8 @@ function runScorecard(selectedTickers){
     {label:'Real P/E',key:'realPE',f:function(v){return v>0?v.toFixed(1)+'x':'N/A'},higher:false,skipZero:true},
     {label:'Real ROIC',key:'realROIC',f:pct,higher:true},
     {label:'Return on NTA',key:'returnOnNTA',f:pct,higher:true,skipZero:true},
-    {label:'CapEx Coverage',key:'capexCoverage',f:function(v){return v!==null?pct(v,0):'—'},higher:false,skipNull:true},
+    {label:'Reinvestment Rate',key:'reinvestRate',f:function(v){return pct(v,1)},higher:true},
+    {label:'Implied Growth',key:'impliedGrowth',f:function(v){return pct(v,1)},higher:true},
     {label:'Incremental Return',key:'incrementalReturn',f:function(v){return v!==null?pct(v):'—'},higher:true,skipNull:true},
     {label:'SBC % of CFO',key:'sbcPctCFO',f:function(v){return pct(v,1)},higher:false}
   ];
@@ -1096,7 +1161,7 @@ function runThesis(){
     if(!hitTarget&&yieldOnEV>=targetYield)hitTarget=yr;
   }
 
-  // Also find when ex-amortization hits target
+  // Also find when asset-light hits target
   var hitTargetLight=null;
   if(hasLightView){
     for(var i=1;i<rows.length;i++){
@@ -1115,12 +1180,12 @@ function runThesis(){
   h+='<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">';
   h+='<div class="proj-result" style="flex:1;min-width:160px;'+(hitTarget&&hitTarget<=horizon?'border-color:var(--green)':'')+'">';
   h+='<div class="pr-val" style="color:'+(hitTarget&&hitTarget<=horizon?'var(--green)':'var(--red)')+'">'+( hitTarget?'Year '+hitTarget:'Never ('+horizon+'yr)')+'</div>';
-  h+='<div class="pr-lbl">Full Cost hits '+pct(targetYield,0)+'</div></div>';
+  h+='<div class="pr-lbl">Conservative hits '+pct(targetYield,0)+'</div></div>';
 
   if(hasLightView){
     h+='<div class="proj-result" style="flex:1;min-width:160px;'+(hitTargetLight&&hitTargetLight<=horizon?'border-color:var(--green)':'')+'">';
     h+='<div class="pr-val" style="color:'+(hitTargetLight&&hitTargetLight<=horizon?'var(--green)':'var(--red)')+'">'+( hitTargetLight?'Year '+hitTargetLight:'Never ('+horizon+'yr)')+'</div>';
-    h+='<div class="pr-lbl">Ex-Amortization hits '+pct(targetYield,0)+'</div></div>';
+    h+='<div class="pr-lbl">Asset-Light hits '+pct(targetYield,0)+'</div></div>';
   }
 
   h+='<div class="proj-result" style="flex:1;min-width:160px">';
@@ -1134,7 +1199,7 @@ function runThesis(){
 
   // Year-by-year table
   h+='<table class="proj-table"><tr><th style="text-align:left">Year</th><th>Revenue</th><th>CFO</th><th>Real SBC</th><th>Real Profit</th><th>Yield on EV</th>';
-  if(hasLightView)h+='<th>Yield (Ex-Amortization)</th>';
+  if(hasLightView)h+='<th>Yield (Asset-Light)</th>';
   h+='</tr>';
   rows.forEach(function(r){
     var highlight='';
@@ -1165,7 +1230,7 @@ function runThesis(){
     h+='background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red)">';
     h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you don\'t reach '+pct(targetYield,0)+' yield within '+horizon+' years. ';
     if(hasLightView&&hitTargetLight&&hitTargetLight<=horizon){
-      h+='The Ex-Amortization view hits it in Year '+hitTargetLight+' — the gap is acquisition amortization. ';
+      h+='The asset-light view hits it in Year '+hitTargetLight+' — the gap is acquisition amortization. ';
     }
     h+='Either the growth assumption is too low, the price is too high, or SBC is the drag.';
   }
@@ -1365,11 +1430,135 @@ function runYOC(){
 // ============ Multi-year store ============
 const yearStore = {};
 let currentYearKey = null;
+let selectedYears = []; // Feature 4: tracks which years are active for analysis
 
 function v(id){const el=document.getElementById(id);return el.value===''?null:parseFloat(el.value)}
 function fmt(n,dec){if(dec===undefined)dec=0;if(n===null||isNaN(n))return '—';return n<0?'-$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}):'$'+n.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
 function fmtM(n){if(n===null||isNaN(n))return '—';var abs=Math.abs(n);var s;if(abs>=1e6)s=(n/1e6).toFixed(1)+'T';else if(abs>=1e3)s=(n/1e3).toFixed(1)+'B';else s=n.toFixed(0)+'M';return n<0?'-$'+s.replace('-',''):'$'+s}
 function pct(n,dec){if(dec===undefined)dec=2;if(n===null||isNaN(n))return '—';return (n*100).toFixed(dec)+'%'}
+
+// Feature 4: Get sorted year keys from yearStore
+function getSortedYearKeys(){
+  return Object.keys(yearStore).sort(function(a,b){
+    var da=yearStore[a].fiscal_year_end||a;var db=yearStore[b].fiscal_year_end||b;return da<db?-1:da>db?1:0;
+  });
+}
+
+// Feature 4: Get active (selected) year keys — respects year selector
+function getActiveYearKeys(){
+  var allKeys=getSortedYearKeys();
+  if(selectedYears.length===0||allKeys.length<=3)return allKeys;
+  // Return only selected, sorted chronologically
+  return allKeys.filter(function(k){return selectedYears.indexOf(k)!==-1;});
+}
+
+// Feature 4: Render year selector when >3 years loaded
+function renderYearSelector(){
+  var container=document.getElementById('yearSelector');
+  var chipsEl=document.getElementById('yearSelectorChips');
+  var countEl=document.getElementById('yearSelectorCount');
+  var allKeys=getSortedYearKeys();
+  if(allKeys.length<=3){
+    container.style.display='none';
+    selectedYears=[];
+    return;
+  }
+  container.style.display='flex';
+  // Default selection: 3 most recent if no selection yet
+  if(selectedYears.length===0){
+    selectedYears=allKeys.slice(-3);
+  }
+  // Clean up: remove any selectedYears no longer in store
+  selectedYears=selectedYears.filter(function(k){return allKeys.indexOf(k)!==-1;});
+  
+  var html='';
+  allKeys.forEach(function(k){
+    var yr=yearStore[k];
+    var label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
+    var isActive=selectedYears.indexOf(k)!==-1;
+    html+='<span class="ys-chip'+(isActive?' active':'')+'" onclick="toggleYearSelection(\''+k+'\')" title="'+(yr.fiscal_year_end||k)+'">'+label+'</span>';
+  });
+  chipsEl.innerHTML=html;
+  var n=selectedYears.length;
+  countEl.textContent=n+'/3 selected';
+  countEl.className='ys-count '+(n===3?'ok':'warn');
+}
+
+function toggleYearSelection(k){
+  var idx=selectedYears.indexOf(k);
+  if(idx!==-1){
+    // Deselect — but don't go below 1
+    if(selectedYears.length<=1)return;
+    selectedYears.splice(idx,1);
+  }else{
+    // Select — cap at 3
+    if(selectedYears.length>=3){
+      // Remove oldest selection
+      selectedYears.shift();
+    }
+    selectedYears.push(k);
+  }
+  // Re-sort selected to chronological
+  var allKeys=getSortedYearKeys();
+  selectedYears.sort(function(a,b){return allKeys.indexOf(a)-allKeys.indexOf(b);});
+  renderYearSelector();
+  // Re-render if results are visible
+  if(document.getElementById('results').style.display==='block'){
+    renderTrend();
+  }
+}
+
+// Feature 5: Target Price Calculator
+function renderTargetCalc(){
+  var content=document.getElementById('targetCalcContent');
+  var activeKeys=getActiveYearKeys();
+  if(activeKeys.length===0){content.innerHTML='';return;}
+  var latestKey=activeKeys[activeKeys.length-1];
+  var yr=yearStore[latestKey];
+  var m=computeMetrics(yr);
+  var price=v('price')||0;
+  var shares=yr.formData.shares||0;
+  var cash=yr.formData.cash||0;
+  var sti=yr.formData.sti||0;
+  var debt=m.debt||0;
+  
+  var viewMode=document.getElementById('targetCalcView').value;
+  var rep=(viewMode==='light'&&m.realProfitLight!==null)?m.realProfitLight:m.realProfit;
+  var viewLabel=viewMode==='light'?'Asset-Light':'Conservative';
+  
+  if(rep<=0){
+    content.innerHTML='<p style="color:var(--red);font-size:.85rem">Current Real Economic Profit ('+viewLabel+') is negative ('+fmtM(rep)+') — no positive yield is achievable at any price.</p>';
+    return;
+  }
+  
+  var customYield=parseFloat(document.getElementById('targetYieldCustom').value)||0;
+  var yields=[0.04,0.05,0.06,0.08,0.10];
+  if(customYield>0&&customYield!==4&&customYield!==5&&customYield!==6&&customYield!==8&&customYield!==10){
+    yields.push(customYield/100);
+    yields.sort(function(a,b){return a-b;});
+  }
+  
+  var h='<table class="target-table"><tr><th>Target Yield</th><th>Required Price</th><th>vs Current ($'+price.toFixed(0)+')</th></tr>';
+  yields.forEach(function(y){
+    var targetEV=rep/y;
+    var targetMktCap=targetEV-debt+cash+sti;
+    var targetPrice=shares>0?targetMktCap/shares:0;
+    var diff=price>0?((targetPrice-price)/price):0;
+    var isAbove=targetPrice>=price;
+    h+='<tr><td>'+pct(y,1)+'</td>';
+    h+='<td>$'+targetPrice.toFixed(0)+'</td>';
+    h+='<td class="'+(isAbove?'above':'below')+'">'+(isAbove?'+':'')+pct(diff,0)+'</td>';
+    h+='</tr>';
+  });
+  h+='</table>';
+  h+='<p class="section-note">Based on '+viewLabel+' REP of '+fmtM(rep)+'. Target EV = REP ÷ yield, then subtract debt, add cash to get equity value per share.</p>';
+  
+  // Hide asset-light option if not available
+  var hasLight=m.realProfitLight!==null;
+  document.getElementById('targetCalcView').querySelector('option[value="light"]').disabled=!hasLight;
+  
+  content.innerHTML=h;
+}
 
 // ============ JSON Import ============
 function openImport(){document.getElementById('jsonInput').value='';document.getElementById('importStatus').className='import-status';document.getElementById('importModal').classList.add('active')}
@@ -1675,20 +1864,15 @@ function computeMetrics(entry){
   var reportedFCF=cfo-capex;
   var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
   var impliedGrowth=reinvestRate*realROIC;
-  var capexCoverage=maintCapex>0?capex/maintCapex:null;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,capexCoverage:capexCoverage,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null,rd_expense:entry.extra.rd_expense||null};
+  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null,rd_expense:entry.extra.rd_expense||null};
 }
 
 function renderPills(){
   var c=document.getElementById('yearPills');
-  var keys=Object.keys(yearStore).sort(function(a,b){
-    var da=yearStore[a].fiscal_year_end||a;
-    var db=yearStore[b].fiscal_year_end||b;
-    return da<db?-1:da>db?1:0;
-  });
-  if(keys.length===0){c.style.display='none';return;}
+  var keys=getSortedYearKeys();
+  if(keys.length===0){c.style.display='none';renderYearSelector();return;}
   c.style.display='flex';
   c.innerHTML=keys.map(function(k){
     var yr=yearStore[k];
@@ -1698,6 +1882,7 @@ function renderPills(){
     var interimBadge=yr.isInterim?' <span style="font-size:.65rem;background:var(--orange);color:#000;padding:1px 5px;border-radius:3px;vertical-align:middle">'+yr.interimLabel+'</span>':'';
     return '<span class="year-pill'+(cur?' current':'')+'" title="'+endD+(yr.isInterim?' (Interim: '+yr.interimLabel+')':'')+'"><span class="load-year" onclick="loadYear(\''+k+'\')">'+label+interimBadge+(endD?' ('+endD+')':'')+'</span> <span class="remove-year" onclick="removeYear(\''+k+'\')" title="Remove">✕</span></span>';
   }).join('');
+  renderYearSelector();
 }
 
 function loadYear(k){
@@ -1716,9 +1901,7 @@ function removeYear(k){
 // ============ Trend Rendering ============
 function renderTrend(){
   var trendCard=document.getElementById('trendCard');
-  var keys=Object.keys(yearStore).sort(function(a,b){
-    var da=yearStore[a].fiscal_year_end||a;var db=yearStore[b].fiscal_year_end||b;return da<db?-1:da>db?1:0;
-  });
+  var keys=getActiveYearKeys();
   if(keys.length<2){trendCard.style.display='none';return;}
   trendCard.style.display='block';
 
@@ -1730,6 +1913,10 @@ function renderTrend(){
     m.isInterim=yr.isInterim||false;
     m.interimLabel=yr.interimLabel||'';
     m.endDate=yr.fiscal_year_end||k;
+    // Feature 2: REP per share
+    var shares=yr.formData.shares||0;
+    m.repPerShare=shares>0?m.realProfit/shares:null;
+    m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
     return m;
   });
 
@@ -1810,6 +1997,7 @@ function renderTrend(){
 
   var trendRows=[
     {label:'Real Profit',key:'realProfit',f:fmtM},
+    {label:'REP / Share',key:'repPerShare',f:function(v){return v!==null?'$'+v.toFixed(2):'—'}},
     {label:'CFO',key:'cfo',f:fmtM},
     {label:'Real SBC',key:'realSBC',f:fmtM,inv:true},
     {label:'Total CapEx',key:'capex',f:fmtM,inv:true},
@@ -1817,23 +2005,77 @@ function renderTrend(){
     {label:'Growth CapEx',key:'growthCapex',f:fmtM},
     {label:'Invested Capital',key:'investedCapital',f:fmtM},
     {label:'Real ROIC',key:'realROIC',f:function(v){return pct(v,1)}},
-    {label:'CapEx Coverage',key:'capexCoverage',f:function(v){return v!=null?pct(v,0):'—'}},
+    {label:'Reinvestment Rate',key:'reinvestRate',f:function(v){return pct(v,1)}},
+    {label:'Implied Profit Growth',key:'impliedGrowth',f:function(v){return pct(v,1)}},
     {label:'Reported FCF',key:'reportedFCF',f:fmtM}
   ];
-  // Add ex-amortization rows if any year has depreciation data
+  // Add asset-light rows if any year has depreciation data
   if(years.some(function(y){return y.maintCapexLight!==null})){
     // Insert after Maint CapEx row (index 4)
     var insertIdx=trendRows.length;
     for(var ti=0;ti<trendRows.length;ti++){if(trendRows[ti].key==='reportedFCF'){insertIdx=ti;break;}}
     trendRows.splice(insertIdx,0,
-      {label:'Maint CapEx (Ex-Amortization)',key:'maintCapexLight',f:function(v){return v!==null?fmtM(v):'—'}},
-      {label:'Real Profit (Ex-Amortization)',key:'realProfitLight',f:function(v){return v!==null?fmtM(v):'—'}},
-      {label:'Real ROIC (Ex-Amortization)',key:'realROICLight',f:function(v){return v!==null?pct(v,1):'—'}}
+      {label:'Maint CapEx (Asset-Light)',key:'maintCapexLight',f:function(v){return v!==null?fmtM(v):'—'}},
+      {label:'Real Profit (Asset-Light)',key:'realProfitLight',f:function(v){return v!==null?fmtM(v):'—'}},
+      {label:'Real ROIC (Asset-Light)',key:'realROICLight',f:function(v){return v!==null?pct(v,1):'—'}}
     );
   }
   if(years.some(function(y){return y.nta>0})){
     trendRows.push({label:'Net Tangible Assets',key:'nta',f:fmtM});
     trendRows.push({label:'Return on NTA',key:'returnOnNTA',f:function(v){return pct(v,1)}});
+  }
+
+  // Feature 6: Dep/NTA Ratio
+  if(years.some(function(y){return y.nta>0&&y.deprOnly>0})){
+    years.forEach(function(y){
+      if(y.nta>0&&y.deprOnly>0)y.depNtaRatio=y.deprOnly/y.nta;
+      else y.depNtaRatio=null;
+    });
+    trendRows.push({label:'Dep/NTA Ratio',key:'depNtaRatio',f:function(v){
+      if(v===null||v===undefined)return 'N/M';
+      var label='';
+      if(v>0.15)label=' <span style="color:var(--red);font-family:DM Sans;font-size:.68rem">Asset-Heavy</span>';
+      else if(v>=0.08)label=' <span style="color:var(--orange);font-family:DM Sans;font-size:.68rem">Mixed</span>';
+      else label=' <span style="color:var(--green);font-family:DM Sans;font-size:.68rem">Asset-Light</span>';
+      return pct(v,1)+label;
+    }});
+  }
+
+  // Feature 3: SBC Value Gap Ratio
+  years.forEach(function(y){
+    if(y.sbcGrant>0&&y.sbcExp>0)y.sbcValueGap=y.sbcGrant/y.sbcExp;
+    else y.sbcValueGap=null;
+  });
+  if(years.some(function(y){return y.sbcValueGap!==null})){
+    trendRows.push({label:'SBC Value Gap',key:'sbcValueGap',f:function(v){
+      if(v===null||v===undefined)return 'N/A';
+      var color='var(--green)';
+      if(v>1.5)color='var(--red)';
+      else if(v>1.2)color='var(--orange)';
+      return '<span style="color:'+color+'">'+v.toFixed(2)+'x</span>';
+    }});
+  }
+
+  // Feature 7: Value Leakage Metric
+  if(years.length>=2){
+    years.forEach(function(y,i){
+      if(i===0){y.valueLeakage=null;return;}
+      var cfoGrowth=y.cfo-years[i-1].cfo;
+      var sbcCurr=Math.max(y.sbcExp,y.sbcGrant);
+      var sbcPrev=Math.max(years[i-1].sbcExp,years[i-1].sbcGrant);
+      var sbcGrowth=sbcCurr-sbcPrev;
+      if(cfoGrowth<=0||sbcGrowth<0){y.valueLeakage=null;}
+      else{y.valueLeakage=sbcGrowth/cfoGrowth;}
+    });
+    if(years.some(function(y){return y.valueLeakage!==null})){
+      trendRows.push({label:'Value Leakage',key:'valueLeakage',f:function(v){
+        if(v===null||v===undefined)return 'N/M';
+        var color='var(--green)';
+        if(v>0.5)color='var(--red)';
+        else if(v>=0.2)color='var(--orange)';
+        return '<span style="color:'+color+'">'+pct(v,0)+'</span>';
+      }});
+    }
   }
   // Incremental Return on Growth CapEx (YoY: Δ Profit / Prior Year Growth CapEx)
   var hasIncremental=years.length>=2&&years.some(function(y){return y.growthCapex>0});
@@ -1872,109 +2114,187 @@ function renderTrend(){
     html+='<td class="trend-val" style="font-family:DM Sans;font-size:.75rem">'+trendText+'</td></tr>';
   });
   html+='</table>';
-
-  // ============ Profit Momentum (replaces Growth Decomposition) ============
-  if(years.length>=2){
-    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">📈 Profit Momentum</h3>';
-    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">Observed trends in Real Profit, Revenue, and Capital Efficiency. For qualitative context on <em>why</em> these trends are occurring (pricing power, volume, efficiency, mix), see the Gemini research report.</p>';
-
-    var profitCAGR=years[0].realProfit>0?Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1:0;
-    var capitalCAGR=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
-    var revenueCAGR=(years[0].revenue&&years[0].revenue>0&&years[years.length-1].revenue)?Math.pow(years[years.length-1].revenue/years[0].revenue,1/(years.length-1))-1:0;
-    var cfoCAGR=years[0].cfo>0?Math.pow(years[years.length-1].cfo/years[0].cfo,1/(years.length-1))-1:0;
-    var fROIC=years[0].realROIC,lROIC=years[years.length-1].realROIC;
-    var roicCh=lROIC-fROIC;
-
-    // Momentum assessment label
-    var momLabel='',momIcon='',momClass='';
-    if(profitCAGR<-0.10&&cfoCAGR<-0.05){momLabel='Eroding';momIcon='↓↓';momClass='neg-color';}
-    else if(profitCAGR<0||roicCh<-0.08){momLabel='Softening';momIcon='↓';momClass='';}
-    else if(profitCAGR>0.05&&roicCh>=-0.02){momLabel='Compounding';momIcon='↑↑';momClass='organic-color';}
-    else if(profitCAGR>0&&roicCh<-0.04){momLabel='Diluting';momIcon='⚠';momClass='warn-color';}
-    else if(profitCAGR>0&&profitCAGR>revenueCAGR){momLabel='Expanding';momIcon='↑';momClass='organic-color';}
-    else if(profitCAGR>=0){momLabel='Steady';momIcon='→';momClass='';}
-    else{momLabel='Mixed';momIcon='~';momClass='';}
-
-    // Summary boxes
-    html+='<div class="decomp-summary">';
-    html+='<div class="decomp-stat"><div class="ds-val '+(profitCAGR>=0?'organic-color':'neg-color')+'">'+pct(profitCAGR,1)+'</div><div class="ds-lbl">Profit CAGR</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val" style="color:var(--text2)">'+pct(revenueCAGR,1)+'</div><div class="ds-lbl">Revenue CAGR</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val '+(roicCh>=0?'organic-color':'neg-color')+'">'+pct(fROIC,1)+' → '+pct(lROIC,1)+'</div><div class="ds-lbl">ROIC Trend</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val '+momClass+'">'+momIcon+' '+momLabel+'</div><div class="ds-lbl">Assessment</div></div>';
+  // Footnotes for new metrics
+  var hasDepNTA=years.some(function(y){return y.depNtaRatio!==null&&y.depNtaRatio!==undefined;});
+  var hasLeakage=years.some(function(y){return y.valueLeakage!==null&&y.valueLeakage!==undefined;});
+  if(hasDepNTA||hasLeakage){
+    html+='<div style="font-size:.72rem;color:var(--text3);margin-top:4px;line-height:1.5">';
+    if(hasDepNTA)html+='<em>Dep/NTA:</em> Depreciation ÷ Net Tangible Assets. Proxy for capital intensity. Lease-heavy companies may show elevated ratios due to ROU asset depreciation. ';
+    if(hasLeakage)html+='<em>Value Leakage:</em> SBC growth as % of CFO growth — shows how much cash flow improvement goes to employee compensation vs. shareholders.';
     html+='</div>';
+  }
 
-    // Period-by-period bars showing profit change
+  // ============ Growth Decomposition ============
+  if(years.length>=2){
+    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">🔬 Growth Decomposition</h3>';
+    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">Where is profit growth coming from? Reinvestment engine (growth CapEx earning returns) vs. organic engine (existing base getting more productive).</p>';
+
+    // For each year-over-year transition
+    var decompData=[];
     for(var di=1;di<years.length;di++){
       var prev=years[di-1],curr=years[di];
       var profitChange=curr.realProfit-prev.realProfit;
-      var revGrowth=(prev.revenue&&prev.revenue>0&&curr.revenue)?(curr.revenue-prev.revenue)/prev.revenue:null;
-      var roicDelta=curr.realROIC-prev.realROIC;
-      var pcPct=prev.realProfit!==0?profitChange/Math.abs(prev.realProfit):0;
+      // Estimate reinvestment contribution: prior year growth capex * prior year ROIC
+      // This assumes 1 year lag for growth capex to start earning
+      var reinvestContrib=prev.growthCapex*prev.realROIC;
+      var organicContrib=profitChange-reinvestContrib;
+      decompData.push({
+        from:prev.label,to:curr.label,
+        profitChange:profitChange,
+        reinvest:reinvestContrib,
+        organic:organicContrib,
+        prevProfit:prev.realProfit,
+        currProfit:curr.realProfit,
+        totalGrowthPct:prev.realProfit!==0?profitChange/Math.abs(prev.realProfit):0,
+        capitalGrowthPct:(prev.investedCapital!==0)?(curr.investedCapital-prev.investedCapital)/Math.abs(prev.investedCapital):0
+      });
+    }
 
-      var barColor=profitChange>=0?'organic':'negative-organic';
-      var barWidth=Math.min(Math.abs(pcPct)*100*3,100); // scale for visibility
-      if(barWidth<10)barWidth=10;
+    // Summary metrics across all periods
+    var totalProfitGrowth=years[years.length-1].realProfit-years[0].realProfit;
+    var totalReinvest=decompData.reduce(function(s,d){return s+d.reinvest},0);
+    var totalOrganic=decompData.reduce(function(s,d){return s+d.organic},0);
+    var profitCAGR=years[0].realProfit>0?Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1:0;
+    var capitalCAGR=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
+
+    // Capital efficiency ratio
+    var efficiencyRatio=(capitalCAGR>0&&profitCAGR>0)?(profitCAGR/capitalCAGR):0;
+
+    // Summary boxes
+    html+='<div class="decomp-summary">';
+    html+='<div class="decomp-stat"><div class="ds-val total-color">'+pct(profitCAGR,1)+'</div><div class="ds-lbl">Profit CAGR</div></div>';
+    html+='<div class="decomp-stat"><div class="ds-val" style="color:var(--text2)">'+pct(capitalCAGR,1)+'</div><div class="ds-lbl">Capital CAGR</div></div>';
+    html+='<div class="decomp-stat"><div class="ds-val '+(efficiencyRatio>=1?'organic-color':'neg-color')+'">'+efficiencyRatio.toFixed(2)+'x</div><div class="ds-lbl">Profit / Capital Growth</div></div>';
+    html+='</div>';
+
+    // Stacked bars for each period
+    decompData.forEach(function(d){
+      var absTotal=Math.abs(d.reinvest)+Math.abs(d.organic);
+      if(absTotal===0)return;
+      var reinvestPct=Math.abs(d.reinvest)/absTotal*100;
+      var organicPct=Math.abs(d.organic)/absTotal*100;
 
       html+='<div class="decomp-row">';
-      html+='<div class="decomp-label">'+prev.label+' → '+curr.label+'</div>';
+      html+='<div class="decomp-label">'+d.from+' → '+d.to+'</div>';
       html+='<div class="decomp-bar-track">';
-      html+='<div class="decomp-seg '+barColor+'" style="width:'+barWidth+'%">'+(profitChange>=0?'+':'')+fmtM(profitChange)+' ('+pct(pcPct,0)+')</div>';
+      if(d.reinvest!==0){
+        html+='<div class="decomp-seg reinvest" style="width:'+reinvestPct+'%" title="Reinvestment: '+fmtM(d.reinvest)+'">'+fmtM(d.reinvest)+'</div>';
+      }
+      if(d.organic!==0){
+        var orgClass=d.organic>=0?'organic':'negative-organic';
+        html+='<div class="decomp-seg '+orgClass+'" style="width:'+organicPct+'%" title="Organic: '+fmtM(d.organic)+'">'+(d.organic>=0?'+':'')+fmtM(d.organic)+'</div>';
+      }
       html+='</div>';
       html+='</div>';
-      html+='<div style="font-size:.72rem;color:var(--text3);margin:-4px 0 12px 120px">Revenue: '+(revGrowth!==null?pct(revGrowth,1):'—')+' · ROIC: '+(roicDelta>=0?'+':'')+(roicDelta*100).toFixed(1)+'pp · Capital: '+pct((prev.investedCapital!==0?(curr.investedCapital-prev.investedCapital)/Math.abs(prev.investedCapital):0),1)+'</div>';
-    }
+
+      // Period detail line
+      html+='<div style="font-size:.72rem;color:var(--text3);margin:-4px 0 12px 120px">Δ Profit: '+fmtM(d.profitChange)+' ('+pct(d.totalGrowthPct,1)+') · Capital grew '+pct(d.capitalGrowthPct,1)+'</div>';
+    });
 
     // Legend
-    html+='<div class="chart-legend" style="margin:12px 0"><span><span class="dot" style="background:#2ecc71"></span> Profit growth</span><span><span class="dot" style="background:#e74c3c"></span> Profit decline</span></div>';
+    html+='<div class="chart-legend" style="margin:12px 0"><span><span class="dot" style="background:#9b59b6"></span> Reinvestment engine (Growth CapEx × ROIC)</span><span><span class="dot" style="background:#2ecc71"></span> Organic growth (base productivity)</span></div>';
 
-    // Factual narrative
-    var momNarr='<strong>Profit Momentum: '+momLabel+' '+momIcon+'</strong> ';
-    if(profitCAGR>=0){momNarr+='Real Profit grew '+pct(profitCAGR,1);}
-    else{momNarr+='Real Profit declined '+pct(Math.abs(profitCAGR),1);}
-    if(revenueCAGR!==0&&Math.abs(profitCAGR-revenueCAGR)>0.02){
-      if(profitCAGR>revenueCAGR)momNarr+=', outpacing revenue growth of '+pct(revenueCAGR,1);
-      else momNarr+=', lagging revenue growth of '+pct(revenueCAGR,1);
-    }else if(revenueCAGR!==0){momNarr+=', roughly in line with revenue growth of '+pct(revenueCAGR,1);}
-    if(capitalCAGR<-0.05)momNarr+=', while invested capital declined '+pct(Math.abs(capitalCAGR),0);
-    else if(capitalCAGR>0.05)momNarr+=', on '+pct(capitalCAGR,0)+' more invested capital';
-    if(roicCh>0.03)momNarr+=' — capital efficiency improving.';
-    else if(roicCh<-0.03)momNarr+=' — capital efficiency declining.';
-    else momNarr+=' — capital efficiency stable.';
-    html+='<div class="flag '+(profitCAGR>=0?'ok':'warn')+'" style="margin-top:12px">'+momNarr+'</div>';
-
-    // Capital Spending info box
-    var latestY=years[years.length-1];
-    var ccr=latestY.maintCapex>0?latestY.capex/latestY.maintCapex:0;
-    html+='<div style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid #333;border-radius:6px">';
-    html+='<div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:6px">Capital Spending ('+latestY.label+')</div>';
-    html+='<div style="font-size:.78rem;color:var(--text3)">';
-    html+='Total CapEx: '+fmtM(latestY.capex)+' · Maint Estimate: '+fmtM(latestY.maintCapex)+' · Coverage: '+pct(ccr,0);
-    if(latestY.rd_expense)html+=' · R&amp;D: '+fmtM(latestY.rd_expense)+' · Total Reinvestment: '+fmtM(latestY.capex+(latestY.rd_expense||0));
-    html+='</div>';
-    if(ccr<1&&ccr>0){
-      html+='<div style="font-size:.72rem;color:var(--text3);margin-top:4px;font-style:italic">CapEx below maintenance estimate. For low-physical-asset and brand-driven companies, growth investment often flows through advertising and R&amp;D (already in CFO).</div>';
+    // Interpretive narrative
+    var avgOrganicPct=totalProfitGrowth!==0?totalOrganic/Math.abs(totalProfitGrowth):0;
+    var narrative2='';
+    if(avgOrganicPct>0.6){
+      narrative2='<strong>Organic-Led Growth:</strong> ~'+Math.round(avgOrganicPct*100)+'% of profit growth comes from the existing base getting more productive — pricing power, expanding margins, or growing users. This is high-quality growth that requires less capital to sustain.';
+    }else if(avgOrganicPct>0.3){
+      narrative2='<strong>Balanced Growth:</strong> Profit growth is split between organic improvement (~'+Math.round(avgOrganicPct*100)+'%) and reinvestment returns. Both engines are contributing, which is healthy.';
+    }else if(avgOrganicPct>=0){
+      narrative2='<strong>Reinvestment-Led Growth:</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) comes from growth CapEx earning returns. The existing base is stable but not expanding much on its own. Growth sustainability depends heavily on continued high-ROIC investment opportunities.';
+    }else{
+      // Check if R&D-heavy company before declaring Base Erosion
+      var latestYearData=yearStore[currentYearKey];
+      var decompRD=latestYearData&&latestYearData.extra?latestYearData.extra.rd_expense||null:null;
+      var decompCapex=latestYearData&&latestYearData.formData?latestYearData.formData.capex||0:0;
+      if(decompRD&&decompCapex>0&&decompRD/decompCapex>3){
+        narrative2='<strong>Acquisition Amortization Distortion:</strong> The organic base appears to be shrinking, but this company invests '+Math.round(decompRD/decompCapex)+'x more through R&D than CapEx. The Growth Decomposition only sees CapEx-based reinvestment and misses R&D-driven growth entirely. The Asset-Light view and R&D Intensity section provide a more complete picture.';
+      }else{
+        narrative2='<strong>Base Erosion Alert:</strong> The organic base is actually shrinking — existing operations are becoming less profitable. Growth CapEx is masking the decline. Watch for competitive pressure or margin compression in the core business.';
+      }
     }
+    if(efficiencyRatio>=1.5){
+      narrative2+=' The profit-to-capital growth ratio of '+efficiencyRatio.toFixed(1)+'x is excellent — profit is growing significantly faster than capital deployed.';
+    }else if(efficiencyRatio<0.8&&efficiencyRatio>0){
+      narrative2+=' Profit is growing slower than capital ('+efficiencyRatio.toFixed(1)+'x) — incremental returns may be dilutive.';
+    }
+    html+='<div class="flag '+(avgOrganicPct>0.3?'ok':avgOrganicPct>=0?'caution':'warn')+'" style="margin-top:12px">'+narrative2+'</div>';
+    html+='<p class="section-note" style="margin-top:8px">Reinvestment contribution estimated as prior year Growth CapEx × ROIC (assumes ~1 year lag). Organic = total profit change minus reinvestment contribution.</p>';
+
+    // ============ Profit Composition View ============
+    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">📊 Profit Composition</h3>';
+    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">How much of each year\'s real profit comes from the original base vs. cumulative returns on growth investments.</p>';
+
+    // Build composition data
+    // Year 0 = 100% organic base. Each subsequent year accumulates reinvestment layer.
+    var baseProfit=years[0].realProfit;
+    var compData=years.map(function(y,i){
+      var reinvestLayer=0;
+      // Sum up all reinvestment contributions from prior years
+      for(var j=1;j<=i;j++){
+        reinvestLayer+=years[j-1].growthCapex*years[j-1].realROIC;
+      }
+      var organicBase=y.realProfit-reinvestLayer;
+      return {
+        label:y.label,
+        realProfit:y.realProfit,
+        reinvestLayer:reinvestLayer,
+        organicBase:organicBase,
+        reinvestPct:y.realProfit>0?reinvestLayer/y.realProfit:0,
+        organicPct:y.realProfit>0?organicBase/y.realProfit:0
+      };
+    });
+
+    // Summary stats
+    var latestComp=compData[compData.length-1];
+    html+='<div class="decomp-summary">';
+    html+='<div class="decomp-stat"><div class="ds-val organic-color">'+fmtM(latestComp.organicBase)+'</div><div class="ds-lbl">Organic Base ('+pct(latestComp.organicPct,0)+')</div></div>';
+    html+='<div class="decomp-stat"><div class="ds-val reinvest-color">'+fmtM(latestComp.reinvestLayer)+'</div><div class="ds-lbl">Reinvestment Layer ('+pct(latestComp.reinvestPct,0)+')</div></div>';
+    html+='<div class="decomp-stat"><div class="ds-val total-color">'+fmtM(latestComp.realProfit)+'</div><div class="ds-lbl">Total Real Profit</div></div>';
     html+='</div>';
 
-    html+='<p class="section-note" style="margin-top:8px">Profit Momentum measures observed trends in Real Profit, Revenue, and ROIC. For qualitative drivers (pricing, volume, efficiency, mix), see the Gemini Deep Research report.</p>';
-
-    // ============ Profit Trend View ============
-    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">📊 Profit Trend</h3>';
-    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">Real Economic Profit by period. For qualitative drivers behind the trend, see the Gemini Deep Research report.</p>';
-
-    var maxProfit=Math.max.apply(null,years.map(function(y){return Math.abs(y.realProfit)}));
+    // Stacked bars for each year
+    var maxProfit=Math.max.apply(null,compData.map(function(c){return Math.abs(c.realProfit)}));
     if(maxProfit===0)maxProfit=1;
-    years.forEach(function(y){
-      var barWidth=Math.max(Math.abs(y.realProfit)/maxProfit*100,10);
-      var barClass=y.realProfit>=0?'organic':'negative-organic';
+    compData.forEach(function(c){
+      var barWidth=Math.max(Math.abs(c.realProfit)/maxProfit*100,10);
+      var orgPct=c.realProfit>0?Math.max(c.organicBase/c.realProfit*100,0):100;
+      var reinPct=c.realProfit>0?Math.max(c.reinvestLayer/c.realProfit*100,0):0;
+      // Clamp
+      if(orgPct+reinPct>100){var scale=100/(orgPct+reinPct);orgPct*=scale;reinPct*=scale;}
+      if(orgPct<0){reinPct=100;orgPct=0;}
+
       html+='<div class="decomp-row">';
-      html+='<div class="decomp-label">'+y.label+'</div>';
+      html+='<div class="decomp-label">'+c.label+'</div>';
       html+='<div class="decomp-bar-track" style="width:'+barWidth+'%">';
-      html+='<div class="decomp-seg '+barClass+'" style="width:100%">'+fmtM(y.realProfit)+'</div>';
+      if(orgPct>0){
+        html+='<div class="decomp-seg organic" style="width:'+orgPct+'%">'+fmtM(c.organicBase)+'</div>';
+      }
+      if(reinPct>0){
+        html+='<div class="decomp-seg reinvest" style="width:'+reinPct+'%">'+fmtM(c.reinvestLayer)+'</div>';
+      }
       html+='</div>';
       html+='</div>';
-      html+='<div style="font-size:.72rem;color:var(--text3);margin:-4px 0 12px 120px">Revenue: '+(y.revenue?fmtM(y.revenue):'—')+' · ROIC: '+pct(y.realROIC,1)+' · IC: '+fmtM(y.investedCapital)+'</div>';
     });
+
+    html+='<div class="chart-legend" style="margin:12px 0"><span><span class="dot" style="background:#2ecc71"></span> Organic base earnings</span><span><span class="dot" style="background:#9b59b6"></span> Cumulative reinvestment returns</span></div>';
+
+    // Interpretive note
+    var orgTrend=compData.length>=2?(latestComp.organicBase-compData[0].organicBase):'';
+    var compNarr='';
+    if(latestComp.reinvestPct>0.4){
+      compNarr='<strong>Compounding Engine Active:</strong> '+pct(latestComp.reinvestPct,0)+' of current profit comes from cumulative reinvestment returns ('+fmtM(latestComp.reinvestLayer)+'). The growth CapEx flywheel is a significant part of the earnings story.';
+    }else if(latestComp.reinvestPct>0.15){
+      compNarr='<strong>Growing Reinvestment Layer:</strong> '+pct(latestComp.reinvestPct,0)+' of profit now comes from reinvestment returns. The compounding engine is building but the organic base still dominates.';
+    }else{
+      compNarr='<strong>Organic-Dominant Earnings:</strong> '+pct(latestComp.organicPct,0)+' of profit comes from the organic base. The reinvestment layer is small — either the company invests modestly or returns take more time to materialize.';
+    }
+    if(typeof orgTrend==='number'&&orgTrend<-compData[0].organicBase*0.1){
+      compNarr+=' <span style="color:var(--orange)">Note: organic base has eroded by '+fmtM(Math.abs(orgTrend))+' — core profitability may be declining.</span>';
+    }
+    html+='<div class="flag info" style="margin-top:8px">'+compNarr+'</div>';
+    html+='<p class="section-note">Organic base = current profit minus cumulative reinvestment returns. Reinvestment layer = sum of each prior year\'s Growth CapEx × ROIC.</p>';
   }
 
   // ROIC trajectory narrative
@@ -1984,11 +2304,11 @@ function renderTrend(){
     var rPctCh=Math.abs(fR)>0?rCh/Math.abs(fR):0;
     var narrative='';
     if(Math.abs(rPctCh)<0.05){
-      narrative='<strong>Stable ROIC:</strong> Real ROIC held at ~'+pct(lR,1)+' over '+years.length+' years. Returns maintained — a positive signal.';
+      narrative='<strong>Stable ROIC:</strong> Real ROIC held at ~'+pct(lR,1)+' over '+years.length+' years. The company is maintaining returns even as invested capital grows — a positive signal.';
     }else if(rCh>0){
-      narrative='<strong>Improving ROIC:</strong> From '+pct(fR,1)+' to '+pct(lR,1)+' (+'+(rCh*100).toFixed(1)+'pp). Capital efficiency is increasing.';
+      narrative='<strong>Improving ROIC:</strong> From '+pct(fR,1)+' to '+pct(lR,1)+' (+'+(rCh*100).toFixed(1)+'pp). Growth CapEx appears to be creating value.';
     }else{
-      narrative='<strong>Compressing ROIC:</strong> From '+pct(fR,1)+' to '+pct(lR,1)+' ('+(rCh*100).toFixed(1)+'pp). See Gemini research for qualitative context on whether this reflects YTD seasonality, mix shifts, or structural compression.';
+      narrative='<strong>Compressing ROIC:</strong> From '+pct(fR,1)+' to '+pct(lR,1)+' ('+(rCh*100).toFixed(1)+'pp). New investments may be earning lower returns — scrutinize growth CapEx quality.';
     }
     html+='<div class="flag info" style="margin-top:12px">'+narrative+'</div>';
   }
@@ -2004,7 +2324,7 @@ function renderTrend(){
 function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYield,unleverYield,realPE,gap,interest,taxPaid,totalAssets,rating,now,debt,cash,sti){
   var d='# Real Economic Profit Analysis: '+ticker+'\n';
   d+='Generated: '+now+' | Share Price: $'+price+' | Analysis Period: '+years[0].label+(years.length>1?' – '+latest.label:'')+'\n\n---\n\n';
-  d+='## Executive Summary\n\nReal Cash Yield on Enterprise Value (Full Cost): '+pct(realYield)+' — '+rating+'\n';
+  d+='## Executive Summary\n\nReal Cash Yield on Enterprise Value (Conservative): '+pct(realYield)+' — '+rating+'\n';
   if(latest.realProfitLight!==null){
     var realYieldLightMD=latest.realProfitLight/ev;
     var ratingLightMD;
@@ -2012,13 +2332,29 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     else if(realYieldLightMD>=0.04)ratingLightMD='Fair Value';
     else if(realYieldLightMD>=0.02)ratingLightMD='Growth Priced In';
     else ratingLightMD='Expensive';
-    d+='Ex-Amortization Yield on EV (Depreciation Only): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
+    d+='Asset-Light Yield on EV (Depreciation Only): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
     var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
-    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Full Cost and Ex-Amortization views tell materially different stories for this company. The gap likely reflects significant acquisition amortization. See Capital & ROIC section for details.\n';
+    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Asset-Light views tell materially different stories for this company. The gap likely reflects significant acquisition amortization. See Capital & ROIC section for details.\n';
   }
   d+='\n';
+  // Feature 1: Three-Tier Yield
+  var mdREP=(latest.realProfitLight!==null)?latest.realProfitLight:latest.realProfit;
+  var mdRepPerShare=shares>0?mdREP/shares:0;
+  var mdNetIncome=latest.net_income||null;
+  d+='### Three-Tier Yield Analysis\n\n| Tier | Yield | Ratio |\n|------|-------|-------|\n';
+  if(mdNetIncome!==null&&marketCap>0){
+    d+='| Wall Street Earnings Yield | '+pct(mdNetIncome/marketCap)+' | P/E '+(mdNetIncome>0?(marketCap/mdNetIncome).toFixed(1)+'x':'N/M')+' |\n';
+  }
+  d+='| **Real Earnings Yield** | **'+pct(mdRepPerShare/price)+'** | P/REP '+(mdRepPerShare>0?(price/mdRepPerShare).toFixed(1)+'x':'N/M')+' |\n';
+  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+' |\n\n';
+  // SBC Value Gap
+  if(latest.sbcGrant>0&&latest.sbcExp>0){
+    var mdSBCGap=latest.sbcGrant/latest.sbcExp;
+    d+='SBC Value Gap: '+mdSBCGap.toFixed(2)+'x'+(mdSBCGap>1.5?' ⚠ Income statement significantly understates compensation cost':'')+'\n\n';
+  }
   d+='| Metric | Value |\n|--------|-------|\n';
   d+='| Real Economic Profit | '+fmtM(latest.realProfit)+' ('+fmt(latest.realProfit/shares,2)+'/share) |\n';
+  d+='| REP Per Share | $'+mdRepPerShare.toFixed(2)+' |\n';
   d+='| Enterprise Value | '+fmtM(ev)+' |\n| Market Cap | '+fmtM(marketCap)+' |\n| Real P/E | '+(realPE>0?realPE.toFixed(1)+'x':'N/A')+' |\n';
   d+='| Unlevered Yield | '+pct(unleverYield)+' |\n| Reported FCF | '+fmtM(latest.reportedFCF)+' |\n';
   d+='| Real vs Reported Gap | '+fmtM(gap)+' |\n| Real ROIC | '+pct(latest.realROIC)+' |\n| Invested Capital | '+fmtM(latest.investedCapital)+' |\n\n';
@@ -2046,7 +2382,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     d+=' Trend |\n|--------|';
     years.forEach(function(){d+='--------|'});d+='-------|\n';
     [{l:'Real Profit',k:'realProfit'},{l:'CFO',k:'cfo'},{l:'Real SBC',k:'realSBC'},{l:'Total CapEx',k:'capex'},{l:'Growth CapEx',k:'growthCapex'},{l:'Real ROIC',k:'realROIC'}].concat(
-      years.some(function(y){return y.maintCapexLight!==null})?[{l:'Real Profit (Ex-Amortization)',k:'realProfitLight'},{l:'Real ROIC (Ex-Amortization)',k:'realROICLight'}]:[]
+      years.some(function(y){return y.maintCapexLight!==null})?[{l:'Real Profit (Asset-Light)',k:'realProfitLight'},{l:'Real ROIC (Asset-Light)',k:'realROICLight'}]:[]
     ).forEach(function(r){
       d+='| '+r.l+' |';
       var vals=years.map(function(y){return y[r.k]});
@@ -2066,17 +2402,16 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   d+='**Maintenance CapEx:** Only spending to maintain current operations. Estimated as D&A × 1.05 when not disclosed. Growth CapEx is the remainder.\n\n';
   d+='### Real P/E vs. Traditional P/E\n\n';
   d+='Traditional P/E uses accounting earnings. Real P/E uses Real Economic Profit per share. For most companies, Real P/E is higher (stock is more expensive than it looks) because our formula accounts for SBC dilution, real maintenance costs, and recurring restructuring. Rough guide: Real P/E runs 1.3–2x traditional P/E for quality companies.\n\n';
-  d+='### Full Cost vs. Ex-Amortization Views\n\n';
-  d+='**Full Cost:** Full D&A × 1.05 as maintenance CapEx, including acquisition-related intangible amortization.\n\n';
-  d+='**Ex-Amortization:** Physical depreciation × 1.05 only, excluding acquisition amortization. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles often retain value even as they amortize to zero.\n\n';
+  d+='### Conservative vs. Asset-Light Views\n\n';
+  d+='**Conservative:** Full D&A × 1.05 as maintenance CapEx, including acquisition-related intangible amortization.\n\n';
+  d+='**Asset-Light:** Physical depreciation × 1.05 only, excluding acquisition amortization. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles often retain value even as they amortize to zero.\n\n';
   d+='### Key Metrics\n\n';
   d+='| Metric | Meaning |\n|--------|---------|\n';
   d+='| Real Cash Yield | Real Profit ÷ EV. Above 7% = strong. Below 2% = expensive. |\n';
   d+='| Real ROIC | Real Profit ÷ Invested Capital. Above 12% = excellent. |\n';
   d+='| Return on NTA | Real Profit ÷ Net Tangible Assets. Strips out goodwill and buybacks. |\n';
   d+='| Real vs. Reported Gap | Negative = reported FCF overstates reality. |\n';
-  d+='| Reinvestment Rate | Growth CapEx ÷ Invested Capital. Understates reinvestment for low-physical-asset companies. |\n';
-  d+='| CapEx Coverage | Total CapEx ÷ Maint Estimate. Below 100% normal for low-physical-asset companies. |\n\n';
+  d+='| Reinvestment Rate × ROIC | Implied organic profit growth rate. |\n\n';
   d+='Data sourced from SEC 10-K/10-Q filings. Extracted via Gemini AI, audited via Claude AI.\n';
   return d;
 }
@@ -2085,9 +2420,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
 function exportBrief(){
   var ticker=document.getElementById('ticker').value||'Company';
   var price=v('price');
-  var keys=Object.keys(yearStore).sort(function(a,b){
-    var da=yearStore[a].fiscal_year_end||a;var db=yearStore[b].fiscal_year_end||b;return da<db?-1:da>db?1:0;
-  });
+  var keys=getActiveYearKeys();
 
   var years=keys.map(function(k){
     var yr=yearStore[k];
@@ -2216,7 +2549,7 @@ function exportBrief(){
 
   // Verdict
   h+='<div class="verdict-box"><div class="yield" style="color:'+ratingColor+'">'+pct(realYield)+'</div>';
-  h+='<div class="label">Real Cash Yield on Enterprise Value — '+ticker+' (Full Cost)</div>';
+  h+='<div class="label">Real Cash Yield on Enterprise Value — '+ticker+' (Conservative)</div>';
   h+='<div class="rating" style="background:'+ratingColor+'">'+rating+'</div>';
   if(latest.realProfitLight!==null){
     var realYieldLight=latest.realProfitLight/ev;
@@ -2227,20 +2560,39 @@ function exportBrief(){
     else{ratingLightBrief='Expensive';ratingColorLightBrief='#e74c3c';}
     var briefViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
     if(briefViewsDiverge){
-      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Ex-Amortization view tells a materially different story</div>';
+      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
     }else{
       h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd">';
     }
     h+='<div class="yield" style="color:'+ratingColorLightBrief+';font-size:'+(briefViewsDiverge?'1.8rem':'1.5rem')+'">'+pct(realYieldLight)+'</div>';
-    h+='<div class="label">Ex-Amortization Yield on EV (Depreciation Only)</div>';
+    h+='<div class="label">Asset-Light Yield on EV (Depreciation Only)</div>';
     h+='<div class="rating" style="background:'+ratingColorLightBrief+'">'+ratingLightBrief+'</div></div>';
   }
   h+='</div>';
+
+  // Feature 1: Three-Tier Yield Display in Export
+  var expNetIncome=latest.net_income||null;
+  var expREP=(latest.realProfitLight!==null)?latest.realProfitLight:latest.realProfit;
+  var expRepPerShare=shares>0?expREP/shares:0;
+  h+='<h2>Three-Tier Yield Analysis</h2>';
+  h+='<table><tr><th style="text-align:left">Yield Tier</th><th>Yield</th><th>Ratio</th></tr>';
+  if(expNetIncome!==null&&marketCap>0){
+    h+='<tr><td style="text-align:left">Wall Street Earnings Yield</td><td>'+pct(expNetIncome/marketCap)+'</td><td>P/E '+(expNetIncome>0?(marketCap/expNetIncome).toFixed(1)+'x':'N/M')+'</td></tr>';
+  }
+  h+='<tr><td style="text-align:left"><strong>Real Earnings Yield</strong></td><td><strong>'+pct(expRepPerShare/price)+'</strong></td><td>P/REP '+(expRepPerShare>0?(price/expRepPerShare).toFixed(1)+'x':'N/M')+'</td></tr>';
+  h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+'</td></tr>';
+  h+='</table>';
+  // SBC Value Gap in export
+  if(latest.sbcGrant>0&&latest.sbcExp>0){
+    var expSBCGap=latest.sbcGrant/latest.sbcExp;
+    h+='<p style="font-size:.85rem;margin-top:4px">SBC Value Gap: '+expSBCGap.toFixed(2)+'x '+(expSBCGap>1.5?'⚠ Income statement significantly understates compensation cost':'')+'</p>';
+  }
 
   // Executive Summary
   h+='<h2>Executive Summary</h2>';
   h+='<table><tr><th>Metric</th><th>Value</th></tr>';
   h+='<tr><td>Real Economic Profit</td><td>'+fmtM(latest.realProfit)+' ('+fmt(latest.realProfit/shares,2)+'/share)</td></tr>';
+  h+='<tr><td>REP Per Share</td><td>$'+expRepPerShare.toFixed(2)+'</td></tr>';
   h+='<tr><td>Enterprise Value</td><td>'+fmtM(ev)+'</td></tr>';
   h+='<tr><td>Market Cap</td><td>'+fmtM(marketCap)+'</td></tr>';
   h+='<tr><td>Real P/E</td><td>'+(realPE>0?realPE.toFixed(1)+'x':'N/A')+'</td></tr>';
@@ -2258,14 +2610,14 @@ function exportBrief(){
   h+='<tr><td>− Real SBC Burden (MAX)</td><td style="text-align:left;color:#888">'+(latest.sbcGrant>latest.sbcExp?'Grant Value (higher than expense)':'Expense')+'</td><td class="neg">'+fmtM(latest.realSBC)+'</td></tr>';
   h+='<tr><td style="padding-left:24px;color:#888">SBC Expense</td><td style="text-align:left;color:#888">From cash flow statement</td><td style="color:#888">'+fmtM(latest.sbcExp)+'</td></tr>';
   h+='<tr><td style="padding-left:24px;color:#888">SBC Grant Value</td><td style="text-align:left;color:#888">RSUs granted × grant date FV</td><td style="color:#888">'+fmtM(latest.sbcGrant)+'</td></tr>';
-  h+='<tr><td>− Maintenance CapEx</td><td style="text-align:left;color:#888">'+(latest.formData.maint_capex>0?'Disclosed':'D&A × 1.05 estimate')+' (Full Cost)</td><td class="neg">'+fmtM(latest.maintCapex)+'</td></tr>';
+  h+='<tr><td>− Maintenance CapEx</td><td style="text-align:left;color:#888">'+(latest.formData.maint_capex>0?'Disclosed':'D&A × 1.05 estimate')+' (Conservative)</td><td class="neg">'+fmtM(latest.maintCapex)+'</td></tr>';
   var restruct=latest.formData.restructuring||0;
   if(restruct>0)h+='<tr><td>− Restructuring</td><td style="text-align:left"></td><td class="neg">'+fmtM(restruct)+'</td></tr>';
-  h+='<tr class="subtotal"><td>= Real Economic Profit (Full Cost)</td><td style="text-align:left"></td><td>'+fmtM(latest.realProfit)+'</td></tr>';
+  h+='<tr class="subtotal"><td>= Real Economic Profit (Conservative)</td><td style="text-align:left"></td><td>'+fmtM(latest.realProfit)+'</td></tr>';
   if(latest.maintCapexLight!==null){
     h+='<tr><td colspan="3" style="padding:4px;border-bottom:none"></td></tr>';
-    h+='<tr><td>− Maintenance CapEx (Ex-Amortization)</td><td style="text-align:left;color:#888">Depreciation Only × 1.05</td><td class="neg">'+fmtM(latest.maintCapexLight)+'</td></tr>';
-    h+='<tr class="subtotal"><td>= Real Economic Profit (Ex-Amortization)</td><td style="text-align:left;color:#888">Excl. acquisition amortization</td><td>'+fmtM(latest.realProfitLight)+'</td></tr>';
+    h+='<tr><td>− Maintenance CapEx (Asset-Light)</td><td style="text-align:left;color:#888">Depreciation Only × 1.05</td><td class="neg">'+fmtM(latest.maintCapexLight)+'</td></tr>';
+    h+='<tr class="subtotal"><td>= Real Economic Profit (Asset-Light)</td><td style="text-align:left;color:#888">Excl. acquisition amortization</td><td>'+fmtM(latest.realProfitLight)+'</td></tr>';
   }
   h+='</table>';
 
@@ -2280,9 +2632,9 @@ function exportBrief(){
   if(latest.maintCapexLight!==null){
     h+='<tr><td>Depreciation Only</td><td>'+fmtM(latest.deprOnly)+'</td></tr>';
     h+='<tr><td>Amortization</td><td>'+fmtM(latest.da-latest.deprOnly)+'</td></tr>';
-    h+='<tr><td>Maint CapEx (Ex-Amortization)</td><td>'+fmtM(latest.maintCapexLight)+'</td></tr>';
-    h+='<tr><td><strong>Real Profit (Ex-Amortization)</strong></td><td><strong>'+fmtM(latest.realProfitLight)+'</strong></td></tr>';
-    h+='<tr><td><strong>Real ROIC (Ex-Amortization)</strong></td><td><strong>'+pct(latest.realROICLight)+'</strong></td></tr>';
+    h+='<tr><td>Maint CapEx (Asset-Light)</td><td>'+fmtM(latest.maintCapexLight)+'</td></tr>';
+    h+='<tr><td><strong>Real Profit (Asset-Light)</strong></td><td><strong>'+fmtM(latest.realProfitLight)+'</strong></td></tr>';
+    h+='<tr><td><strong>Real ROIC (Asset-Light)</strong></td><td><strong>'+pct(latest.realROICLight)+'</strong></td></tr>';
   }
   h+='<tr><td>Shareholders Equity</td><td>'+fmtM(latest.equity)+'</td></tr>';
   h+='<tr><td>Total Debt</td><td>'+fmtM(debt)+'</td></tr>';
@@ -2290,9 +2642,9 @@ function exportBrief(){
   h+='<tr><td>Invested Capital</td><td>'+fmtM(latest.investedCapital)+'</td></tr>';
   h+='<tr><td><strong>Real ROIC</strong></td><td><strong>'+pct(latest.realROIC)+'</strong></td></tr>';
   var expReinvestRate=latest.investedCapital>0?latest.growthCapex/latest.investedCapital:0;
-  var expCapexCoverage=latest.maintCapex>0?latest.capex/latest.maintCapex:0;
+  var expImpliedGrowth=expReinvestRate*latest.realROIC;
   h+='<tr><td>Reinvestment Rate</td><td>'+pct(expReinvestRate,1)+'</td></tr>';
-  h+='<tr><td>CapEx Coverage Ratio</td><td>'+pct(expCapexCoverage,0)+'</td></tr>';
+  h+='<tr><td>Implied Profit Growth</td><td>'+pct(expImpliedGrowth,1)+'</td></tr>';
   if(latest.nta>0){
     h+='<tr><td>Net Tangible Assets</td><td>'+fmtM(latest.nta)+'</td></tr>';
     h+='<tr><td><strong>Return on NTA</strong></td><td><strong>'+pct(latest.returnOnNTA)+'</strong></td></tr>';
@@ -2320,7 +2672,7 @@ function exportBrief(){
     h+='</table>';
 
     if(bRdCapex!==null&&bRdCapex>3){
-      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. The Ex-Amortization view likely better reflects actual economics.</div>';
+      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The Asset-Light view likely better reflects actual economics.</div>';
     }else if(bRdCapex!==null&&bRdCapex>1){
       h+='<div class="flag info"><strong>📊 Significant R&amp;D Investment:</strong> R&amp;D spending is '+bRdCapex.toFixed(1)+'x physical CapEx. Consider R&amp;D alongside CapEx when evaluating total reinvestment.</div>';
     }
@@ -2424,10 +2776,43 @@ function exportBrief(){
       {label:'Growth CapEx',key:'growthCapex',f:fmtM},
       {label:'Invested Capital',key:'investedCapital',f:fmtM},
       {label:'Real ROIC',key:'realROIC',f:function(v){return pct(v,1)}},
-      {label:'CapEx Coverage',key:'capexCoverage',f:function(v){return v!=null?pct(v,0):'—'}},
+      {label:'Reinvestment Rate',key:'reinvestRate',f:function(v){return pct(v,1)}},
+      {label:'Implied Growth',key:'impliedGrowth',f:function(v){return pct(v,1)}},
       {label:'Reported FCF',key:'reportedFCF',f:fmtM},
       {label:'Return on NTA',key:'returnOnNTA',f:function(v){return v>0?pct(v,1):'—'}}
     ];
+
+    // Feature 3, 6, 7: Compute additional metrics for export trend
+    years.forEach(function(y){
+      // SBC Value Gap
+      y.sbcValueGap=(y.sbcGrant>0&&y.sbcExp>0)?y.sbcGrant/y.sbcExp:null;
+      // Dep/NTA
+      y.depNtaRatio=(y.nta>0&&y.deprOnly>0)?y.deprOnly/y.nta:null;
+    });
+    if(years.some(function(y){return y.depNtaRatio!==null})){
+      trendRows.push({label:'Dep/NTA Ratio',key:'depNtaRatio',f:function(v){
+        if(v===null)return '—';
+        var label=v>0.15?' (Asset-Heavy)':v>=0.08?' (Mixed)':' (Asset-Light)';
+        return pct(v,1)+label;
+      }});
+    }
+    if(years.some(function(y){return y.sbcValueGap!==null})){
+      trendRows.push({label:'SBC Value Gap',key:'sbcValueGap',f:function(v){return v!==null?v.toFixed(2)+'x':'N/A'}});
+    }
+    // Value Leakage
+    if(years.length>=2){
+      years.forEach(function(y,i){
+        if(i===0){y.valueLeakage=null;return;}
+        var cfoGr=y.cfo-years[i-1].cfo;
+        var sbcC=Math.max(y.sbcExp,y.sbcGrant);
+        var sbcP=Math.max(years[i-1].sbcExp,years[i-1].sbcGrant);
+        var sbcGr=sbcC-sbcP;
+        y.valueLeakage=(cfoGr>0&&sbcGr>=0)?sbcGr/cfoGr:null;
+      });
+      if(years.some(function(y){return y.valueLeakage!==null})){
+        trendRows.push({label:'Value Leakage',key:'valueLeakage',f:function(v){return v!==null?pct(v,0):'N/M'}});
+      }
+    }
 
     trendRows.forEach(function(row){
       var vals=years.map(function(y){return y[row.key]});
@@ -2445,105 +2830,72 @@ function exportBrief(){
     });
     h+='</table>';
 
-    // Profit Momentum (replaces Growth Decomposition)
-    h+='<h2>Profit Momentum</h2>';
+    // Growth Decomposition
+    h+='<h2>Growth Decomposition</h2>';
     var profitCAGR=years[0].realProfit>0?Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1:0;
     var capitalCAGR=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
-    var revenueCAGR=(years[0].revenue&&years[0].revenue>0&&years[years.length-1].revenue)?Math.pow(years[years.length-1].revenue/years[0].revenue,1/(years.length-1))-1:0;
-    var cfoCAGR=years[0].cfo>0?Math.pow(years[years.length-1].cfo/years[0].cfo,1/(years.length-1))-1:0;
-    var fR=years[0].realROIC,lR=years[years.length-1].realROIC;
-    var roicChange=lR-fR;
+    var effRatio=(capitalCAGR>0&&profitCAGR>0)?(profitCAGR/capitalCAGR):0;
 
-    h+='<table style="max-width:480px"><tr><th style="text-align:left">Metric</th><th>Value</th></tr>';
-    h+='<tr><td style="text-align:left">Real Profit CAGR</td><td '+(profitCAGR>=0?'class="pos"':'class="neg"')+'>'+pct(profitCAGR,1)+'</td></tr>';
-    h+='<tr><td style="text-align:left">CFO CAGR</td><td '+(cfoCAGR>=0?'class="pos"':'class="neg"')+'>'+pct(cfoCAGR,1)+'</td></tr>';
-    h+='<tr><td style="text-align:left">Revenue CAGR</td><td>'+pct(revenueCAGR,1)+'</td></tr>';
-    h+='<tr><td style="text-align:left">ROIC Change</td><td '+(roicChange>=0?'class="pos"':'class="neg"')+'>'+pct(fR,1)+' → '+pct(lR,1)+' ('+(roicChange>=0?'+':'')+(roicChange*100).toFixed(1)+'pp)</td></tr>';
+    h+='<table style="max-width:400px"><tr><th style="text-align:left">Metric</th><th>Value</th></tr>';
+    h+='<tr><td style="text-align:left">Profit CAGR</td><td>'+pct(profitCAGR,1)+'</td></tr>';
     h+='<tr><td style="text-align:left">Capital CAGR</td><td>'+pct(capitalCAGR,1)+'</td></tr>';
+    h+='<tr><td style="text-align:left">Profit / Capital Growth</td><td '+(effRatio>=1?'class="pos"':'class="neg"')+'>'+effRatio.toFixed(2)+'x</td></tr>';
     h+='</table>';
 
-    // Period-by-period table — simplified
-    h+='<table><tr><th style="text-align:left">Period</th><th>Δ Real Profit</th><th>Revenue Δ</th><th>ROIC Δ</th><th>Read</th></tr>';
+    // Period-by-period decomposition — FIX: handle negative organic cleanly
+    var totalPG=years[years.length-1].realProfit-years[0].realProfit;
+    var totalReinvest=0,totalOrganic=0;
+    var decompPeriods=[];
     for(var di=1;di<years.length;di++){
       var prev=years[di-1],curr=years[di];
       var pc=curr.realProfit-prev.realProfit;
-      var revGrowth=(prev.revenue&&prev.revenue>0&&curr.revenue)?(curr.revenue-prev.revenue)/prev.revenue:null;
-      var roicDelta=curr.realROIC-prev.realROIC;
-      // Determine read
-      var periodRead='';
-      var pcPct=prev.realProfit!==0?pc/Math.abs(prev.realProfit):0;
-      if(pcPct>0.05&&revGrowth!==null&&pcPct>revGrowth+0.02)periodRead='Profit expanding';
-      else if(pcPct>0.05)periodRead='Growing with revenue';
-      else if(pcPct>=-0.05)periodRead='Steady';
-      else if(pcPct>=-0.10)periodRead='Softening';
-      else periodRead='Declining';
-      var pcClass=pc>=0?'pos':'neg';
-      var roicClass=roicDelta>=0?'pos':'neg';
-      h+='<tr><td style="text-align:left">'+prev.label+' → '+curr.label+'</td>';
-      h+='<td class="'+pcClass+'">'+fmtM(pc)+' ('+pct(pcPct,0)+')</td>';
-      h+='<td>'+(revGrowth!==null?pct(revGrowth,1):'—')+'</td>';
-      h+='<td class="'+roicClass+'">'+(roicDelta>=0?'+':'')+(roicDelta*100).toFixed(1)+'pp</td>';
-      h+='<td style="text-align:left;font-size:.82rem;color:#666">'+periodRead+'</td></tr>';
+      var rc=prev.growthCapex*prev.realROIC;
+      var oc=pc-rc;
+      totalReinvest+=rc;totalOrganic+=oc;
+      decompPeriods.push({from:prev.label,to:curr.label,profitChange:pc,reinvest:rc,organic:oc});
     }
+    var avgOrganicPct=totalPG!==0?totalOrganic/Math.abs(totalPG):0;
+
+    h+='<table><tr><th style="text-align:left">Period</th><th>Δ Profit</th><th>Reinvestment</th><th>Organic</th><th>Assessment</th></tr>';
+    decompPeriods.forEach(function(d){
+      // FIX: show readable assessment instead of raw %
+      var assessment='';
+      if(d.profitChange<=0&&d.organic<0)assessment='Organic base contracted';
+      else if(d.organic<0)assessment='Organic drag; reinvestment offset it';
+      else if(d.organic>Math.abs(d.reinvest)*2)assessment='Organic-led growth';
+      else if(d.organic>d.reinvest)assessment='Mostly organic';
+      else assessment='Reinvestment-led';
+      var orgClass=d.organic>=0?'pos':'neg';
+      h+='<tr><td style="text-align:left">'+d.from+' → '+d.to+'</td><td>'+fmtM(d.profitChange)+'</td><td>'+fmtM(d.reinvest)+'</td><td class="'+orgClass+'">'+fmtM(d.organic)+'</td><td style="text-align:left;font-size:.82rem;color:#666">'+assessment+'</td></tr>';
+    });
     h+='</table>';
 
-    // Profit Momentum assessment label
-    var momentumLabel='',momentumIcon='',momentumClass='';
-    if(profitCAGR<-0.10&&cfoCAGR<-0.05){momentumLabel='Eroding';momentumIcon='↓↓';momentumClass='warn';}
-    else if(profitCAGR<0||roicChange<-0.08){momentumLabel='Softening';momentumIcon='↓';momentumClass='caution';}
-    else if(profitCAGR>0.05&&roicChange>=-0.02){momentumLabel='Compounding';momentumIcon='↑↑';momentumClass='ok';}
-    else if(profitCAGR>0&&roicChange<-0.04){momentumLabel='Diluting';momentumIcon='⚠';momentumClass='caution';}
-    else if(profitCAGR>0&&profitCAGR>revenueCAGR){momentumLabel='Expanding';momentumIcon='↑';momentumClass='ok';}
-    else if(profitCAGR>=0){momentumLabel='Steady';momentumIcon='→';momentumClass='ok';}
-    else{momentumLabel='Mixed';momentumIcon='~';momentumClass='caution';}
-
-    // Factual narrative sentence
-    var momentumNarr='<strong>Profit Momentum: '+momentumLabel+' '+momentumIcon+'</strong> ';
-    if(profitCAGR>=0){
-      momentumNarr+='Real Profit grew '+pct(profitCAGR,1);
+    // Growth narrative
+    var narrative='';
+    if(avgOrganicPct>0.6){
+      narrative='<strong>Growth Assessment: Organic-Led.</strong> ~'+Math.round(avgOrganicPct*100)+'% of profit growth comes from the existing base getting more productive — pricing power, expanding margins, or growing users. High-quality growth requiring less capital.';
+    }else if(avgOrganicPct>0.3){
+      narrative='<strong>Growth Assessment: Balanced.</strong> Profit growth split between organic improvement (~'+Math.round(avgOrganicPct*100)+'%) and reinvestment returns. Both engines contributing.';
+    }else if(avgOrganicPct>=0){
+      narrative='<strong>Growth Assessment: Reinvestment-Led.</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) from growth CapEx earning returns. Sustainability depends on continued investment opportunities.';
     }else{
-      momentumNarr+='Real Profit declined '+pct(Math.abs(profitCAGR),1);
-    }
-    if(revenueCAGR!==0&&Math.abs(profitCAGR-revenueCAGR)>0.02){
-      if(profitCAGR>revenueCAGR){
-        momentumNarr+=', outpacing revenue growth of '+pct(revenueCAGR,1);
+      // Check if R&D-heavy before declaring Base Erosion
+      var briefRD=latest.rd_expense||null;
+      var briefCapex=latest.capex||0;
+      if(briefRD&&briefCapex>0&&briefRD/briefCapex>3){
+        narrative='<strong>Growth Assessment: Acquisition Amortization Distortion.</strong> Organic base appears to shrink, but R&D investment ('+Math.round(briefRD/briefCapex)+'x CapEx) is the primary growth channel — invisible to CapEx-based decomposition. See R&D Intensity and Asset-Light view.';
       }else{
-        momentumNarr+=', lagging revenue growth of '+pct(revenueCAGR,1);
+        narrative='<strong>Growth Assessment: Base Erosion.</strong> Organic base is shrinking. Growth CapEx masking decline in core profitability.';
       }
-    }else if(revenueCAGR!==0){
-      momentumNarr+=', roughly in line with revenue growth of '+pct(revenueCAGR,1);
     }
-    if(capitalCAGR<-0.05){
-      momentumNarr+=', while invested capital declined '+pct(Math.abs(capitalCAGR),0);
-    }else if(capitalCAGR>0.05){
-      momentumNarr+=', on '+pct(capitalCAGR,0)+' more invested capital';
-    }
-    if(roicChange>0.03)momentumNarr+=' — capital efficiency improving.';
-    else if(roicChange<-0.03)momentumNarr+=' — capital efficiency declining.';
-    else momentumNarr+=' — capital efficiency stable.';
+    h+='<div class="narrative">'+narrative+'</div>';
 
-    h+='<div class="narrative '+momentumClass+'">'+momentumNarr+'</div>';
-
-    // Capital Spending summary (informational, not diagnostic)
-    h+='<table style="max-width:400px;margin-top:12px"><tr><th style="text-align:left">Capital Spending</th><th>Latest</th></tr>';
-    h+='<tr><td style="text-align:left">Total CapEx</td><td>'+fmtM(latest.capex)+'</td></tr>';
-    h+='<tr><td style="text-align:left">Maint CapEx Estimate (D&amp;A×1.05)</td><td>'+fmtM(latest.maintCapex)+'</td></tr>';
-    var briefCapexCov=latest.maintCapex>0?latest.capex/latest.maintCapex:0;
-    h+='<tr><td style="text-align:left">CapEx Coverage Ratio</td><td>'+pct(briefCapexCov,0)+'</td></tr>';
-    h+='<tr><td style="text-align:left">Growth CapEx</td><td>'+fmtM(latest.growthCapex)+'</td></tr>';
-    if(latest.rd_expense&&latest.rd_expense>0){
-      h+='<tr><td style="text-align:left">R&amp;D Expense</td><td>'+fmtM(latest.rd_expense)+'</td></tr>';
-      h+='<tr><td style="text-align:left"><strong>Total Visible Reinvestment</strong></td><td><strong>'+fmtM(latest.capex+(latest.rd_expense||0))+'</strong></td></tr>';
-    }
-    h+='</table>';
-    if(briefCapexCov<1&&briefCapexCov>0){
-      h+='<p class="section-note">CapEx is below the maintenance estimate. For low-physical-asset and brand-driven companies, this does not indicate underinvestment — growth investment often flows through advertising and R&amp;D (already deducted from CFO). See Gemini research report for qualitative assessment of investment channels.</p>';
-    }
-
-    // ROIC trajectory (keep, reworded to be factual)
+    // ROIC trajectory — FIX: detect V-shape / non-linear patterns
+    var fR=years[0].realROIC,lR=years[years.length-1].realROIC;
     var rCh=lR-fR;
     var roicNarr='';
     if(years.length>=3){
+      // Check for V-shape or inverted V
       var midROICs=years.slice(1,-1).map(function(y){return y.realROIC});
       var minMid=Math.min.apply(null,midROICs);
       var maxMid=Math.max.apply(null,midROICs);
@@ -2552,16 +2904,16 @@ function exportBrief(){
 
       if(isVShape){
         roicNarr='<strong>ROIC Trajectory: V-Shaped Recovery.</strong> Dipped from '+pct(fR,1)+' to '+pct(minMid,1)+' before recovering to '+pct(lR,1)+'. ';
-        if(lR>=fR-0.02)roicNarr+='Returns have largely recovered.';
-        else roicNarr+='Recovery underway but not yet back to prior peak.';
+        if(lR>=fR-0.02)roicNarr+='Returns have largely recovered despite significantly more capital deployed — a strong signal.';
+        else roicNarr+='Recovery underway but not yet back to prior peak. Watch whether the trend continues.';
       }else if(isInvV){
-        roicNarr='<strong>ROIC Trajectory: Peaked.</strong> Rose from '+pct(fR,1)+' to '+pct(maxMid,1)+' then moderated to '+pct(lR,1)+'. See Gemini research for context on whether this reflects YTD seasonality, mix shifts, or structural compression.';
+        roicNarr='<strong>ROIC Trajectory: Peaked and Declining.</strong> Rose from '+pct(fR,1)+' to '+pct(maxMid,1)+' then fell to '+pct(lR,1)+'. Returns may be compressing as investment scales.';
       }else if(Math.abs(rCh)<0.005){
-        roicNarr='<strong>ROIC Trajectory: Stable</strong> at ~'+pct(lR,1)+'.';
+        roicNarr='<strong>ROIC Trajectory: Stable</strong> at ~'+pct(lR,1)+'. Maintaining returns as capital grows — positive signal.';
       }else if(rCh>0){
-        roicNarr='<strong>ROIC Trajectory: Improving</strong> from '+pct(fR,1)+' to '+pct(lR,1)+' (+'+(rCh*100).toFixed(1)+'pp).';
+        roicNarr='<strong>ROIC Trajectory: Improving</strong> from '+pct(fR,1)+' to '+pct(lR,1)+' (+'+(rCh*100).toFixed(1)+'pp). Growth CapEx appears value-creating.';
       }else{
-        roicNarr='<strong>ROIC Trajectory: Compressing</strong> from '+pct(fR,1)+' to '+pct(lR,1)+' ('+(rCh*100).toFixed(1)+'pp). See Gemini research for qualitative context.';
+        roicNarr='<strong>ROIC Trajectory: Compressing</strong> from '+pct(fR,1)+' to '+pct(lR,1)+' ('+(rCh*100).toFixed(1)+'pp). New investments may earn lower returns.';
       }
     }else{
       if(Math.abs(rCh)<0.005){
@@ -2602,9 +2954,9 @@ function exportBrief(){
     flags.push({type:'growth',text:'<strong>🚀 Growth Investment:</strong> '+fmtM(latest.growthCapex)+' ('+pct(growthPct,0)+' of total CapEx) deployed as growth spending.'});
   }
   if(latest.maintCapexLight!==null){
-    // Ex-Amortization view exists — handled in the ROIC section
+    // Asset-Light view exists — handled in the ROIC section
   }else if(latest.deprOnly>0&&latest.da>0&&latest.deprOnly>=latest.da*0.95){
-    flags.push({type:'ok',text:'<strong>✓ No Ex-Amortization View Needed:</strong> Depreciation ≈ D&A. Minimal intangible amortization — Full Cost and Ex-Amortization views would be nearly identical.'});
+    flags.push({type:'ok',text:'<strong>✓ No Asset-Light View Needed:</strong> Depreciation ≈ D&A. Minimal intangible amortization — Conservative and Asset-Light views would be nearly identical.'});
   }
   if(realYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — strong cash generation relative to price.'});
   else if(realYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — fair cash generation for the price.'});
@@ -2646,15 +2998,15 @@ function exportBrief(){
   h+='<p>For most companies, Real P/E is <em>higher</em> than traditional P/E — meaning the stock is more expensive than it looks. The gap exists because our formula penalizes costs that traditional earnings ignore. As a rough guide, Real P/E tends to run 1.3–2x the traditional P/E for quality companies.</p>';
   h+='<p>The gap gets extreme for companies with massive SBC or heavy acquisition amortization. It narrows for capital-light businesses with modest SBC. It can even reverse for companies with large non-cash write-downs depressing reported earnings while cash flow stays strong.</p>';
 
-  h+='<h3>Full Cost vs. Ex-Amortization Views</h3>';
+  h+='<h3>Conservative vs. Asset-Light Views</h3>';
   h+='<p>For companies that grow through acquisitions, this brief may show two views:</p>';
-  h+='<p><strong>Full Cost:</strong> Uses full D&A × 1.05 as maintenance CapEx — includes amortization of acquired intangibles (customer relationships, technology). The tougher test.</p>';
-  h+='<p><strong>Ex-Amortization:</strong> Uses only physical depreciation × 1.05, excluding acquisition amortization. The rationale: acquired intangibles often retain or grow in value even as they amortize to zero on the books. They don\'t require equivalent cash to maintain. This view better reflects actual cash needs for M&A-heavy companies.</p>';
+  h+='<p><strong>Conservative:</strong> Uses full D&A × 1.05 as maintenance CapEx — includes amortization of acquired intangibles (customer relationships, technology). The tougher test.</p>';
+  h+='<p><strong>Asset-Light:</strong> Uses only physical depreciation × 1.05, excluding acquisition amortization. The rationale: acquired intangibles often retain or grow in value even as they amortize to zero on the books. They don\'t require equivalent cash to maintain. This view better reflects actual cash needs for M&A-heavy companies.</p>';
 
   h+='<h3>R&amp;D Intensity</h3>';
   h+='<p>For technology and R&amp;D-intensive companies, the traditional CapEx-based framework can miss the primary investment channel. Under GAAP, R&amp;D is expensed immediately — it flows through the income statement, not the balance sheet. This means:</p>';
-  h+='<p>• R&amp;D is already deducted from Cash From Operations (it\'s a real cash cost)<br>• But it doesn\'t appear in CapEx or Growth CapEx<br>• Companies spending 5–20x more on R&amp;D than CapEx may show zero "growth investment" despite massive reinvestment</p>';
-  h+='<p>When the R&amp;D Intensity section is present, it reveals the full reinvestment picture: CapEx + R&amp;D combined. The Profit Momentum assessment uses observed profit trends rather than CapEx-based inference, avoiding false signals for R&amp;D-heavy and brand-driven companies.</p>';
+  h+='<p>• R&amp;D is already deducted from Cash From Operations (it\'s a real cash cost)<br>• But it doesn\'t appear in CapEx, Growth CapEx, or the Growth Decomposition<br>• Companies spending 5–20x more on R&amp;D than CapEx may show zero "growth investment" despite massive reinvestment</p>';
+  h+='<p>When the R&amp;D Intensity section is present, it reveals the full reinvestment picture: CapEx + R&amp;D combined. If R&amp;D is 3x or more than CapEx, the Growth Decomposition\'s "Base Erosion" signal may be misleading — the company is investing heavily in growth, just through a channel the framework can\'t see.</p>';
 
   h+='<h3>Key Metrics in This Brief</h3>';
   h+='<table><tr><th>Metric</th><th>What It Tells You</th></tr>';
@@ -2665,8 +3017,8 @@ function exportBrief(){
   h+='<tr><td>Invested Capital</td><td>Equity + Debt − Cash − Short-Term Investments. Total capital deployed in the business.</td></tr>';
   h+='<tr><td>Enterprise Value (EV)</td><td>Market Cap + Debt − Cash − STI. Total price to acquire the entire business.</td></tr>';
   h+='<tr><td>Growth CapEx</td><td>Total CapEx minus Maintenance CapEx. Investment in future growth beyond maintaining current capacity.</td></tr>';
-  h+='<tr><td>R&amp;D / CapEx</td><td>Ratio of R&amp;D spending to physical CapEx. Above 3x = R&amp;D is the primary investment channel.</td></tr>';
-  h+='<tr><td>CapEx Coverage Ratio</td><td>Total CapEx ÷ Maintenance Estimate. Below 100% is normal for low-physical-asset companies. Above 100% = expanding physical capacity.</td></tr>';
+  h+='<tr><td>R&amp;D / CapEx</td><td>Ratio of R&amp;D spending to physical CapEx. Above 3x = R&amp;D is the primary investment channel. Growth Decomposition understates reinvestment for these companies.</td></tr>';
+  h+='<tr><td>Reinvestment Rate × ROIC</td><td>Implied organic profit growth. Shows whether growth spending is creating or destroying value.</td></tr>';
   h+='</table>';
 
   h+='<h3>Data Source & Verification</h3>';
@@ -2763,7 +3115,59 @@ function calculate(){
   else{rating='Expensive';ratingClass='expensive';}
 
   document.getElementById('verdict').className='verdict '+ratingClass;
-  var verdictHTML='<div class="yield-num">'+pct(realYield)+'</div><div class="yield-label">Real Cash Yield on Enterprise Value — '+ticker+' (Full Cost)</div><div class="rating">'+rating+'</div>';
+
+  // Feature 1: Three-Tier Yield Display + Feature 2: REP Per Share
+  var netIncome=null;
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
+    netIncome=yearStore[currentYearKey].extra.net_income||null;
+  }
+  var wallStreetYield=null,wallStreetPE=null,eps=null;
+  if(netIncome!==null&&marketCap>0){
+    wallStreetYield=netIncome/marketCap;
+    wallStreetPE=marketCap/netIncome;
+    eps=netIncome/shares;
+  }
+  // Real Earnings Yield (default to Ex-Amortization if available, else Conservative)
+  var repForYield=(hasLightView&&realProfitLight!==null)?realProfitLight:realProfit;
+  var repPerShare=repForYield/shares;
+  var realEarningsYield=repPerShare/price;
+  var realPERatio=(repPerShare>0)?price/repPerShare:null;
+  var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'Ex-Amort':'Conservative';
+  // Real Ownership Yield (REP/EV) — this is the existing main yield
+  var ownershipYield=realYield;
+  var ownershipRatio=(realProfit>0)?ev/realProfit:null;
+  // Net debt for bridge explanation
+  var netDebt=debt-cash;
+
+  var verdictHTML='<div class="yield-num">'+pct(realYield)+'</div><div class="yield-label">Real Cash Yield on Enterprise Value — '+ticker+' (Conservative)</div><div class="rating">'+rating+'</div>';
+
+  // Three-tier yield section
+  verdictHTML+='<div class="yield-tiers">';
+  // 1. Wall Street Earnings Yield
+  if(wallStreetYield!==null){
+    var wsColor=wallStreetYield>=0.07?'var(--green)':wallStreetYield>=0.04?'var(--blue)':wallStreetYield>=0.02?'var(--orange)':'var(--red)';
+    verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+wsColor+'">'+pct(wallStreetYield)+'</span><span class="yt-ratio">(P/E '+(wallStreetPE>0?wallStreetPE.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Wall Street Earnings Yield — reported net income vs. stock price</span></div>';
+  }
+  // 2. Real Earnings Yield
+  var reColor=realEarningsYield>=0.07?'var(--green)':realEarningsYield>=0.04?'var(--blue)':realEarningsYield>=0.02?'var(--orange)':'var(--red)';
+  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+reColor+'">'+pct(realEarningsYield)+'</span><span class="yt-ratio">(P/REP '+(realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Real Earnings Yield — SBC, maintenance CapEx, accounting noise removed ('+yieldViewLabel+')</span></div>';
+  // 3. Real Ownership Yield
+  var roColor=ownershipYield>=0.07?'var(--green)':ownershipYield>=0.04?'var(--blue)':ownershipYield>=0.02?'var(--orange)':'var(--red)';
+  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+roColor+'">'+pct(ownershipYield)+'</span><span class="yt-ratio">(REP/EV '+(ownershipRatio!==null?ownershipRatio.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Real Ownership Yield — what you\'d earn buying the whole company, debt and all</span></div>';
+
+  // Bridge explanation
+  if(wallStreetYield!==null){
+    var netDebtB=netDebt/1000; // in billions
+    verdictHTML+='<div class="yield-bridge">Wall Street → Real: the gap is accounting cleanup. Real → Ownership: the gap is '+(netDebt>=0?'$'+Math.abs(netDebtB).toFixed(1)+'B in net debt':'-$'+Math.abs(netDebtB).toFixed(1)+'B (net cash)')+'.</div>';
+  }
+  verdictHTML+='</div>';
+
+  // Feature 3: SBC Value Gap warning
+  var latestSBCGap=sbcGrant>0&&sbcExp>0?sbcGrant/sbcExp:null;
+  if(latestSBCGap!==null&&latestSBCGap>1.5){
+    verdictHTML+='<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);font-size:.82rem;color:#e8b4b0">⚠ <strong>SBC GAP:</strong> Grant value is '+latestSBCGap.toFixed(1)+'x reported expense — income statement understates true compensation cost</div>';
+  }
+
   if(hasLightView&&realProfitLight!==null){
     var realYieldLight=realProfitLight/ev;
     var ratingLight,ratingColorLight,ratingBgLight;
@@ -2773,20 +3177,20 @@ function calculate(){
     else{ratingLight='Expensive';ratingColorLight='var(--red)';ratingBgLight='rgba(231,76,60,.15)';}
     var viewsDiverge=(realProfit<0&&realProfitLight>0)||(realProfit>0&&realProfitLight<0)||Math.abs(realProfitLight-realProfit)>(Math.abs(cfo)*0.3);
     if(viewsDiverge){
-      verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Ex-Amortization view tells a materially different story</div>';
+      verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
     }else{
       verdictHTML+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">';
     }
-    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Ex-Amortization Yield on EV (Depreciation Only)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
+    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Asset-Light Yield on EV (Depreciation Only)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
   }
   document.getElementById('verdict').innerHTML=verdictHTML;
 
   var metricsData=[
     {label:'Real Economic Profit',value:fmtM(realProfit),sub:fmt(realProfit/shares,2)+'/share',hl:true},
+    {label:'REP Per Share ('+yieldViewLabel+')',value:'$'+repPerShare.toFixed(2),sub:'vs EPS '+(eps!==null?'$'+eps.toFixed(2):'N/A')},
+    {label:'Real P/E ('+yieldViewLabel+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
     {label:'Unlevered Yield',value:pct(unleverYield)},
-    {label:'Real P/E',value:realPE>0?realPE.toFixed(1)+'x':'N/A'},
     {label:'Enterprise Value',value:fmtM(ev)},
-    {label:'Reported FCF',value:fmtM(reportedFCF)},
     {label:'Real vs Reported Gap',value:fmtM(gap),neg:gap<0}
   ];
   document.getElementById('metricsGrid').innerHTML=metricsData.map(function(m){
@@ -2794,13 +3198,13 @@ function calculate(){
   }).join('');
 
   // Waterfall
-  var wfItems=[{label:'CFO',value:cfo,type:'positive'},{label:'− Real SBC',value:-realSBC,type:'negative'},{label:'− Maint CapEx (Full Cost)',value:-maintCapex,type:'negative'},{label:'− Restructuring',value:-restructuring,type:'negative'}];
+  var wfItems=[{label:'CFO',value:cfo,type:'positive'},{label:'− Real SBC',value:-realSBC,type:'negative'},{label:'− Maint CapEx (Conservative)',value:-maintCapex,type:'negative'},{label:'− Restructuring',value:-restructuring,type:'negative'}];
   if(investmentIncome>0)wfItems.push({label:'+ Invest. Income',value:investmentIncome,type:'invest'});
-  wfItems.push({label:'= Real Profit (Full Cost)',value:realProfit,type:'result'});
+  wfItems.push({label:'= Real Profit (Conservative)',value:realProfit,type:'result'});
   if(hasLightView){
     wfItems.push({label:'',value:0,type:'positive'});
-    wfItems.push({label:'− Maint CapEx (Ex-Amortization)',value:-maintCapexLight,type:'negative'});
-    wfItems.push({label:'= Real Profit (Ex-Amortization)',value:realProfitLight,type:'result'});
+    wfItems.push({label:'− Maint CapEx (Asset-Light)',value:-maintCapexLight,type:'negative'});
+    wfItems.push({label:'= Real Profit (Asset-Light)',value:realProfitLight,type:'result'});
   }
   var maxVal=Math.max.apply(null,wfItems.map(function(w){return Math.abs(w.value)}).concat([1]));
   document.getElementById('waterfall').innerHTML=wfItems.map(function(w){
@@ -2820,17 +3224,17 @@ function calculate(){
     var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
     var impliedGrowth=reinvestRate*realROIC;
     var roicItems=[
-      {label:'Real ROIC (Full Cost)',value:pct(realROIC),sub:'Real Profit ÷ Invested Capital'},
+      {label:'Real ROIC (Conservative)',value:pct(realROIC),sub:'Real Profit ÷ Invested Capital'},
       {label:'Invested Capital',value:fmtM(investedCapital),sub:'Equity + Debt − Cash − STI'},
       {label:'Growth CapEx',value:fmtM(growthCapex),sub:'Total CapEx − Maint CapEx'},
-      {label:'Maint CapEx (Full Cost)',value:fmtM(maintCapex),sub:maintMethod},
+      {label:'Maint CapEx (Conservative)',value:fmtM(maintCapex),sub:maintMethod},
       {label:'Reinvestment Rate',value:pct(reinvestRate,1),sub:'Growth CapEx ÷ Invested Capital'},
-      {label:'CapEx Coverage Ratio',value:maintCapex>0?pct(capex/maintCapex,0):'—',sub:'Total CapEx ÷ Maint Estimate. Below 100% = low-physical-asset or mature.'}
+      {label:'Implied Profit Growth',value:pct(impliedGrowth,1),sub:'Reinvest Rate × ROIC'}
     ];
     if(hasLightView){
       var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-      roicItems.push({label:'Maint CapEx (Ex-Amortization)',value:fmtM(maintCapexLight),sub:'Depreciation Only × 1.05'});
-      roicItems.push({label:'Real ROIC (Ex-Amortization)',value:pct(realROICLight),sub:'Ex-Amortization Profit ÷ IC'});
+      roicItems.push({label:'Maint CapEx (Asset-Light)',value:fmtM(maintCapexLight),sub:'Depreciation Only × 1.05'});
+      roicItems.push({label:'Real ROIC (Asset-Light)',value:pct(realROICLight),sub:'Asset-Light Profit ÷ IC'});
     }
     if(nta>0){
       roicItems.push({label:'Return on NTA',value:pct(returnOnNTA),sub:'Real Profit ÷ Net Tangible Assets'});
@@ -2857,15 +3261,15 @@ function calculate(){
   }else{
     roicCard.style.display=equity>0?'block':'none';
     if(equity>0){
-      var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Full Cost) · Real Profit ÷ Invested Capital</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital · Equity + Debt − Cash − STI</div></div>';
+      var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Conservative) · Real Profit ÷ Invested Capital</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital · Equity + Debt − Cash − STI</div></div>';
       if(hasLightView){
         var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Ex-Amortization) · Depr Only × 1.05</div></div>';
-        ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (Ex-Amortization)</div></div>';
+        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Asset-Light) · Depr Only × 1.05</div></div>';
+        ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (Asset-Light)</div></div>';
       }
       if(nta>0)ntaHTML+='<div class="metric"><div class="val">'+pct(returnOnNTA)+'</div><div class="lbl">Return on NTA · Real Profit ÷ Net Tangible Assets</div></div><div class="metric"><div class="val">'+fmtM(nta)+'</div><div class="lbl">Net Tangible Assets · Assets − GW − Intang − Cash</div></div>';
       document.getElementById('roicMetrics').innerHTML=ntaHTML;
-      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' Ex-Amortization view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
+      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' Asset-Light view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
       document.getElementById('yocSection').style.display='none';
     }
   }
@@ -2895,7 +3299,7 @@ function calculate(){
     rdHTML+='</div>';
 
     if(rdIsHeavy){
-      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. The <strong>Ex-Amortization view</strong> likely better reflects actual economics.</div>';
+      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The <strong>Asset-Light view</strong> likely better reflects actual economics.</div>';
     }else if(rdCapexRatio!==null&&rdCapexRatio>1){
       rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 Significant R&D Investment:</strong> R&D spending is '+rdCapexRatio.toFixed(1)+'x physical CapEx. Consider R&D alongside CapEx when evaluating total reinvestment.</div>';
     }
@@ -2930,13 +3334,13 @@ function calculate(){
     rows.push(['Investment Income Credit','+'+fmt(investmentIncome,0)+'M','Added to Real Profit','positive']);
   }
   rows.push(['','','','']);
-  rows.push(['Real Economic Profit (Full Cost)',fmt(realProfit,0)+'M','CFO − SBC − MaintCapex − Restruct'+(investmentIncome>0?' + Invest Income':''),'subtotal']);
+  rows.push(['Real Economic Profit (Conservative)',fmt(realProfit,0)+'M','CFO − SBC − MaintCapex − Restruct'+(investmentIncome>0?' + Invest Income':''),'subtotal']);
   if(hasLightView){
     rows.push(['','','','']);
     rows.push(['Depreciation Only',fmt(deprOnly,0)+'M','Physical depreciation (excl. intangible amortization)']);
     rows.push(['Amortization',fmt(da-deprOnly,0)+'M','Acquisition-related intangible amortization']);
-    rows.push(['Maint CapEx (Ex-Amortization)',fmt(maintCapexLight,0)+'M','Depreciation Only × 1.05','negative']);
-    rows.push(['Real Economic Profit (Ex-Amortization)',fmt(realProfitLight,0)+'M','Uses physical depreciation only for maintenance','subtotal']);
+    rows.push(['Maint CapEx (Asset-Light)',fmt(maintCapexLight,0)+'M','Depreciation Only × 1.05','negative']);
+    rows.push(['Real Economic Profit (Asset-Light)',fmt(realProfitLight,0)+'M','Uses physical depreciation only for maintenance','subtotal']);
   }
   rows.push(['','','','']);
   rows.push(['Reported FCF',fmt(reportedFCF,0)+'M','CFO − Total CapEx']);
@@ -2951,7 +3355,7 @@ function calculate(){
     rows.push(['Real ROIC',pct(realROIC),'Real Profit ÷ Invested Capital']);
     if(growthCapex>0){
       rows.push(['Reinvestment Rate',pct(investedCapital>0?growthCapex/investedCapital:0,1),'Growth CapEx ÷ Invested Capital']);
-      rows.push(['CapEx Coverage',pct(maintCapex>0?capex/maintCapex:0,0),'Total CapEx ÷ Maint Estimate']);
+      rows.push(['Implied Profit Growth',pct(investedCapital>0?(growthCapex/investedCapital)*realROIC:0,1),'Reinvest Rate × ROIC']);
     }
     if(nta>0){
       rows.push(['Net Tangible Assets',fmtM(nta),'Assets − Goodwill − Intangibles − Cash − STI']);
@@ -3006,12 +3410,12 @@ function calculate(){
   if(hasLightView){
     var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
     if(realROIC<0&&realROICLight>0){
-      flags.push({type:'info',text:'<strong>ℹ Ex-Amortization View:</strong> Full Cost ROIC is '+pct(realROIC)+' but Ex-Amortization ROIC is '+pct(realROICLight)+'. The gap ('+fmtM(realProfitLight-realProfit)+') is acquisition amortization treated as maintenance cost. For companies growing through M&A, the Ex-Amortization view may better reflect operating reality.'});
+      flags.push({type:'info',text:'<strong>ℹ Asset-Light View:</strong> Conservative ROIC is '+pct(realROIC)+' but Asset-Light ROIC is '+pct(realROICLight)+'. The gap ('+fmtM(realProfitLight-realProfit)+') is acquisition amortization treated as maintenance cost. For companies growing through M&A, the asset-light view may better reflect operating reality.'});
     }else if(realROICLight>realROIC+0.03){
-      flags.push({type:'info',text:'<strong>ℹ Ex-Amortization View:</strong> ROIC improves from '+pct(realROIC)+' (Full Cost) to '+pct(realROICLight)+' (Ex-Amortization) when excluding acquisition amortization from maintenance CapEx.'});
+      flags.push({type:'info',text:'<strong>ℹ Asset-Light View:</strong> ROIC improves from '+pct(realROIC)+' (conservative) to '+pct(realROICLight)+' (asset-light) when excluding acquisition amortization from maintenance CapEx.'});
     }
   }else if(deprOnly>0&&da>0&&deprOnly>=da*0.95){
-    flags.push({type:'ok',text:'<strong>✓ No Ex-Amortization View Needed:</strong> Depreciation ('+fmtM(deprOnly)+') ≈ D&A ('+fmtM(da)+'). This company has minimal intangible amortization — Full Cost and Ex-Amortization views would be nearly identical.'});
+    flags.push({type:'ok',text:'<strong>✓ No Asset-Light View Needed:</strong> Depreciation ('+fmtM(deprOnly)+') ≈ D&A ('+fmtM(da)+'). This company has minimal intangible amortization — Conservative and Asset-Light views would be nearly identical.'});
   }
   if(nta>0&&returnOnNTA>0){
     var roicNTAGap=realROIC-returnOnNTA;
@@ -3044,9 +3448,12 @@ function calculate(){
   document.getElementById('results').style.display='block';
   document.getElementById('exportBtn').style.display='block';
   document.getElementById('projCard').style.display='block';
+  document.getElementById('targetCalcCard').style.display='block';
 
   // Render trend
   renderTrend();
+  // Feature 5: Render target price calculator
+  renderTargetCalc();
 
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
 }
