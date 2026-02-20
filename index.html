@@ -275,7 +275,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
 <div id="yearPills" class="year-pills" style="display:none"></div>
 <div id="yearSelector" class="year-selector" style="display:none">
-  <span class="ys-label">Analyze:</span>
+  <span class="ys-label">Analyze years:</span>
   <div id="yearSelectorChips"></div>
   <span id="yearSelectorCount" class="ys-count"></span>
 </div>
@@ -1447,26 +1447,27 @@ function getSortedYearKeys(){
 // Feature 4: Get active (selected) year keys — respects year selector
 function getActiveYearKeys(){
   var allKeys=getSortedYearKeys();
-  if(selectedYears.length===0||allKeys.length<=3)return allKeys;
+  if(selectedYears.length===0)return allKeys;
   // Return only selected, sorted chronologically
-  return allKeys.filter(function(k){return selectedYears.indexOf(k)!==-1;});
+  var active=allKeys.filter(function(k){return selectedYears.indexOf(k)!==-1;});
+  return active.length>0?active:allKeys;
 }
 
-// Feature 4: Render year selector when >3 years loaded
+// Feature 4: Render year selector when 2+ years loaded
 function renderYearSelector(){
   var container=document.getElementById('yearSelector');
   var chipsEl=document.getElementById('yearSelectorChips');
   var countEl=document.getElementById('yearSelectorCount');
   var allKeys=getSortedYearKeys();
-  if(allKeys.length<=3){
+  if(allKeys.length<2){
     container.style.display='none';
     selectedYears=[];
     return;
   }
   container.style.display='flex';
-  // Default selection: 3 most recent if no selection yet
+  // Default selection: all years (up to 3 most recent) if no selection yet
   if(selectedYears.length===0){
-    selectedYears=allKeys.slice(-3);
+    selectedYears=allKeys.length<=3?allKeys.slice():allKeys.slice(-3);
   }
   // Clean up: remove any selectedYears no longer in store
   selectedYears=selectedYears.filter(function(k){return allKeys.indexOf(k)!==-1;});
@@ -1480,8 +1481,9 @@ function renderYearSelector(){
   });
   chipsEl.innerHTML=html;
   var n=selectedYears.length;
-  countEl.textContent=n+'/3 selected';
-  countEl.className='ys-count '+(n===3?'ok':'warn');
+  var total=allKeys.length;
+  countEl.textContent=n+' of '+total+' selected';
+  countEl.className='ys-count '+(n>=2?'ok':'warn');
 }
 
 function toggleYearSelection(k){
@@ -1491,11 +1493,6 @@ function toggleYearSelection(k){
     if(selectedYears.length<=1)return;
     selectedYears.splice(idx,1);
   }else{
-    // Select — cap at 3
-    if(selectedYears.length>=3){
-      // Remove oldest selection
-      selectedYears.shift();
-    }
     selectedYears.push(k);
   }
   // Re-sort selected to chronological
@@ -1917,6 +1914,8 @@ function renderTrend(){
     var shares=yr.formData.shares||0;
     m.repPerShare=shares>0?m.realProfit/shares:null;
     m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
+    // SBC % of CFO
+    m.sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:null;
     return m;
   });
 
@@ -2000,6 +1999,13 @@ function renderTrend(){
     {label:'REP / Share',key:'repPerShare',f:function(v){return v!==null?'$'+v.toFixed(2):'—'}},
     {label:'CFO',key:'cfo',f:fmtM},
     {label:'Real SBC',key:'realSBC',f:fmtM,inv:true},
+    {label:'SBC % of CFO',key:'sbcPctCFO',f:function(v){
+      if(v===null||v===undefined)return '—';
+      var color='var(--green)';
+      if(v>0.3)color='var(--red)';
+      else if(v>0.15)color='var(--orange)';
+      return '<span style="color:'+color+'">'+pct(v,1)+'</span>';
+    },inv:true},
     {label:'Total CapEx',key:'capex',f:fmtM,inv:true},
     {label:'Maint CapEx',key:'maintCapex',f:fmtM},
     {label:'Growth CapEx',key:'growthCapex',f:fmtM},
@@ -3220,16 +3226,19 @@ function calculate(){
   }
   document.getElementById('verdict').innerHTML=verdictHTML;
 
+  var sbcPctCFO=cfo>0?realSBC/cfo:0;
+  var sbcPctColor=sbcPctCFO>0.3?'color:var(--red)':sbcPctCFO>0.15?'color:var(--orange)':'';
   var metricsData=[
     {label:'Real Economic Profit',value:fmtM(realProfit),sub:fmt(realProfit/shares,2)+'/share',hl:true},
     {label:'REP Per Share ('+yieldViewShort+')',value:'$'+repPerShare.toFixed(2),sub:'vs EPS '+(eps!==null?'$'+eps.toFixed(2):'N/A')},
     {label:'Real P/E ('+yieldViewShort+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
-    {label:'Unlevered Yield',value:pct(unleverYield)},
+    {label:'SBC % of CFO',value:pct(sbcPctCFO,1),sub:fmtM(realSBC)+' of '+fmtM(cfo),customStyle:sbcPctColor},
     {label:'Enterprise Value',value:fmtM(ev)},
     {label:'Real vs Reported Gap',value:fmtM(gap),neg:gap<0}
   ];
   document.getElementById('metricsGrid').innerHTML=metricsData.map(function(m){
-    return '<div class="metric'+(m.hl?' highlight':'')+'"><div class="val" '+(m.neg?'style="color:var(--red)"':'')+'>'+m.value+'</div><div class="lbl">'+m.label+(m.sub?' · '+m.sub:'')+'</div></div>';
+    var style=m.neg?'style="color:var(--red)"':(m.customStyle?'style="'+m.customStyle+'"':'');
+    return '<div class="metric'+(m.hl?' highlight':'')+'"><div class="val" '+style+'>'+m.value+'</div><div class="lbl">'+m.label+(m.sub?' · '+m.sub:'')+'</div></div>';
   }).join('');
 
   // Waterfall
