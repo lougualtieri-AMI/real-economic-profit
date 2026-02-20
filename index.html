@@ -303,7 +303,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div class="field"><label>Maint. CapEx ($M)</label><input type="number" id="maint_capex" step="1" placeholder="If disclosed"><div class="hint">Leave blank to auto-estimate</div></div>
   </div>
   <div class="row">
-    <div class="field"><label>Depreciation Only ($M)</label><input type="number" id="depr_only" step="1" placeholder="Optional"><div class="hint">Physical depreciation only (excl. intangible amortization). Enables asset-light view for acquisitive companies.</div></div>
+    <div class="field"><label>Depreciation Only ($M)</label><input type="number" id="depr_only" step="1" placeholder="Optional"><div class="hint">Physical depreciation only (excl. intangible amortization). Enables ex-amortization view for acquisitive companies.</div></div>
     <div class="field"><label>Amortization ($M)</label><input type="number" id="amort_only" step="1" placeholder="Auto-calculated" readonly style="opacity:.6"><div class="hint">= D&A − Depreciation. Shows acquisition-related portion.</div></div>
   </div>
   <h3>Other Adjustments</h3>
@@ -418,7 +418,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">What price do you need for the yield you want? Flips the equation: instead of yield-at-price, price-at-yield.</p>
     <div class="row" style="margin-bottom:12px">
       <div class="field"><label>Custom Target Yield (%)</label><input type="number" id="targetYieldCustom" step="0.1" placeholder="e.g. 6" oninput="renderTargetCalc()"></div>
-      <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="conservative">Conservative (Full D&A)</option><option value="light">Asset-Light (Depr Only)</option></select></div>
+      <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="conservative">Conservative (Full D&A)</option><option value="light">Ex-Amortization (Depr Only)</option></select></div>
     </div>
     <div id="targetCalcContent"></div>
   </div>
@@ -491,9 +491,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Real ROIC</strong><br>
       Real Economic Profit ÷ Invested Capital. How efficiently the company uses deployed capital. Above 12% is strong; below 6% is concerning.</p>
 
-      <p><strong style="color:var(--accent2)">Conservative vs. Asset-Light Views</strong><br>
+      <p><strong style="color:var(--accent2)">Conservative vs. Ex-Amortization Views</strong><br>
       <em>Conservative:</em> Full D&A × 1.05 as maintenance CapEx — penalizes acquisitive companies, which may be appropriate.<br>
-      <em>Asset-Light:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles (customer relationships, technology) don't require equivalent cash to maintain.</p>
+      <em>Ex-Amortization:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Amortization of acquired intangibles is not a real cash cost — the assets often retain value even as they amortize to zero on the books.</p>
 
       <p><strong style="color:var(--accent2)">Real SBC Burden</strong><br>
       MAX of SBC Expense (cash flow statement) or SBC Grant Date Fair Value (units granted × grant price). Captures true dilution cost — the accounting expense often understates the economic value transferred to employees.</p>
@@ -562,7 +562,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">SBC Expense Addback</strong> — Stock-based compensation added back in CFO section. Non-cash charge.</p>
       <p><strong style="color:var(--accent2)">SBC Grant Date Fair Value</strong> — Units granted × weighted-average grant price. From SBC footnote.</p>
       <p><strong style="color:var(--accent2)">D&A</strong> — Depreciation & Amortization combined. From cash flow adjustments.</p>
-      <p><strong style="color:var(--accent2)">Depreciation Only</strong> — Physical depreciation of PP&E, excluding intangible amortization. Enables asset-light view.</p>
+      <p><strong style="color:var(--accent2)">Depreciation Only</strong> — Physical depreciation of PP&E, excluding intangible amortization. Enables ex-amortization view.</p>
       <p><strong style="color:var(--accent2)">Amortization</strong> — D&A minus Depreciation. Acquisition-related intangible write-down. An accounting convention — acquired assets often retain or grow in value even as they amortize to zero on the books.</p>
       <p><strong style="color:var(--accent2)">STI</strong> — Short-Term Investments. Current marketable securities, treated like cash.</p>
       <p><strong style="color:var(--accent2)">Interest Paid</strong> — Cash interest from supplemental disclosures (bottom of cash flow statement).</p>
@@ -1185,7 +1185,7 @@ function runThesis(){
   if(hasLightView){
     h+='<div class="proj-result" style="flex:1;min-width:160px;'+(hitTargetLight&&hitTargetLight<=horizon?'border-color:var(--green)':'')+'">';
     h+='<div class="pr-val" style="color:'+(hitTargetLight&&hitTargetLight<=horizon?'var(--green)':'var(--red)')+'">'+( hitTargetLight?'Year '+hitTargetLight:'Never ('+horizon+'yr)')+'</div>';
-    h+='<div class="pr-lbl">Asset-Light hits '+pct(targetYield,0)+'</div></div>';
+    h+='<div class="pr-lbl">Ex-Amort hits '+pct(targetYield,0)+'</div></div>';
   }
 
   h+='<div class="proj-result" style="flex:1;min-width:160px">';
@@ -1199,7 +1199,7 @@ function runThesis(){
 
   // Year-by-year table
   h+='<table class="proj-table"><tr><th style="text-align:left">Year</th><th>Revenue</th><th>CFO</th><th>Real SBC</th><th>Real Profit</th><th>Yield on EV</th>';
-  if(hasLightView)h+='<th>Yield (Asset-Light)</th>';
+  if(hasLightView)h+='<th>Yield (Ex-Amort)</th>';
   h+='</tr>';
   rows.forEach(function(r){
     var highlight='';
@@ -1230,7 +1230,7 @@ function runThesis(){
     h+='background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red)">';
     h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you don\'t reach '+pct(targetYield,0)+' yield within '+horizon+' years. ';
     if(hasLightView&&hitTargetLight&&hitTargetLight<=horizon){
-      h+='The asset-light view hits it in Year '+hitTargetLight+' — the gap is acquisition amortization. ';
+      h+='The ex-amortization view hits it in Year '+hitTargetLight+' — the gap is acquisition amortization. ';
     }
     h+='Either the growth assumption is too low, the price is too high, or SBC is the drag.';
   }
@@ -1524,7 +1524,7 @@ function renderTargetCalc(){
   
   var viewMode=document.getElementById('targetCalcView').value;
   var rep=(viewMode==='light'&&m.realProfitLight!==null)?m.realProfitLight:m.realProfit;
-  var viewLabel=viewMode==='light'?'Asset-Light':'Conservative';
+  var viewLabel=viewMode==='light'?'Ex-Amortization':'Conservative';
   
   if(rep<=0){
     content.innerHTML='<p style="color:var(--red);font-size:.85rem">Current Real Economic Profit ('+viewLabel+') is negative ('+fmtM(rep)+') — no positive yield is achievable at any price.</p>';
@@ -2015,9 +2015,9 @@ function renderTrend(){
     var insertIdx=trendRows.length;
     for(var ti=0;ti<trendRows.length;ti++){if(trendRows[ti].key==='reportedFCF'){insertIdx=ti;break;}}
     trendRows.splice(insertIdx,0,
-      {label:'Maint CapEx (Asset-Light)',key:'maintCapexLight',f:function(v){return v!==null?fmtM(v):'—'}},
-      {label:'Real Profit (Asset-Light)',key:'realProfitLight',f:function(v){return v!==null?fmtM(v):'—'}},
-      {label:'Real ROIC (Asset-Light)',key:'realROICLight',f:function(v){return v!==null?pct(v,1):'—'}}
+      {label:'Maint CapEx (Ex-Amortization)',key:'maintCapexLight',f:function(v){return v!==null?fmtM(v):'—'}},
+      {label:'Real Profit (Ex-Amortization)',key:'realProfitLight',f:function(v){return v!==null?fmtM(v):'—'}},
+      {label:'Real ROIC (Ex-Amortization)',key:'realROICLight',f:function(v){return v!==null?pct(v,1):'—'}}
     );
   }
   if(years.some(function(y){return y.nta>0})){
@@ -2209,7 +2209,7 @@ function renderTrend(){
       var decompRD=latestYearData&&latestYearData.extra?latestYearData.extra.rd_expense||null:null;
       var decompCapex=latestYearData&&latestYearData.formData?latestYearData.formData.capex||0:0;
       if(decompRD&&decompCapex>0&&decompRD/decompCapex>3){
-        narrative2='<strong>Acquisition Amortization Distortion:</strong> The organic base appears to be shrinking, but this company invests '+Math.round(decompRD/decompCapex)+'x more through R&D than CapEx. The Growth Decomposition only sees CapEx-based reinvestment and misses R&D-driven growth entirely. The Asset-Light view and R&D Intensity section provide a more complete picture.';
+        narrative2='<strong>Acquisition Amortization Distortion:</strong> The organic base appears to be shrinking, but this company invests '+Math.round(decompRD/decompCapex)+'x more through R&D than CapEx. The Growth Decomposition only sees CapEx-based reinvestment and misses R&D-driven growth entirely. The Ex-Amortization view and R&D Intensity section provide a more complete picture.';
       }else{
         narrative2='<strong>Base Erosion Alert:</strong> The organic base is actually shrinking — existing operations are becoming less profitable. Growth CapEx is masking the decline. Watch for competitive pressure or margin compression in the core business.';
       }
@@ -2332,9 +2332,9 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     else if(realYieldLightMD>=0.04)ratingLightMD='Fair Value';
     else if(realYieldLightMD>=0.02)ratingLightMD='Growth Priced In';
     else ratingLightMD='Expensive';
-    d+='Asset-Light Yield on EV (Depreciation Only): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
+    d+='Ex-Amortization Yield on EV (excludes acquisition amortization): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
     var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
-    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Asset-Light views tell materially different stories for this company. The gap likely reflects significant acquisition amortization. See Capital & ROIC section for details.\n';
+    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Ex-Amortization views tell materially different stories. The gap is acquisition amortization — a non-cash accounting charge, not a real cost of running the business. See Capital & ROIC section for details.\n';
   }
   d+='\n';
   // Feature 1: Three-Tier Yield
@@ -2399,7 +2399,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     d+=' Trend |\n|--------|';
     years.forEach(function(){d+='--------|'});d+='-------|\n';
     [{l:'Real Profit',k:'realProfit'},{l:'CFO',k:'cfo'},{l:'Real SBC',k:'realSBC'},{l:'Total CapEx',k:'capex'},{l:'Growth CapEx',k:'growthCapex'},{l:'Real ROIC',k:'realROIC'}].concat(
-      years.some(function(y){return y.maintCapexLight!==null})?[{l:'Real Profit (Asset-Light)',k:'realProfitLight'},{l:'Real ROIC (Asset-Light)',k:'realROICLight'}]:[]
+      years.some(function(y){return y.maintCapexLight!==null})?[{l:'Real Profit (Ex-Amortization)',k:'realProfitLight'},{l:'Real ROIC (Ex-Amortization)',k:'realROICLight'}]:[]
     ).forEach(function(r){
       d+='| '+r.l+' |';
       var vals=years.map(function(y){return y[r.k]});
@@ -2419,9 +2419,9 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   d+='**Maintenance CapEx:** Only spending to maintain current operations. Estimated as D&A × 1.05 when not disclosed. Growth CapEx is the remainder.\n\n';
   d+='### Real P/E vs. Traditional P/E\n\n';
   d+='Traditional P/E uses accounting earnings. Real P/E uses Real Economic Profit per share. For most companies, Real P/E is higher (stock is more expensive than it looks) because our formula accounts for SBC dilution, real maintenance costs, and recurring restructuring. Rough guide: Real P/E runs 1.3–2x traditional P/E for quality companies.\n\n';
-  d+='### Conservative vs. Asset-Light Views\n\n';
+  d+='### Conservative vs. Ex-Amortization Views\n\n';
   d+='**Conservative:** Full D&A × 1.05 as maintenance CapEx, including acquisition-related intangible amortization.\n\n';
-  d+='**Asset-Light:** Physical depreciation × 1.05 only, excluding acquisition amortization. Better reflects actual cash needs for M&A-heavy companies since acquired intangibles often retain value even as they amortize to zero.\n\n';
+  d+='**Ex-Amortization:** Physical depreciation × 1.05 only, excluding acquisition amortization. The rationale: when a company acquires another, it books intangible assets (customer relationships, technology, brand) that amortize over time. But unlike depreciation of physical equipment, this amortization doesn\'t represent a real cash cost of running the business — the acquired assets often retain or grow in value. Excluding it gives a clearer picture of true maintenance needs.\n\n';
   d+='### Key Metrics\n\n';
   d+='| Metric | Meaning |\n|--------|---------|\n';
   d+='| Real Cash Yield | Real Profit ÷ EV. Above 7% = strong. Below 2% = expensive. |\n';
@@ -2577,12 +2577,12 @@ function exportBrief(){
     else{ratingLightBrief='Expensive';ratingColorLightBrief='#e74c3c';}
     var briefViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
     if(briefViewsDiverge){
-      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
+      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Excluding acquisition amortization tells a materially different story</div>';
     }else{
       h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd">';
     }
     h+='<div class="yield" style="color:'+ratingColorLightBrief+';font-size:'+(briefViewsDiverge?'1.8rem':'1.5rem')+'">'+pct(realYieldLight)+'</div>';
-    h+='<div class="label">Asset-Light Yield on EV (Depreciation Only)</div>';
+    h+='<div class="label">Ex-Amortization Yield on EV — excludes acquisition amortization (not a real cash cost)</div>';
     h+='<div class="rating" style="background:'+ratingColorLightBrief+'">'+ratingLightBrief+'</div></div>';
   }
   h+='</div>';
@@ -2650,8 +2650,8 @@ function exportBrief(){
   h+='<tr class="subtotal"><td>= Real Economic Profit (Conservative)</td><td style="text-align:left"></td><td>'+fmtM(latest.realProfit)+'</td></tr>';
   if(latest.maintCapexLight!==null){
     h+='<tr><td colspan="3" style="padding:4px;border-bottom:none"></td></tr>';
-    h+='<tr><td>− Maintenance CapEx (Asset-Light)</td><td style="text-align:left;color:#888">Depreciation Only × 1.05</td><td class="neg">'+fmtM(latest.maintCapexLight)+'</td></tr>';
-    h+='<tr class="subtotal"><td>= Real Economic Profit (Asset-Light)</td><td style="text-align:left;color:#888">Excl. acquisition amortization</td><td>'+fmtM(latest.realProfitLight)+'</td></tr>';
+    h+='<tr><td>− Maintenance CapEx (Ex-Amortization)</td><td style="text-align:left;color:#888">Depreciation Only × 1.05</td><td class="neg">'+fmtM(latest.maintCapexLight)+'</td></tr>';
+    h+='<tr class="subtotal"><td>= Real Economic Profit (Ex-Amortization)</td><td style="text-align:left;color:#888">Excl. acquisition amortization</td><td>'+fmtM(latest.realProfitLight)+'</td></tr>';
   }
   h+='</table>';
 
@@ -2666,9 +2666,9 @@ function exportBrief(){
   if(latest.maintCapexLight!==null){
     h+='<tr><td>Depreciation Only</td><td>'+fmtM(latest.deprOnly)+'</td></tr>';
     h+='<tr><td>Amortization</td><td>'+fmtM(latest.da-latest.deprOnly)+'</td></tr>';
-    h+='<tr><td>Maint CapEx (Asset-Light)</td><td>'+fmtM(latest.maintCapexLight)+'</td></tr>';
-    h+='<tr><td><strong>Real Profit (Asset-Light)</strong></td><td><strong>'+fmtM(latest.realProfitLight)+'</strong></td></tr>';
-    h+='<tr><td><strong>Real ROIC (Asset-Light)</strong></td><td><strong>'+pct(latest.realROICLight)+'</strong></td></tr>';
+    h+='<tr><td>Maint CapEx (Ex-Amortization)</td><td>'+fmtM(latest.maintCapexLight)+'</td></tr>';
+    h+='<tr><td><strong>Real Profit (Ex-Amortization)</strong></td><td><strong>'+fmtM(latest.realProfitLight)+'</strong></td></tr>';
+    h+='<tr><td><strong>Real ROIC (Ex-Amortization)</strong></td><td><strong>'+pct(latest.realROICLight)+'</strong></td></tr>';
   }
   h+='<tr><td>Shareholders Equity</td><td>'+fmtM(latest.equity)+'</td></tr>';
   h+='<tr><td>Total Debt</td><td>'+fmtM(debt)+'</td></tr>';
@@ -2706,7 +2706,7 @@ function exportBrief(){
     h+='</table>';
 
     if(bRdCapex!==null&&bRdCapex>3){
-      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The Asset-Light view likely better reflects actual economics.</div>';
+      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The Ex-Amortization view likely better reflects actual economics.</div>';
     }else if(bRdCapex!==null&&bRdCapex>1){
       h+='<div class="flag info"><strong>📊 Significant R&amp;D Investment:</strong> R&amp;D spending is '+bRdCapex.toFixed(1)+'x physical CapEx. Consider R&amp;D alongside CapEx when evaluating total reinvestment.</div>';
     }
@@ -2917,7 +2917,7 @@ function exportBrief(){
       var briefRD=latest.rd_expense||null;
       var briefCapex=latest.capex||0;
       if(briefRD&&briefCapex>0&&briefRD/briefCapex>3){
-        narrative='<strong>Growth Assessment: Acquisition Amortization Distortion.</strong> Organic base appears to shrink, but R&D investment ('+Math.round(briefRD/briefCapex)+'x CapEx) is the primary growth channel — invisible to CapEx-based decomposition. See R&D Intensity and Asset-Light view.';
+        narrative='<strong>Growth Assessment: Acquisition Amortization Distortion.</strong> Organic base appears to shrink, but R&D investment ('+Math.round(briefRD/briefCapex)+'x CapEx) is the primary growth channel — invisible to CapEx-based decomposition. See R&D Intensity and Ex-Amortization view.';
       }else{
         narrative='<strong>Growth Assessment: Base Erosion.</strong> Organic base is shrinking. Growth CapEx masking decline in core profitability.';
       }
@@ -2988,9 +2988,9 @@ function exportBrief(){
     flags.push({type:'growth',text:'<strong>🚀 Growth Investment:</strong> '+fmtM(latest.growthCapex)+' ('+pct(growthPct,0)+' of total CapEx) deployed as growth spending.'});
   }
   if(latest.maintCapexLight!==null){
-    // Asset-Light view exists — handled in the ROIC section
+    // Ex-Amortization view exists — handled in the ROIC section
   }else if(latest.deprOnly>0&&latest.da>0&&latest.deprOnly>=latest.da*0.95){
-    flags.push({type:'ok',text:'<strong>✓ No Asset-Light View Needed:</strong> Depreciation ≈ D&A. Minimal intangible amortization — Conservative and Asset-Light views would be nearly identical.'});
+    flags.push({type:'ok',text:'<strong>✓ Views Aligned:</strong> Depreciation ≈ D&A. Minimal intangible amortization — Conservative and Ex-Amortization views would be nearly identical.'});
   }
   if(realYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — strong cash generation relative to price.'});
   else if(realYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — fair cash generation for the price.'});
@@ -3032,10 +3032,10 @@ function exportBrief(){
   h+='<p>For most companies, Real P/E is <em>higher</em> than traditional P/E — meaning the stock is more expensive than it looks. The gap exists because our formula penalizes costs that traditional earnings ignore. As a rough guide, Real P/E tends to run 1.3–2x the traditional P/E for quality companies.</p>';
   h+='<p>The gap gets extreme for companies with massive SBC or heavy acquisition amortization. It narrows for capital-light businesses with modest SBC. It can even reverse for companies with large non-cash write-downs depressing reported earnings while cash flow stays strong.</p>';
 
-  h+='<h3>Conservative vs. Asset-Light Views</h3>';
+  h+='<h3>Conservative vs. Ex-Amortization Views</h3>';
   h+='<p>For companies that grow through acquisitions, this brief may show two views:</p>';
   h+='<p><strong>Conservative:</strong> Uses full D&A × 1.05 as maintenance CapEx — includes amortization of acquired intangibles (customer relationships, technology). The tougher test.</p>';
-  h+='<p><strong>Asset-Light:</strong> Uses only physical depreciation × 1.05, excluding acquisition amortization. The rationale: acquired intangibles often retain or grow in value even as they amortize to zero on the books. They don\'t require equivalent cash to maintain. This view better reflects actual cash needs for M&A-heavy companies.</p>';
+  h+='<p><strong>Ex-Amortization:</strong> Uses only physical depreciation × 1.05, excluding acquisition amortization. The rationale: when a company acquires another, it books intangible assets that amortize over time. But unlike depreciation of physical equipment, this amortization doesn\'t represent a real cash cost of running the business — the acquired assets often retain or grow in value even as they amortize to zero on the books. Excluding it gives a cleaner picture of what the company actually needs to spend to maintain operations.</p>';
 
   h+='<h3>R&amp;D Intensity</h3>';
   h+='<p>For technology and R&amp;D-intensive companies, the traditional CapEx-based framework can miss the primary investment channel. Under GAAP, R&amp;D is expensed immediately — it flows through the income statement, not the balance sheet. This means:</p>';
@@ -3166,7 +3166,8 @@ function calculate(){
   var repPerShare=repForYield/shares;
   var realEarningsYield=repPerShare/price;
   var realPERatio=(repPerShare>0)?price/repPerShare:null;
-  var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'Ex-Amort':'Conservative';
+  var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'excl. acquisition amortization — not a real cash cost':'Conservative';
+  var yieldViewShort=(hasLightView&&realProfitLight!==null)?'Ex-Amortization':'Conservative';
   // Real Ownership Yield (REP/EV) — this is the existing main yield
   var ownershipYield=realYield;
   var ownershipRatio=(realProfit>0)?ev/realProfit:null;
@@ -3211,18 +3212,18 @@ function calculate(){
     else{ratingLight='Expensive';ratingColorLight='var(--red)';ratingBgLight='rgba(231,76,60,.15)';}
     var viewsDiverge=(realProfit<0&&realProfitLight>0)||(realProfit>0&&realProfitLight<0)||Math.abs(realProfitLight-realProfit)>(Math.abs(cfo)*0.3);
     if(viewsDiverge){
-      verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Asset-Light view tells a materially different story</div>';
+      verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Excluding acquisition amortization tells a materially different story</div>';
     }else{
       verdictHTML+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">';
     }
-    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Asset-Light Yield on EV (Depreciation Only)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
+    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Ex-Amortization Yield on EV — excludes acquisition amortization (not a real cash cost)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
   }
   document.getElementById('verdict').innerHTML=verdictHTML;
 
   var metricsData=[
     {label:'Real Economic Profit',value:fmtM(realProfit),sub:fmt(realProfit/shares,2)+'/share',hl:true},
-    {label:'REP Per Share ('+yieldViewLabel+')',value:'$'+repPerShare.toFixed(2),sub:'vs EPS '+(eps!==null?'$'+eps.toFixed(2):'N/A')},
-    {label:'Real P/E ('+yieldViewLabel+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
+    {label:'REP Per Share ('+yieldViewShort+')',value:'$'+repPerShare.toFixed(2),sub:'vs EPS '+(eps!==null?'$'+eps.toFixed(2):'N/A')},
+    {label:'Real P/E ('+yieldViewShort+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
     {label:'Unlevered Yield',value:pct(unleverYield)},
     {label:'Enterprise Value',value:fmtM(ev)},
     {label:'Real vs Reported Gap',value:fmtM(gap),neg:gap<0}
@@ -3237,8 +3238,8 @@ function calculate(){
   wfItems.push({label:'= Real Profit (Conservative)',value:realProfit,type:'result'});
   if(hasLightView){
     wfItems.push({label:'',value:0,type:'positive'});
-    wfItems.push({label:'− Maint CapEx (Asset-Light)',value:-maintCapexLight,type:'negative'});
-    wfItems.push({label:'= Real Profit (Asset-Light)',value:realProfitLight,type:'result'});
+    wfItems.push({label:'− Maint CapEx (Ex-Amortization)',value:-maintCapexLight,type:'negative'});
+    wfItems.push({label:'= Real Profit (Ex-Amortization)',value:realProfitLight,type:'result'});
   }
   var maxVal=Math.max.apply(null,wfItems.map(function(w){return Math.abs(w.value)}).concat([1]));
   document.getElementById('waterfall').innerHTML=wfItems.map(function(w){
@@ -3267,8 +3268,8 @@ function calculate(){
     ];
     if(hasLightView){
       var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-      roicItems.push({label:'Maint CapEx (Asset-Light)',value:fmtM(maintCapexLight),sub:'Depreciation Only × 1.05'});
-      roicItems.push({label:'Real ROIC (Asset-Light)',value:pct(realROICLight),sub:'Asset-Light Profit ÷ IC'});
+      roicItems.push({label:'Maint CapEx (Ex-Amortization)',value:fmtM(maintCapexLight),sub:'Depreciation Only × 1.05'});
+      roicItems.push({label:'Real ROIC (Ex-Amortization)',value:pct(realROICLight),sub:'Ex-Amort Profit ÷ IC'});
     }
     if(nta>0){
       roicItems.push({label:'Return on NTA',value:pct(returnOnNTA),sub:'Real Profit ÷ Net Tangible Assets'});
@@ -3298,12 +3299,12 @@ function calculate(){
       var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Conservative) · Real Profit ÷ Invested Capital</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital · Equity + Debt − Cash − STI</div></div>';
       if(hasLightView){
         var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Asset-Light) · Depr Only × 1.05</div></div>';
-        ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (Asset-Light)</div></div>';
+        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Ex-Amortization) · Depr Only × 1.05</div></div>';
+        ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (Ex-Amortization)</div></div>';
       }
       if(nta>0)ntaHTML+='<div class="metric"><div class="val">'+pct(returnOnNTA)+'</div><div class="lbl">Return on NTA · Real Profit ÷ Net Tangible Assets</div></div><div class="metric"><div class="val">'+fmtM(nta)+'</div><div class="lbl">Net Tangible Assets · Assets − GW − Intang − Cash</div></div>';
       document.getElementById('roicMetrics').innerHTML=ntaHTML;
-      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' Asset-Light view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
+      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' Ex-Amortization view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
       document.getElementById('yocSection').style.display='none';
     }
   }
@@ -3333,7 +3334,7 @@ function calculate(){
     rdHTML+='</div>';
 
     if(rdIsHeavy){
-      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The <strong>Asset-Light view</strong> likely better reflects actual economics.</div>';
+      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The <strong>Ex-Amortization view</strong> likely better reflects actual economics.</div>';
     }else if(rdCapexRatio!==null&&rdCapexRatio>1){
       rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 Significant R&D Investment:</strong> R&D spending is '+rdCapexRatio.toFixed(1)+'x physical CapEx. Consider R&D alongside CapEx when evaluating total reinvestment.</div>';
     }
@@ -3373,8 +3374,8 @@ function calculate(){
     rows.push(['','','','']);
     rows.push(['Depreciation Only',fmt(deprOnly,0)+'M','Physical depreciation (excl. intangible amortization)']);
     rows.push(['Amortization',fmt(da-deprOnly,0)+'M','Acquisition-related intangible amortization']);
-    rows.push(['Maint CapEx (Asset-Light)',fmt(maintCapexLight,0)+'M','Depreciation Only × 1.05','negative']);
-    rows.push(['Real Economic Profit (Asset-Light)',fmt(realProfitLight,0)+'M','Uses physical depreciation only for maintenance','subtotal']);
+    rows.push(['Maint CapEx (Ex-Amortization)',fmt(maintCapexLight,0)+'M','Depreciation Only × 1.05','negative']);
+    rows.push(['Real Economic Profit (Ex-Amortization)',fmt(realProfitLight,0)+'M','Uses physical depreciation only for maintenance','subtotal']);
   }
   rows.push(['','','','']);
   rows.push(['Reported FCF',fmt(reportedFCF,0)+'M','CFO − Total CapEx']);
@@ -3444,12 +3445,12 @@ function calculate(){
   if(hasLightView){
     var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
     if(realROIC<0&&realROICLight>0){
-      flags.push({type:'info',text:'<strong>ℹ Asset-Light View:</strong> Conservative ROIC is '+pct(realROIC)+' but Asset-Light ROIC is '+pct(realROICLight)+'. The gap ('+fmtM(realProfitLight-realProfit)+') is acquisition amortization treated as maintenance cost. For companies growing through M&A, the asset-light view may better reflect operating reality.'});
+      flags.push({type:'info',text:'<strong>ℹ Ex-Amortization View:</strong> Conservative ROIC is '+pct(realROIC)+' but Ex-Amortization ROIC is '+pct(realROICLight)+'. The gap ('+fmtM(realProfitLight-realProfit)+') is acquisition amortization treated as maintenance cost. For companies growing through M&A, the ex-amortization view may better reflect operating reality.'});
     }else if(realROICLight>realROIC+0.03){
-      flags.push({type:'info',text:'<strong>ℹ Asset-Light View:</strong> ROIC improves from '+pct(realROIC)+' (conservative) to '+pct(realROICLight)+' (asset-light) when excluding acquisition amortization from maintenance CapEx.'});
+      flags.push({type:'info',text:'<strong>ℹ Ex-Amortization View:</strong> ROIC improves from '+pct(realROIC)+' (conservative) to '+pct(realROICLight)+' (asset-light) when excluding acquisition amortization from maintenance CapEx.'});
     }
   }else if(deprOnly>0&&da>0&&deprOnly>=da*0.95){
-    flags.push({type:'ok',text:'<strong>✓ No Asset-Light View Needed:</strong> Depreciation ('+fmtM(deprOnly)+') ≈ D&A ('+fmtM(da)+'). This company has minimal intangible amortization — Conservative and Asset-Light views would be nearly identical.'});
+    flags.push({type:'ok',text:'<strong>✓ Views Aligned:</strong> Depreciation ('+fmtM(deprOnly)+') ≈ D&A ('+fmtM(da)+'). This company has minimal intangible amortization — Conservative and Ex-Amortization views would be nearly identical.'});
   }
   if(nta>0&&returnOnNTA>0){
     var roicNTAGap=realROIC-returnOnNTA;
