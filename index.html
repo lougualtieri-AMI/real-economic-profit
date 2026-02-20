@@ -2038,7 +2038,7 @@ function renderTrend(){
       else y.depNtaRatio=null;
     });
     trendRows.push({label:'Dep/NTA Ratio',key:'depNtaRatio',f:function(v){
-      if(v===null||v===undefined)return 'N/M';
+      if(v===null||v===undefined)return 'N/A';
       var label='';
       if(v>0.15)label=' <span style="color:var(--red);font-family:DM Sans;font-size:.68rem">Asset-Heavy</span>';
       else if(v>=0.08)label=' <span style="color:var(--orange);font-family:DM Sans;font-size:.68rem">Mixed</span>';
@@ -2075,7 +2075,7 @@ function renderTrend(){
     });
     if(years.some(function(y){return y.valueLeakage!==null})){
       trendRows.push({label:'Value Leakage',key:'valueLeakage',f:function(v){
-        if(v===null||v===undefined)return 'N/M';
+        if(v===null||v===undefined)return 'N/A';
         var color='var(--green)';
         if(v>0.5)color='var(--red)';
         else if(v>=0.2)color='var(--orange)';
@@ -2351,10 +2351,13 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   d+='Three ways to measure what this stock earns relative to its price — each strips away another layer of distortion.\n\n';
   d+='| Tier | Yield | Ratio | What It Measures |\n|------|-------|-------|------------------|\n';
   if(mdNetIncome!==null&&marketCap>0){
-    d+='| Wall Street Earnings Yield | '+pct(mdNetIncome/marketCap)+' | P/E '+(mdNetIncome>0?(marketCap/mdNetIncome).toFixed(1)+'x':'N/M')+' | Reported net income vs. stock price — what most investors see |\n';
+    d+='| Wall Street Earnings Yield | '+pct(mdNetIncome/marketCap)+' | P/E '+(mdNetIncome>0?(marketCap/mdNetIncome).toFixed(1)+'x':'N/A')+' | Reported net income vs. stock price — what most investors see |\n';
   }
-  d+='| **Real Earnings Yield** | **'+pct(mdRepPerShare/price)+'** | P/REP '+(mdRepPerShare>0?(price/mdRepPerShare).toFixed(1)+'x':'N/M')+' | Same price, but earnings cleaned up — real SBC, true maintenance CapEx, noise removed |\n';
-  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+' | What you\'d earn buying the whole company, debt and all |\n\n';
+  d+='| **Real Earnings Yield** | **'+pct(mdRepPerShare/price)+'** | P/REP '+(mdRepPerShare>0?(price/mdRepPerShare).toFixed(1)+'x':'N/A')+' | Same price, but earnings cleaned up — real SBC, true maintenance CapEx, noise removed |\n';
+  var mdEquity=latest.formData.equity||0;
+  var mdDE=mdEquity>0?debt/mdEquity:0;
+  var mdDETag=mdDE>0?' · D/E '+mdDE.toFixed(1)+'x':'';
+  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+mdDETag+' | What you\'d earn buying the whole company, debt and all |\n\n';
   // Bridge explanations
   var mdNetDebt=debt-cash;
   var mdNetDebtB=mdNetDebt/1000;
@@ -2601,10 +2604,13 @@ function exportBrief(){
   h+='<p style="font-size:.9rem;margin-bottom:10px">Three ways to measure what this stock earns relative to its price — each one strips away another layer of distortion.</p>';
   h+='<table><tr><th style="text-align:left">Yield Tier</th><th>Yield</th><th>Ratio</th><th style="text-align:left">What It Measures</th></tr>';
   if(expNetIncome!==null&&marketCap>0){
-    h+='<tr><td style="text-align:left">Wall Street Earnings Yield</td><td>'+pct(expNetIncome/marketCap)+'</td><td>P/E '+(expNetIncome>0?(marketCap/expNetIncome).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Reported net income vs. stock price. What most investors see.</td></tr>';
+    h+='<tr><td style="text-align:left">Wall Street Earnings Yield</td><td>'+pct(expNetIncome/marketCap)+'</td><td>P/E '+(expNetIncome>0?(marketCap/expNetIncome).toFixed(1)+'x':'N/A')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Reported net income vs. stock price. What most investors see.</td></tr>';
   }
-  h+='<tr><td style="text-align:left"><strong>Real Earnings Yield</strong></td><td><strong>'+pct(expRepPerShare/price)+'</strong></td><td>P/REP '+(expRepPerShare>0?(price/expRepPerShare).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Same stock price, but earnings cleaned up — real SBC dilution, true maintenance CapEx, and accounting noise removed.</td></tr>';
-  h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/M')+'</td><td style="text-align:left;font-size:.85rem;color:#666">What you\'d actually earn buying the whole company, taking on its debt and keeping its cash.</td></tr>';
+  h+='<tr><td style="text-align:left"><strong>Real Earnings Yield</strong></td><td><strong>'+pct(expRepPerShare/price)+'</strong></td><td>P/REP '+(expRepPerShare>0?(price/expRepPerShare).toFixed(1)+'x':'N/A')+'</td><td style="text-align:left;font-size:.85rem;color:#666">Same stock price, but earnings cleaned up — real SBC dilution, true maintenance CapEx, and accounting noise removed.</td></tr>';
+  var expEquity=latest.formData.equity||0;
+  var expDE=expEquity>0?debt/expEquity:0;
+  var expDETag=expDE>0?' · D/E '+expDE.toFixed(1)+'x':'';
+  h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+expDETag+'</td><td style="text-align:left;font-size:.85rem;color:#666">What you\'d actually earn buying the whole company, taking on its debt and keeping its cash.</td></tr>';
   h+='</table>';
   // Bridge explanations
   var expNetDebt=debt-cash;
@@ -2850,7 +2856,7 @@ function exportBrief(){
         y.valueLeakage=(cfoGr>0&&sbcGr>=0)?sbcGr/cfoGr:null;
       });
       if(years.some(function(y){return y.valueLeakage!==null})){
-        trendRows.push({label:'Value Leakage',key:'valueLeakage',f:function(v){return v!==null?pct(v,0):'N/M'}});
+        trendRows.push({label:'Value Leakage',key:'valueLeakage',f:function(v){return v!==null?pct(v,0):'N/A'}});
       }
     }
 
@@ -3187,14 +3193,16 @@ function calculate(){
   // 1. Wall Street Earnings Yield
   if(wallStreetYield!==null){
     var wsColor=wallStreetYield>=0.07?'var(--green)':wallStreetYield>=0.04?'var(--blue)':wallStreetYield>=0.02?'var(--orange)':'var(--red)';
-    verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+wsColor+'">'+pct(wallStreetYield)+'</span><span class="yt-ratio">(P/E '+(wallStreetPE>0?wallStreetPE.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Wall Street Earnings Yield — reported net income vs. stock price</span></div>';
+    verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+wsColor+'">'+pct(wallStreetYield)+'</span><span class="yt-ratio">(P/E '+(wallStreetPE>0?wallStreetPE.toFixed(1)+'x':'N/A')+')</span><span class="yt-label">Wall Street Earnings Yield — reported net income vs. stock price</span></div>';
   }
   // 2. Real Earnings Yield
   var reColor=realEarningsYield>=0.07?'var(--green)':realEarningsYield>=0.04?'var(--blue)':realEarningsYield>=0.02?'var(--orange)':'var(--red)';
-  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+reColor+'">'+pct(realEarningsYield)+'</span><span class="yt-ratio">(P/REP '+(realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Real Earnings Yield — SBC, maintenance CapEx, accounting noise removed ('+yieldViewLabel+')</span></div>';
+  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+reColor+'">'+pct(realEarningsYield)+'</span><span class="yt-ratio">(P/REP '+(realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/A')+')</span><span class="yt-label">Real Earnings Yield — SBC, maintenance CapEx, accounting noise removed ('+yieldViewLabel+')</span></div>';
   // 3. Real Ownership Yield
   var roColor=ownershipYield>=0.07?'var(--green)':ownershipYield>=0.04?'var(--blue)':ownershipYield>=0.02?'var(--orange)':'var(--red)';
-  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+roColor+'">'+pct(ownershipYield)+'</span><span class="yt-ratio">(REP/EV '+(ownershipRatio!==null?ownershipRatio.toFixed(1)+'x':'N/M')+')</span><span class="yt-label">Real Ownership Yield — what you\'d earn buying the whole company, debt and all</span></div>';
+  var deRatio=equity>0?debt/equity:0;
+  var deTag=deRatio>0?' · D/E '+deRatio.toFixed(1)+'x':'';
+  verdictHTML+='<div class="yield-tier"><span class="yt-value" style="color:'+roColor+'">'+pct(ownershipYield)+'</span><span class="yt-ratio">(REP/EV '+(ownershipRatio!==null?ownershipRatio.toFixed(1)+'x':'N/A')+deTag+')</span><span class="yt-label">Real Ownership Yield — what you\'d earn buying the whole company, debt and all</span></div>';
 
   // Bridge explanation
   if(wallStreetYield!==null){
@@ -3231,7 +3239,7 @@ function calculate(){
   var metricsData=[
     {label:'Real Economic Profit',value:fmtM(realProfit),sub:fmt(realProfit/shares,2)+'/share',hl:true},
     {label:'REP Per Share ('+yieldViewShort+')',value:'$'+repPerShare.toFixed(2),sub:'vs EPS '+(eps!==null?'$'+eps.toFixed(2):'N/A')},
-    {label:'Real P/E ('+yieldViewShort+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/M',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
+    {label:'Real P/E ('+yieldViewShort+')',value:realPERatio!==null&&realPERatio>0?realPERatio.toFixed(1)+'x':'N/A',sub:wallStreetPE!==null&&wallStreetPE>0?'vs P/E '+wallStreetPE.toFixed(1)+'x':''},
     {label:'SBC % of CFO',value:pct(sbcPctCFO,1),sub:fmtM(realSBC)+' of '+fmtM(cfo),customStyle:sbcPctColor},
     {label:'Enterprise Value',value:fmtM(ev)},
     {label:'Real vs Reported Gap',value:fmtM(gap),neg:gap<0}
