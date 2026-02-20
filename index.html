@@ -493,7 +493,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
       <p><strong style="color:var(--accent2)">Conservative vs. Ex-Amortization Views</strong><br>
       <em>Conservative:</em> Full D&A × 1.05 as maintenance CapEx — penalizes acquisitive companies, which may be appropriate.<br>
-      <em>Ex-Amortization:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Amortization of acquired intangibles is not a real cash cost — the assets often retain value even as they amortize to zero on the books.</p>
+      <em>Ex-Amortization:</em> Depreciation Only × 1.05, excluding intangible amortization from acquisitions. Amortization of acquired intangibles is may not be a real cash cost — the assets often retain value even as they amortize to zero on the books.</p>
 
       <p><strong style="color:var(--accent2)">Real SBC Burden</strong><br>
       MAX of SBC Expense (cash flow statement) or SBC Grant Date Fair Value (units granted × grant price). Captures true dilution cost — the accounting expense often understates the economic value transferred to employees.</p>
@@ -2334,7 +2334,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     else ratingLightMD='Expensive';
     d+='Ex-Amortization Yield on EV (excludes acquisition amortization): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
     var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
-    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Ex-Amortization views tell materially different stories. The gap is acquisition amortization — a non-cash accounting charge, not a real cost of running the business. See Capital & ROIC section for details.\n';
+    if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Conservative and Ex-Amortization views tell materially different stories. The gap is acquisition amortization — a non-cash accounting charge, may not be a real cost of running the business. See Capital & ROIC section for details.\n';
   }
   d+='\n';
   // Feature 1: Three-Tier Yield
@@ -2582,7 +2582,7 @@ function exportBrief(){
       h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd">';
     }
     h+='<div class="yield" style="color:'+ratingColorLightBrief+';font-size:'+(briefViewsDiverge?'1.8rem':'1.5rem')+'">'+pct(realYieldLight)+'</div>';
-    h+='<div class="label">Ex-Amortization Yield on EV — excludes acquisition amortization (not a real cash cost)</div>';
+    h+='<div class="label">Ex-Amortization Yield on EV — excludes acquisition amortization (may not be a real cash cost)</div>';
     h+='<div class="rating" style="background:'+ratingColorLightBrief+'">'+ratingLightBrief+'</div></div>';
   }
   h+='</div>';
@@ -3166,7 +3166,7 @@ function calculate(){
   var repPerShare=repForYield/shares;
   var realEarningsYield=repPerShare/price;
   var realPERatio=(repPerShare>0)?price/repPerShare:null;
-  var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'excl. acquisition amortization — not a real cash cost':'Conservative';
+  var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'excl. acquisition amortization — may not be a real cash cost':'Conservative';
   var yieldViewShort=(hasLightView&&realProfitLight!==null)?'Ex-Amortization':'Conservative';
   // Real Ownership Yield (REP/EV) — this is the existing main yield
   var ownershipYield=realYield;
@@ -3216,7 +3216,7 @@ function calculate(){
     }else{
       verdictHTML+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">';
     }
-    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Ex-Amortization Yield on EV — excludes acquisition amortization (not a real cash cost)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
+    verdictHTML+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:'+(viewsDiverge?'2rem':'1.6rem')+';font-weight:700;line-height:1.2;color:'+ratingColorLight+'">'+pct(realYieldLight)+'</div><div class="yield-label">Ex-Amortization Yield on EV — excludes acquisition amortization (may not be a real cash cost)</div><div style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-top:6px;background:'+ratingBgLight+';color:'+ratingColorLight+'">'+ratingLight+'</div></div>';
   }
   document.getElementById('verdict').innerHTML=verdictHTML;
 
