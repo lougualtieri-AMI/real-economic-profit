@@ -233,6 +233,27 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .target-table td:first-child{font-family:'DM Sans',sans-serif;color:var(--text2)}
 .target-table td.above{color:var(--green)}
 .target-table td.below{color:var(--red)}
+
+/* JSON Inspector */
+.json-inspector-btn{display:none;padding:8px 14px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s;margin-bottom:8px;width:100%}
+.json-inspector-btn:hover{border-color:var(--accent);color:var(--text)}
+.json-inspector-btn .ji-count{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3);margin-left:6px}
+.json-modal-body{max-height:60vh;overflow-y:auto}
+.json-entry{margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.json-entry-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card2);cursor:pointer;transition:background .2s;flex-wrap:wrap}
+.json-entry-header:hover{background:rgba(212,160,37,.06)}
+.json-entry-header .je-label{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;color:var(--accent2)}
+.json-entry-header .je-type{font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:600}
+.json-entry-header .je-type.annual{background:rgba(52,152,219,.15);color:var(--blue)}
+.json-entry-header .je-type.interim{background:rgba(230,126,34,.15);color:var(--orange)}
+.json-entry-header .je-meta{font-size:.72rem;color:var(--text3);margin-left:auto;font-family:'JetBrains Mono',monospace}
+.json-entry-header .je-arrow{color:var(--text3);transition:transform .2s;font-size:.8rem}
+.json-entry-header.open .je-arrow{transform:rotate(90deg)}
+.json-entry-body{display:none;padding:12px;border-top:1px solid var(--border)}
+.json-entry-body.open{display:block}
+.json-entry-body pre{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text);overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;line-height:1.5}
+.json-copy-btn{padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.72rem;cursor:pointer;margin-top:8px;transition:all .2s}
+.json-copy-btn:hover{border-color:var(--accent);color:var(--text)}
 </style>
 </head>
 <body>
@@ -244,8 +265,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-02-20';
-  var buildId='v3.2.0';
+  var buildDate='2026-02-27';
+  var buildId='v3.3.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -272,6 +293,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 </div>
 
 <button class="secondary" onclick="openImport()">📋 Import Data from Gemini (10-K / 10-Q)</button>
+<button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()">🔍 View Loaded JSON <span class="ji-count" id="jiCount"></span></button>
 
 <div id="yearPills" class="year-pills" style="display:none"></div>
 <div id="yearSelector" class="year-selector" style="display:none">
@@ -439,6 +461,17 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div class="btn-row">
       <button class="btn-cancel" onclick="closeImport()">Cancel</button>
       <button class="btn-import" onclick="doImport()">Import & Fill</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="jsonInspectorModal">
+  <div class="modal" style="max-width:700px">
+    <h3>🔍 Loaded JSON Data</h3>
+    <p>Raw JSON imported for each filing period. Click a row to expand and view the full data.</p>
+    <div class="json-modal-body" id="jsonInspectorBody"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn-cancel" onclick="closeJsonInspector()">Close</button>
     </div>
   </div>
 </div>
@@ -662,6 +695,7 @@ function loadFromPortfolio(){
   renderPills();
   document.getElementById('results').style.display='none';
   document.getElementById('exportBtn').style.display='none';
+  updateJsonInspectorBtn();
 }
 
 function onPortfolioSelect(){
@@ -683,6 +717,7 @@ function clearForNewCompany(){
   renderPills();
   document.getElementById('results').style.display='none';
   document.getElementById('exportBtn').style.display='none';
+  updateJsonInspectorBtn();
 }
 
 // Auto-calc amortization when depreciation or D&A changes
@@ -1561,6 +1596,114 @@ function renderTargetCalc(){
 function openImport(){document.getElementById('jsonInput').value='';document.getElementById('importStatus').className='import-status';document.getElementById('importModal').classList.add('active')}
 function closeImport(){document.getElementById('importModal').classList.remove('active');document.getElementById('importStatus').className='import-status'}
 
+// ============ JSON Inspector ============
+function updateJsonInspectorBtn(){
+  var keys=getSortedYearKeys();
+  var hasJson=keys.some(function(k){return yearStore[k].rawJson;});
+  var btn=document.getElementById('jsonInspectorBtn');
+  if(hasJson){
+    var count=keys.filter(function(k){return yearStore[k].rawJson;}).length;
+    btn.style.display='block';
+    document.getElementById('jiCount').textContent='('+count+' filing'+(count>1?'s':'')+' loaded)';
+  }else{
+    btn.style.display='none';
+  }
+}
+
+function openJsonInspector(){
+  var keys=getSortedYearKeys();
+  var body=document.getElementById('jsonInspectorBody');
+  var html='';
+  var hasAny=false;
+
+  keys.forEach(function(k,idx){
+    var yr=yearStore[k];
+    if(!yr.rawJson)return;
+    hasAny=true;
+    var label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
+    var typeClass=yr.isInterim?'interim':'annual';
+    var typeLabel=yr.detectedType||(yr.isInterim?yr.interimLabel:'10-K Annual');
+    var importTime=yr.importedAt?formatImportTime(yr.importedAt):'Unknown';
+    var ticker=(yr.formData&&yr.formData.ticker)?yr.formData.ticker.toUpperCase():'';
+    var entryId='jsonEntry_'+idx;
+
+    html+='<div class="json-entry">';
+    html+='<div class="json-entry-header" onclick="toggleJsonEntry(\''+entryId+'\')" id="'+entryId+'_hdr">';
+    html+='<span class="je-arrow" id="'+entryId+'_arrow">▶</span>';
+    html+='<span class="je-label">'+(ticker?ticker+' — ':'')+label+'</span>';
+    html+='<span class="je-type '+typeClass+'">'+typeLabel+'</span>';
+    html+='<span class="je-meta">Imported: '+importTime+'</span>';
+    html+='</div>';
+    html+='<div class="json-entry-body" id="'+entryId+'_body">';
+
+    // Summary line
+    var jsonSummary=getJsonSummary(yr.rawJson);
+    html+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">'+jsonSummary+'</div>';
+
+    html+='<pre id="'+entryId+'_pre">'+escapeHtml(yr.rawJson)+'</pre>';
+    html+='<button class="json-copy-btn" onclick="copyJsonEntry(\''+entryId+'_pre\')">📋 Copy JSON</button>';
+    html+='</div></div>';
+  });
+
+  if(!hasAny){
+    html='<p style="color:var(--text3);font-size:.85rem;padding:20px 0;text-align:center">No JSON data stored yet. Import a filing to see it here.</p>';
+  }
+
+  body.innerHTML=html;
+  document.getElementById('jsonInspectorModal').classList.add('active');
+}
+
+function closeJsonInspector(){document.getElementById('jsonInspectorModal').classList.remove('active')}
+
+function toggleJsonEntry(id){
+  var body=document.getElementById(id+'_body');
+  var hdr=document.getElementById(id+'_hdr');
+  var arrow=document.getElementById(id+'_arrow');
+  var isOpen=body.classList.contains('open');
+  body.classList.toggle('open');
+  hdr.classList.toggle('open');
+  arrow.textContent=isOpen?'▶':'▼';
+}
+
+function copyJsonEntry(preId){
+  var text=document.getElementById(preId).textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=event.target;btn.textContent='✓ Copied!';setTimeout(function(){btn.textContent='📋 Copy JSON'},1500);
+  });
+}
+
+function formatImportTime(iso){
+  try{
+    var d=new Date(iso);
+    var now=new Date();
+    var diffMs=now-d;
+    var diffMin=Math.floor(diffMs/60000);
+    var diffHr=Math.floor(diffMs/3600000);
+    var timeStr=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    var dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(diffMin<1)return 'Just now';
+    if(diffMin<60)return diffMin+'m ago ('+timeStr+')';
+    if(diffHr<24)return diffHr+'h ago ('+timeStr+')';
+    return dateStr+' at '+timeStr;
+  }catch(e){return iso;}
+}
+
+function getJsonSummary(raw){
+  try{
+    var d=JSON.parse(raw.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g,function(m,g){return g||''}));
+    var keys=Object.keys(d);
+    var fieldCount=0;
+    function countFields(obj){for(var k in obj){if(obj.hasOwnProperty(k)){fieldCount++;if(obj[k]&&typeof obj[k]==='object'&&!Array.isArray(obj[k]))countFields(obj[k]);}}}
+    countFields(d);
+    var size=(new Blob([raw]).size/1024).toFixed(1);
+    return fieldCount+' fields • '+size+' KB • Top-level keys: '+keys.slice(0,8).join(', ')+(keys.length>8?' …':'');
+  }catch(e){return 'Unable to parse summary';}
+}
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function stripJsonComments(str){return str.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g,function(m,g){return g||''});}
 
 function doImport(){
@@ -1802,6 +1945,16 @@ function doImport(){
     msg+=' Enter ticker & share price, then analyze!';
     statusEl.className='import-status success';
     statusEl.textContent=msg;
+
+    // Store raw JSON and import timestamp for inspector
+    var storeKey=fyEnd||fyLabel||('import_'+Date.now());
+    if(yearStore[storeKey]){
+      yearStore[storeKey].rawJson=raw;
+      yearStore[storeKey].importedAt=new Date().toISOString();
+      yearStore[storeKey].detectedType=isInterim?interimLabel:'10-K Annual';
+    }
+    updateJsonInspectorBtn();
+
     setTimeout(function(){closeImport()},4500);
   }catch(e){
     statusEl.className='import-status error';
@@ -1869,7 +2022,7 @@ function computeMetrics(entry){
 function renderPills(){
   var c=document.getElementById('yearPills');
   var keys=getSortedYearKeys();
-  if(keys.length===0){c.style.display='none';renderYearSelector();return;}
+  if(keys.length===0){c.style.display='none';renderYearSelector();updateJsonInspectorBtn();return;}
   c.style.display='flex';
   c.innerHTML=keys.map(function(k){
     var yr=yearStore[k];
