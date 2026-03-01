@@ -361,7 +361,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
   <h3>💰 Investment Portfolio</h3>
   <div class="row">
-    <div class="field"><label>Non-Cash LT Investments ($M)</label><input type="number" id="lt_investments" step="1" value="0"><div class="hint">Marketable securities, bond portfolios</div></div>
+    <div class="field"><label>Non-Cash LT Investments ($M)</label><input type="number" id="lt_investments" step="1" value="0"><div class="hint">Manual only — use when income is NOT already in CFO</div></div>
     <div class="field"><label>Expected Return (%)</label><input type="number" id="inv_return_rate" step="0.1" value="4"><div class="hint">Default 4%</div></div>
   </div>
   <p class="section-note">Investment income is added to Real Economic Profit as a credit.</p>
@@ -1803,7 +1803,7 @@ function doImport(){
       'total debt':'debt','total_debt_principal':'debt','total debt principal':'debt','total_debt':'debt',
       'cash & equivalents':'cash','cash and equivalents':'cash','cash & cash equivalents':'cash','cash and cash equivalents':'cash','cash_and_equivalents':'cash','cash_and_cash_equivalents':'cash','cash_and_cash_equivalents':'cash',
       'short-term investments':'sti','short term investments':'sti','current marketable securities':'sti','short_term_investments':'sti','marketable_securities_current':'sti','marketable_securities':'sti','marketable securities':'sti',
-      'non-current marketable securities':'lt_investments','non current marketable securities':'lt_investments','long-term investments':'lt_investments','long term investments':'lt_investments','non_current_marketable_securities':'lt_investments','marketable_securities_non_current':'lt_investments',
+      'long-term investments':'lt_investments','long term investments':'lt_investments',
       'diluted shares outstanding':'shares','diluted shares':'shares','shares_outstanding_diluted':'shares','weighted_avg_shares_diluted':'shares','weighted_average_shares_diluted':'shares','diluted_shares_outstanding':'shares','diluted_shares':'shares',
       'total shareholders equity':'equity','total stockholders equity':'equity','shareholders_equity':'equity','stockholders_equity':'equity','total_shareholders_equity':'equity','total_stockholders_equity':'equity','equity':'equity','total_equity':'equity',
       'total assets':'total_assets','total_assets':'total_assets',
@@ -1813,7 +1813,7 @@ function doImport(){
     };
     var fyKeys={'fiscal_year_end':1,'fiscal year end':1,'fiscal_year_end_date':1,'fiscal year end date':1,'period_end_date':1,'period end date':1};
     var fyLabelKeys={'fiscal_year_label':1,'fiscal year label':1,'fiscal_year':1,'fy_label':1};
-    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1,'r&d expense':1,'r_and_d_expense':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research, development and engineering':1,'research development and engineering':1};
+    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1,'r&d expense':1,'r_and_d_expense':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research, development and engineering':1,'research development and engineering':1,'non-current marketable securities':1,'non current marketable securities':1,'non_current_marketable_securities':1,'marketable_securities_non_current':1};
     // Skip these metadata fields during field mapping
     var skipKeys={'filing_type':1,'filingtype':1,'filing type':1,'quarter':1,'quarter_end_date':1,'quarter end date':1,'quarterenddate':1,'period_reported':1,'period reported':1,'periodreported':1,'diluted_eps':1,'diluted eps':1,'dilutedeps':1,
       'report_type':1,'reporttype':1,'report type':1,'period':1,'period_type':1,'periodtype':1,'period type':1,'months_elapsed':1,'monthselapsed':1,'months elapsed':1,
@@ -1845,6 +1845,7 @@ function doImport(){
         if(eKey==='revenues')eKey='revenue';
         if(eKey==='total_revenue'||eKey==='net_revenue')eKey='revenue';
         if(eKey==='r&d_expense'||eKey==='r_and_d_expense'||eKey==='rd_expense'||eKey==='research_and_development'||eKey==='research,_development_and_engineering'||eKey==='research_development_and_engineering')eKey='rd_expense';
+        if(eKey==='non-current_marketable_securities'||eKey==='non_current_marketable_securities'||eKey==='marketable_securities_non_current')eKey='non_current_marketable_securities';
         // Annualize revenue and net income if interim
         if(isInterim&&annualize!==1&&annualizeFields[lk]&&val!==null&&typeof val==='number'){
           extra[eKey]=Math.round(val*annualize);
