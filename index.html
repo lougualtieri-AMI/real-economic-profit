@@ -266,7 +266,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-01';
-  var buildId='v3.3.1';
+  var buildId='v3.3.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -1979,6 +1979,8 @@ function restoreForm(d){
 function saveCurrentYear(yearKey,fyEnd,fyLabel,extra){
   yearStore[yearKey]={formData:captureForm(),fiscal_year_end:fyEnd,fiscal_year_label:fyLabel,extra:extra||{}};
   currentYearKey=yearKey;
+  // Auto-select newly imported years
+  if(selectedYears.indexOf(yearKey)===-1)selectedYears.push(yearKey);
   renderPills();
 }
 
