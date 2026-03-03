@@ -353,7 +353,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="downloadPortfolio()">⬇ Backup</button>
   <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()">⬆ Restore</button>
-  <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
+  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json" style="display:none" onchange="restorePortfolio(event)">
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="openGlossary()">📖 Glossary</button>
 </div>
@@ -823,27 +823,46 @@ function downloadPortfolio(){
 }
 
 function restorePortfolio(evt){
-  var file=evt.target.files[0];if(!file)return;
+  var file=evt.target.files[0];
+  if(!file){alert('No file selected.');return;}
   var reader=new FileReader();
+  reader.onerror=function(){alert('Error reading file.');};
   reader.onload=function(e){
     try{
-      var imported=JSON.parse(e.target.result);
+      var raw=e.target.result;
+      if(!raw||raw.length<3){alert('File appears to be empty.');return;}
+      var imported=JSON.parse(raw);
+      if(!imported||typeof imported!=='object'){alert('File does not contain valid portfolio JSON.');return;}
+      var keys=Object.keys(imported);
+      if(keys.length===0){alert('Portfolio file contains no companies.');return;}
+      // Validate structure: each key should have a .years property
+      var validCount=0;
       var p=getPortfolio();
-      var count=0;
       for(var t in imported){
-        if(imported.hasOwnProperty(t)){p[t]=imported[t];count++;}
+        if(!imported.hasOwnProperty(t))continue;
+        var entry=imported[t];
+        if(entry&&typeof entry==='object'&&entry.years){
+          p[t]=entry;
+          validCount++;
+        }
+      }
+      if(validCount===0){
+        alert('File has '+keys.length+' keys but none have the expected portfolio structure (needs .years property). Keys found: '+keys.slice(0,5).join(', '));
+        return;
       }
       putPortfolio(p);
       refreshPortfolioSelect();
-      // Auto-select first restored company
+      // Auto-select and load first restored company
       var sel=document.getElementById('portfolioSelect');
       var tickers=Object.keys(p).sort();
       if(tickers.length>0){
         sel.value=tickers[0];
         loadFromPortfolio();
       }
-      alert('Restored '+count+' companies into portfolio. Loaded: '+(tickers.length>0?tickers[0]:'none'));
-    }catch(err){alert('Invalid portfolio file: '+err.message);}
+      alert('Restored '+validCount+' companies. Portfolio now has '+tickers.length+' total. Loaded: '+tickers[0]);
+    }catch(err){
+      alert('Portfolio restore failed: '+err.message+'\n\nFirst 200 chars of file:\n'+e.target.result.substring(0,200));
+    }
   };
   reader.readAsText(file);
   evt.target.value='';
