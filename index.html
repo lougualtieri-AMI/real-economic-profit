@@ -332,7 +332,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-03';
-  var buildId='v3.4.3';
+  var buildId='v3.4.4';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -352,8 +352,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <button class="pb-btn" onclick="scorecardPortfolio()">🏆 Scorecard</button>
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="downloadPortfolio()">⬇ Backup</button>
-  <label class="pb-btn" style="cursor:pointer;display:inline-block" for="portfolioFileInput">⬆ Restore</label>
-  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json,*/*" style="width:0;height:0;opacity:0;position:fixed;left:-9999px">
+  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()">⬆ Restore</button>
+  <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="openGlossary()">📖 Glossary</button>
 </div>
@@ -1375,11 +1375,6 @@ function runThesis(){
 
 // Init portfolio on load
 refreshPortfolioSelect();
-
-// Attach file input listener via JS (more reliable than inline onchange)
-document.getElementById('portfolioFileInput').addEventListener('change', function(evt){
-  restorePortfolio(evt);
-});
 
 // ============ Yield-on-Cost Trajectory ============
 function toggleYOC(){
@@ -3027,7 +3022,7 @@ function exportBrief(){
 
     // R&D Decomposition in Export
     h+='<div class="narrative"><strong>R&amp;D Maintenance vs. Growth Decomposition</strong><br>';
-    h+='R&amp;D is expensed under GAAP, so it reduces CFO directly. But not all R&amp;D is growth investment — a significant portion is functionally maintenance spending (bug fixes, security patches, patent replacement, regulatory compliance). Using the app\\'s current estimate of '+rdMaintPct+'% maintenance R&amp;D:<br><br>';
+    h+='R&amp;D is expensed under GAAP, so it reduces CFO directly. But not all R&amp;D is growth investment — a significant portion is functionally maintenance spending (bug fixes, security patches, patent replacement, regulatory compliance). Using the app\'s current estimate of '+rdMaintPct+'% maintenance R&amp;D:<br><br>';
     var expMaintRD=latest.rd_expense*rdMaintPct/100;
     var expGrowthRD=latest.rd_expense-expMaintRD;
     var expAdjProfit=latest.realProfit+expGrowthRD;
