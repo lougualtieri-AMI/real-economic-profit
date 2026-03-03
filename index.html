@@ -332,7 +332,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-03';
-  var buildId='v3.4.0';
+  var buildId='v3.4.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -352,8 +352,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <button class="pb-btn" onclick="scorecardPortfolio()">🏆 Scorecard</button>
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="downloadPortfolio()">⬇ Backup</button>
-  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()">⬆ Restore</button>
-  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json" style="display:none" onchange="restorePortfolio(event)">
+  <button class="pb-btn" id="restoreBtn" onclick="triggerRestore()">⬆ Restore</button>
+  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json,*/*" style="display:none">
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="openGlossary()">📖 Glossary</button>
 </div>
@@ -822,22 +822,35 @@ function downloadPortfolio(){
   a.click();URL.revokeObjectURL(url);
 }
 
+function triggerRestore(){
+  var inp=document.getElementById('portfolioFileInput');
+  // Remove old listener and re-add to ensure it fires
+  var newInp=inp.cloneNode(true);
+  inp.parentNode.replaceChild(newInp,inp);
+  newInp.addEventListener('change',function(evt){
+    restorePortfolio(evt);
+  });
+  newInp.click();
+}
+
 function restorePortfolio(evt){
-  var file=evt.target.files[0];
-  if(!file){alert('No file selected.');return;}
+  var files=evt.target.files;
+  if(!files||files.length===0){alert('No file selected.');return;}
+  var file=files[0];
   var reader=new FileReader();
-  reader.onerror=function(){alert('Error reading file.');};
+  reader.onerror=function(){alert('Error reading file: '+reader.error);};
   reader.onload=function(e){
     try{
       var raw=e.target.result;
-      if(!raw||raw.length<3){alert('File appears to be empty.');return;}
+      if(!raw||raw.length<3){alert('File appears to be empty ('+raw.length+' chars).');return;}
       var imported=JSON.parse(raw);
-      if(!imported||typeof imported!=='object'){alert('File does not contain valid portfolio JSON.');return;}
+      if(!imported||typeof imported!=='object'||Array.isArray(imported)){
+        alert('File does not contain a valid portfolio object.');return;
+      }
       var keys=Object.keys(imported);
       if(keys.length===0){alert('Portfolio file contains no companies.');return;}
-      // Validate structure: each key should have a .years property
-      var validCount=0;
       var p=getPortfolio();
+      var validCount=0;
       for(var t in imported){
         if(!imported.hasOwnProperty(t))continue;
         var entry=imported[t];
@@ -847,25 +860,24 @@ function restorePortfolio(evt){
         }
       }
       if(validCount===0){
-        alert('File has '+keys.length+' keys but none have the expected portfolio structure (needs .years property). Keys found: '+keys.slice(0,5).join(', '));
+        alert('File has '+keys.length+' keys but none look like portfolio entries. Keys: '+keys.slice(0,5).join(', '));
         return;
       }
       putPortfolio(p);
       refreshPortfolioSelect();
-      // Auto-select and load first restored company
+      // Auto-select and load first company
       var sel=document.getElementById('portfolioSelect');
       var tickers=Object.keys(p).sort();
       if(tickers.length>0){
         sel.value=tickers[0];
         loadFromPortfolio();
       }
-      alert('Restored '+validCount+' companies. Portfolio now has '+tickers.length+' total. Loaded: '+tickers[0]);
+      alert('✓ Restored '+validCount+' companies. Portfolio now has '+tickers.length+' total. Loaded: '+tickers[0]);
     }catch(err){
-      alert('Portfolio restore failed: '+err.message+'\n\nFirst 200 chars of file:\n'+e.target.result.substring(0,200));
+      alert('Restore failed: '+err.message+'\n\nFile size: '+file.size+' bytes\nFirst 300 chars:\n'+e.target.result.substring(0,300));
     }
   };
   reader.readAsText(file);
-  evt.target.value='';
 }
 
 // Compare - show picker first
