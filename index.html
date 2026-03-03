@@ -332,7 +332,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-03';
-  var buildId='v3.4.1';
+  var buildId='v3.4.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -352,8 +352,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <button class="pb-btn" onclick="scorecardPortfolio()">🏆 Scorecard</button>
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="downloadPortfolio()">⬇ Backup</button>
-  <button class="pb-btn" id="restoreBtn" onclick="triggerRestore()">⬆ Restore</button>
-  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json,*/*" style="display:none">
+  <label class="pb-btn" style="cursor:pointer;display:inline-block" for="portfolioFileInput">⬆ Restore</label>
+  <input type="file" id="portfolioFileInput" accept=".json,.txt,application/json,*/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)" onchange="restorePortfolio(event)">
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="openGlossary()">📖 Glossary</button>
 </div>
@@ -822,20 +822,9 @@ function downloadPortfolio(){
   a.click();URL.revokeObjectURL(url);
 }
 
-function triggerRestore(){
-  var inp=document.getElementById('portfolioFileInput');
-  // Remove old listener and re-add to ensure it fires
-  var newInp=inp.cloneNode(true);
-  inp.parentNode.replaceChild(newInp,inp);
-  newInp.addEventListener('change',function(evt){
-    restorePortfolio(evt);
-  });
-  newInp.click();
-}
-
 function restorePortfolio(evt){
   var files=evt.target.files;
-  if(!files||files.length===0){alert('No file selected.');return;}
+  if(!files||files.length===0)return;
   var file=files[0];
   var reader=new FileReader();
   reader.onerror=function(){alert('Error reading file: '+reader.error);};
@@ -874,10 +863,11 @@ function restorePortfolio(evt){
       }
       alert('✓ Restored '+validCount+' companies. Portfolio now has '+tickers.length+' total. Loaded: '+tickers[0]);
     }catch(err){
-      alert('Restore failed: '+err.message+'\n\nFile size: '+file.size+' bytes\nFirst 300 chars:\n'+e.target.result.substring(0,300));
+      alert('Restore failed: '+err.message);
     }
   };
   reader.readAsText(file);
+  evt.target.value='';
 }
 
 // Compare - show picker first
