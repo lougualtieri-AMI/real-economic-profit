@@ -386,7 +386,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <h2>📊 Phase 1 — Cash Flow <span class="source-badge annual">from 10-K annual</span></h2>
   <div class="row" style="margin-bottom:12px">
     <div class="field"><label>Company / Ticker</label><input type="text" id="ticker" placeholder="e.g. AAPL"></div>
-    <div class="field"><label>Current Share Price ($)</label><input type="number" id="price" step="0.01" placeholder="Look up live price"></div>
+    <div class="field"><label>Current Share Price ($)</label><div style="display:flex;gap:6px"><input type="number" id="price" step="0.01" placeholder="Look up live price" style="flex:1"><button onclick="applyPriceAllYears()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Write this price to all stored year entries">All years</button></div></div>
   </div>
   <h3>Operating Cash Flow</h3>
   <div class="field"><label>Cash From Operations ($M)</label><input type="number" id="cfo" step="1"></div>
@@ -2133,6 +2133,18 @@ function restoreForm(d){
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   if(d.price)document.getElementById('price').value=d.price;
   calcAmort();
+}
+
+function applyPriceAllYears(){
+  var p=v('price');
+  if(!p||p<=0){alert('Enter a share price first.');return;}
+  // Save current year's form first
+  if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
+  var count=0;
+  Object.keys(yearStore).forEach(function(k){
+    if(yearStore[k].formData){yearStore[k].formData.price=p;count++;}
+  });
+  alert('Price $'+p.toFixed(2)+' applied to '+count+' year'+(count!==1?'s':'')+'.');
 }
 
 function saveCurrentYear(yearKey,fyEnd,fyLabel,extra){
