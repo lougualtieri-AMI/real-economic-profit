@@ -295,6 +295,16 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .dd-bar-legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
 
 /* R&D Range Slider */
+/* Adjustment Flow */
+.adj-yield-tag{font-family:'JetBrains Mono',monospace;font-weight:500;padding:3px 8px;border-radius:4px;display:inline-block}
+.adj-yt-con{background:rgba(52,152,219,.15);color:var(--blue);font-size:.85rem;font-weight:700;border:1px solid rgba(52,152,219,.3)}
+.adj-yt-amort{background:rgba(155,89,182,.12);color:var(--purple);font-size:.78rem;font-weight:600}
+.adj-yt-final{background:rgba(46,204,113,.08);color:var(--green);font-size:.72rem;font-weight:500;border:1px dashed rgba(46,204,113,.3)}
+.adj-yield-label{font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;text-align:center;margin-top:1px}
+.adj-preset{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:500;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--card);color:var(--text3);cursor:pointer;transition:all .15s}
+.adj-preset:hover{border-color:var(--text3);color:var(--text2)}
+.adj-preset.act-a{border-color:var(--purple);background:rgba(155,89,182,.1);color:var(--purple)}
+.adj-preset.act-r{border-color:var(--green);background:rgba(46,204,113,.1);color:var(--green)}
 .rd-range-group{margin:14px 0}
 .rd-range-group label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px}
 .rd-range-group input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
@@ -332,7 +342,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-03';
-  var buildId='v3.4.5';
+  var buildId='v3.4.6';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -443,6 +453,57 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div id="sbcDeepDive" style="display:none"></div>
   <div id="capexDeepDive" style="display:none"></div>
   <div id="amortDeepDive" style="display:none"></div>
+  <div id="adjustmentFlow" class="card" style="display:none">
+    <h2>🎯 Profit Adjustment Flow</h2>
+    <p style="font-size:.8rem;color:var(--text2);margin-top:-10px;margin-bottom:14px;line-height:1.5">Start with the most defensible number (Conservative REP), then progressively add back costs that may not be real economic expenses. Each colored segment shows how much profit and yield you recover.</p>
+    <div id="adjBar" style="display:flex;height:44px;border-radius:8px;overflow:hidden;margin-bottom:4px"></div>
+    <div id="adjYieldRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px"></div>
+    <div style="display:flex;gap:12px;font-size:.68rem;color:var(--text3);margin-bottom:14px;flex-wrap:wrap">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--blue);vertical-align:middle;margin-right:4px"></span>Conservative REP — most defensible</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--purple);vertical-align:middle;margin-right:4px"></span>Amortization addback — analytically supported</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);vertical-align:middle;margin-right:4px;opacity:.6;border:1px dashed var(--green)"></span>Growth R&D addback — subjective estimate</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="adjCards">
+      <!-- Amort adjustment card -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--purple)"></span>Amortization Adjustment</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-bottom:8px"><strong style="color:var(--purple)" id="adjAmortAmt">$0</strong> in intangible amortization</div>
+        <div style="background:rgba(155,89,182,.08);border-left:3px solid var(--purple);padding:8px 10px;border-radius:0 6px 6px 0;font-size:.7rem;color:var(--text2);line-height:1.5;margin-bottom:10px"><strong style="color:var(--purple)">What this adds back:</strong> Accounting charges for past acquisitions that don't require future cash. The company already maintains these assets through operating expenses — amortization on top of that double-counts the cost.</div>
+        <div id="adjAmortPresets" style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <input type="range" id="adjAmortSlider" min="0" max="100" value="70" style="flex:1;accent-color:var(--purple);cursor:pointer">
+          <span id="adjAmortPctLabel" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;color:var(--purple);min-width:36px;text-align:right">70%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text3);margin-bottom:8px"><span>0% false cost</span><span>100% false cost</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.6rem;color:var(--text3)">Added Back to Profit</div><div id="adjAmortAdd" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--purple)">+$0</div></div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.6rem;color:var(--text3)">Yield After Amort Adj.</div><div id="adjAmortYield" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--purple)">0%</div></div>
+        </div>
+      </div>
+      <!-- R&D adjustment card -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green)"></span>R&D Growth Addback</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-bottom:8px"><strong style="color:var(--green)" id="adjRdAmt">$0</strong> in R&D expense</div>
+        <div style="background:rgba(46,204,113,.08);border-left:3px solid var(--green);padding:8px 10px;border-radius:0 6px 6px 0;font-size:.7rem;color:var(--text2);line-height:1.5;margin-bottom:10px"><strong style="color:var(--green)">What this adds back:</strong> The portion of R&D that is discretionary growth investment — not required to keep the business running. Already deducted from CFO, but it's optional. This shows what owners <em>could</em> earn if growth spending stopped.</div>
+        <div id="adjRdPresets" style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <input type="range" id="adjRdSlider" min="0" max="100" value="70" style="flex:1;accent-color:var(--green);cursor:pointer">
+          <span id="adjRdPctLabel" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;color:var(--green);min-width:36px;text-align:right">70%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text3);margin-bottom:8px"><span>0% maintenance</span><span>100% maintenance</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.6rem;color:var(--text3)">Growth R&D Added Back</div><div id="adjRdAdd" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--green)">+$0</div></div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.6rem;color:var(--text3)">Fully Adjusted Yield</div><div id="adjRdYield" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--accent2)">0%</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Summary waterfall table -->
+    <table class="dd-mini-table" style="margin-top:14px" id="adjSummaryTable">
+      <thead><tr><th>View</th><th>Real Profit</th><th style="text-align:right">Yield on EV</th><th>Assumption</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div id="adjSummaryNote" style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5;font-style:italic"></div>
+  </div>
   <div class="card" id="roicCard" style="display:none">
     <h2>🔄 ROIC & Growth CapEx Analysis</h2>
     <div id="roicMetrics" class="metrics" style="margin-bottom:16px;grid-template-columns:1fr 1fr 1fr"></div>
@@ -3639,6 +3700,224 @@ function renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,r
   el.innerHTML=html;
 }
 
+// ============ Adjustment Flow Visualization ============
+var adjAmortPct=70;
+var adjAmortPresetId='serial';
+
+function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intangibles){
+  var el=document.getElementById('adjustmentFlow');
+  // Need amort and at least one of amort or rd to show
+  var hasAmort=amort>0;
+  var hasRd=rdExpense&&rdExpense>0;
+  if(!hasAmort&&!hasRd){el.style.display='none';return;}
+  el.style.display='block';
+
+  // Amort presets
+  var totalAcq=(goodwill||0)+(intangibles||0);
+  var isSerialAcq=totalAcq>amort*5;
+  var amortPresets=[
+    {id:'serial',label:'Serial Acquirer',val:70},
+    {id:'sw_acq',label:'Software/Tech',val:50},
+    {id:'organic',label:'Organic Grower',val:15},
+    {id:'pharma',label:'Pharma',val:60},
+    {id:'custom',label:'Custom',val:null}
+  ];
+  // Auto-select based on company characteristics
+  if(isSerialAcq) adjAmortPresetId='serial';
+
+  var pc=document.getElementById('adjAmortPresets');
+  pc.innerHTML='';
+  amortPresets.forEach(function(p){
+    var b=document.createElement('button');
+    b.className='adj-preset'+(p.id===adjAmortPresetId?' act-a':'');
+    b.textContent=p.label;
+    b.onclick=function(){
+      adjAmortPresetId=p.id;
+      if(p.val!==null){adjAmortPct=p.val;document.getElementById('adjAmortSlider').value=p.val;}
+      pc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-a')});
+      b.classList.add('act-a');
+      updateAdjustmentFlow(rep,amort,rdExpense,ev);
+    };
+    pc.appendChild(b);
+  });
+
+  // R&D presets — use same presets as existing deep-dive
+  var rdPresetDefs=[
+    {id:'software',label:'Software 70-20-10',val:70},
+    {id:'pharma',label:'Pharma (Patent)',val:60},
+    {id:'semicon',label:'Semiconductor',val:45},
+    {id:'medtech',label:'MedTech',val:65},
+    {id:'custom',label:'Custom',val:null}
+  ];
+  var prc=document.getElementById('adjRdPresets');
+  prc.innerHTML='';
+  if(hasRd){
+    rdPresetDefs.forEach(function(p){
+      var b=document.createElement('button');
+      b.className='adj-preset'+(rdCurrentPreset===p.id?' act-r':'');
+      b.textContent=p.label;
+      b.onclick=function(){
+        rdCurrentPreset=p.id;
+        if(p.val!==null){rdMaintPct=p.val;document.getElementById('adjRdSlider').value=p.val;}
+        prc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-r')});
+        b.classList.add('act-r');
+        updateAdjustmentFlow(rep,amort,rdExpense,ev);
+        // Sync the R&D deep-dive slider if it exists
+        var ddSlider=document.getElementById('rdMaintSlider');
+        if(ddSlider&&p.val!==null){ddSlider.value=p.val;updateRDSlider();}
+      };
+      prc.appendChild(b);
+    });
+  }
+
+  // Set slider values
+  document.getElementById('adjAmortSlider').value=adjAmortPct;
+  if(hasRd) document.getElementById('adjRdSlider').value=rdMaintPct;
+
+  // Labels
+  document.getElementById('adjAmortAmt').textContent=fmtM(amort);
+  if(hasRd) document.getElementById('adjRdAmt').textContent=fmtM(rdExpense);
+
+  // Hide R&D card if no R&D
+  var cards=document.getElementById('adjCards');
+  if(!hasRd){
+    cards.style.gridTemplateColumns='1fr';
+    cards.children[1].style.display='none';
+  }else{
+    cards.style.gridTemplateColumns='1fr 1fr';
+    cards.children[1].style.display='';
+  }
+
+  // Wire sliders
+  document.getElementById('adjAmortSlider').oninput=function(){
+    adjAmortPct=parseInt(this.value);
+    adjAmortPresetId='custom';
+    pc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-a')});
+    var cb=pc.querySelector('.adj-preset:last-child');if(cb)cb.classList.add('act-a');
+    updateAdjustmentFlow(rep,amort,rdExpense,ev);
+  };
+  if(hasRd){
+    document.getElementById('adjRdSlider').oninput=function(){
+      rdMaintPct=parseInt(this.value);
+      rdCurrentPreset='custom';
+      prc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-r')});
+      var cb=prc.querySelector('.adj-preset:last-child');if(cb)cb.classList.add('act-r');
+      updateAdjustmentFlow(rep,amort,rdExpense,ev);
+      // Sync R&D deep-dive
+      var ddSlider=document.getElementById('rdMaintSlider');
+      if(ddSlider){ddSlider.value=rdMaintPct;updateRDSlider();}
+    };
+  }
+
+  updateAdjustmentFlow(rep,amort,rdExpense,ev);
+}
+
+function updateAdjustmentFlow(rep,amort,rdExpense,ev){
+  var hasRd=rdExpense&&rdExpense>0;
+  var amortAdd=amort*adjAmortPct/100;
+  var repAmort=rep+amortAdd;
+  var rdGrowth=hasRd?rdExpense*(1-rdMaintPct/100):0;
+  var finalRep=repAmort+rdGrowth;
+
+  var yC=ev>0?rep/ev*100:0;
+  var yA=ev>0?repAmort/ev*100:0;
+  var yF=ev>0?finalRep/ev*100:0;
+
+  // Update labels
+  document.getElementById('adjAmortPctLabel').textContent=adjAmortPct+'%';
+  document.getElementById('adjAmortAdd').textContent='+'+fmtM(amortAdd);
+  document.getElementById('adjAmortYield').textContent=pct(yA/100);
+  if(hasRd){
+    document.getElementById('adjRdPctLabel').textContent=rdMaintPct+'%';
+    document.getElementById('adjRdAdd').textContent='+'+fmtM(rdGrowth);
+    document.getElementById('adjRdYield').textContent=pct(yF/100);
+  }
+
+  // Bar segments
+  var maxV=finalRep*1.08;
+  if(maxV<rep*1.3)maxV=rep*1.3;
+  if(maxV<=0)maxV=1;
+  var wRep=Math.max(rep/maxV*100,0);
+  var wAmort=Math.max(amortAdd/maxV*100,0);
+  var wRd=hasRd?Math.max(rdGrowth/maxV*100,0):0;
+
+  var bar=document.getElementById('adjBar');
+  bar.innerHTML='';
+
+  function mkSeg(bgStyle,w,label,val,extra){
+    var d=document.createElement('div');
+    d.style.cssText='height:44px;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;transition:width .4s ease;'+bgStyle+';width:'+Math.max(w,0).toFixed(1)+'%;'+(extra||'');
+    if(w>14)d.innerHTML='<div style="font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.8;white-space:nowrap;color:#fff">'+label+'</div><div style="font-family:\'JetBrains Mono\',monospace;font-size:.82rem;font-weight:600;white-space:nowrap;color:#fff">'+val+'</div>';
+    else if(w>4)d.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.72rem;font-weight:500;white-space:nowrap;color:#fff">'+val+'</div>';
+    return d;
+  }
+
+  var s1=mkSeg('background:linear-gradient(135deg,var(--blue),#2471a3)',wRep,'Conservative REP',fmtM(rep),'border-radius:8px 0 0 8px;font-weight:700');
+  bar.appendChild(s1);
+
+  if(wAmort>0.3){
+    bar.appendChild(mkSeg('background:linear-gradient(135deg,var(--purple),#7d3c98)',wAmort,'Amort','+'+fmtM(amortAdd)));
+  }
+
+  if(wRd>0.3){
+    var rdSeg=mkSeg('background:repeating-linear-gradient(135deg,rgba(46,204,113,.5),rgba(46,204,113,.5) 4px,rgba(46,204,113,.25) 4px,rgba(46,204,113,.25) 8px)',wRd,'Growth R&D','+'+fmtM(rdGrowth),'border:1.5px dashed rgba(46,204,113,.5);border-left:none');
+    bar.appendChild(rdSeg);
+  }
+
+  // Round last segment
+  var segs=bar.children;
+  if(segs.length>0){
+    segs[segs.length-1].style.borderRadius='0 8px 8px 0';
+    if(segs.length===1)segs[0].style.borderRadius='8px';
+  }
+
+  // Yield row
+  var yr=document.getElementById('adjYieldRow');
+  var yhtml='<div style="text-align:center"><span class="adj-yield-tag adj-yt-con">'+pct(yC/100)+'</span><div class="adj-yield-label">Defensible</div></div>';
+  yhtml+='<span style="color:var(--text3);font-size:.75rem">→</span>';
+  yhtml+='<div style="text-align:center"><span class="adj-yield-tag adj-yt-amort">'+pct(yA/100)+'</span><div class="adj-yield-label">Likely</div></div>';
+  if(hasRd){
+    yhtml+='<span style="color:var(--text3);font-size:.75rem">→</span>';
+    yhtml+='<div style="text-align:center"><span class="adj-yield-tag adj-yt-final">'+pct(yF/100)+'</span><div class="adj-yield-label">Subjective</div></div>';
+  }
+  yhtml+='<span style="flex:1"></span>';
+  yhtml+='<span style="font-size:.7rem;color:var(--text3)">Adjusted: <strong style="color:var(--text)">'+fmtM(finalRep)+'</strong></span>';
+  yr.innerHTML=yhtml;
+
+  // Summary table
+  var tb=document.querySelector('#adjSummaryTable tbody');
+  tb.innerHTML='';
+  var rows=[
+    ['','Conservative',fmtM(rep),pct(yC/100),'Full D&A × 1.05 — hardest test'],
+    ['','+ Amort Addback ('+adjAmortPct+'%)','+'+fmtM(amortAdd),pct(yA/100),adjAmortPct+'% of '+fmtM(amort)+' is false cost']
+  ];
+  if(hasRd){
+    rows.push(['','+ Growth R&D ('+(100-rdMaintPct)+'%)','+'+fmtM(rdGrowth),pct(yF/100),rdMaintPct+'% maint, '+(100-rdMaintPct)+'% growth']);
+  }
+  rows.push(['sub','Fully Adjusted',fmtM(finalRep),pct(yF/100),'Your best estimate']);
+
+  rows.forEach(function(r){
+    var tr=document.createElement('tr');
+    if(r[0]==='sub')tr.className='dd-subtotal';
+    for(var i=1;i<r.length;i++){
+      var td=document.createElement('td');
+      td.textContent=r[i];
+      if(i===3)td.style.textAlign='right';
+      tr.appendChild(td);
+    }
+    // Color code rows
+    if(r[1].indexOf('Conservative')===0){tr.style.color='var(--blue)';tr.style.fontWeight='600';}
+    else if(r[1].indexOf('Amort')>0)tr.style.color='var(--purple)';
+    else if(r[1].indexOf('R&D')>0){tr.style.color='var(--green)';tr.style.opacity='0.75';tr.style.fontStyle='italic';}
+    tb.appendChild(tr);
+  });
+
+  // Summary note
+  document.getElementById('adjSummaryNote').textContent=
+    'Starting from conservative REP of '+fmtM(rep)+' ('+pct(yC/100)+' yield), adding back '+adjAmortPct+'% of intangible amortization brings profit to '+fmtM(repAmort)+'.'+
+    (hasRd?' Adding the '+(100-rdMaintPct)+'% of R&D classified as discretionary growth investment brings the fully adjusted owner earnings to '+fmtM(finalRep)+' ('+pct(yF/100)+' yield on EV).':'');
+}
+
 // ============ R&D Deep-Dive with Decomposition ============
 var rdMaintPct=70; // default slider value
 var rdCurrentPreset='software'; // default preset
@@ -3992,6 +4271,14 @@ function calculate(){
   var ddGoodwill=v('goodwill')||0;
   var ddIntangibles=v('intangibles')||0;
   renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,realProfitLight,cfo,ddGoodwill,ddIntangibles,ev);
+
+  // Adjustment Flow visualization
+  var adjAmort=(deprOnly>0&&da>0)?da-deprOnly:0;
+  var adjRdExp=null;
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
+    adjRdExp=yearStore[currentYearKey].extra.rd_expense||null;
+  }
+  renderAdjustmentFlow(realProfit,adjAmort,adjRdExp,ev,deprOnly,da,ddGoodwill,ddIntangibles);
 
   // ROIC section
   var goodwill=v('goodwill')||0;
