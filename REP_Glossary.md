@@ -15,11 +15,14 @@ Real Economic Profit divided by Enterprise Value. Answers: "What is my real cash
 **Real ROIC (Return on Invested Capital)**
 Real Economic Profit divided by Invested Capital (Equity + Debt − Cash − STI). Measures how efficiently the company uses its deployed capital. Above 12% is strong; below 6% is concerning.
 
-**Real ROIC — Conservative vs. Asset-Light Views**
-The Conservative view uses full D&A × 1.05 as maintenance CapEx. The Asset-Light view uses only physical Depreciation × 1.05, excluding intangible amortization from acquisitions. For companies like Broadcom that grow through M&A, the asset-light view better reflects actual cash maintenance needs since acquired intangibles (customer relationships, technology) don't require equivalent cash spending to maintain.
+**Real ROIC — Full Cost vs. Excluding Amortization Views**
+The Full Cost view uses full D&A × 1.05 as maintenance CapEx. The Excluding Amortization view uses only physical Depreciation × 1.05, excluding intangible amortization from acquisitions. For companies like Broadcom that grow through M&A, the Excluding Amortization view better reflects actual cash maintenance needs since acquired intangibles (customer relationships, technology) don't require equivalent cash spending to maintain.
 
 **Real SBC (Stock-Based Compensation) Burden**
 The greater of SBC Expense (from the cash flow statement) or SBC Grant Date Fair Value (RSUs granted × weighted-average grant price). The MAX function captures the true dilution cost to shareholders, since the accounting expense often understates the economic value being transferred to employees.
+
+**Three-Tier Yield**
+Three ways to measure what a stock earns relative to its price, each stripping away another layer of distortion: (1) Wall Street Earnings Yield (GAAP Net Income ÷ Market Cap) — what most investors see; (2) Real Earnings Yield (REP ÷ Market Cap) — accounting distortions removed; (3) Real Ownership Yield (REP ÷ Enterprise Value) — what you'd earn buying the whole company, taking on debt and keeping cash. For cash-rich companies, Enterprise Value is smaller than Market Cap, making the Ownership Yield higher than the Earnings Yield.
 
 **Return on NTA (Net Tangible Assets)**
 Real Economic Profit divided by Net Tangible Assets (Total Assets − Goodwill − Intangible Assets − Cash − STI). Strips out acquisition premiums and buyback-compressed equity to show what the operating assets actually earn. Useful for comparing companies with very different M&A and capital return histories.
@@ -46,10 +49,10 @@ Total Assets − Goodwill − Intangible Assets − Cash − STI. The physical a
 **Growth CapEx**
 Total CapEx minus Maintenance CapEx. Capital spending beyond what's needed to maintain the current asset base — this is the investment in future growth.
 
-**Maintenance CapEx — Conservative**
+**Maintenance CapEx — Full Cost**
 When not disclosed by the company, estimated as D&A × 1.05 (depreciation and amortization plus a 5% inflation buffer). Represents the annual cash spending needed to maintain the current productive capacity. The 1.05 multiplier accounts for the fact that replacing aging assets costs more today than when they were originally purchased.
 
-**Maintenance CapEx — Asset-Light**
+**Maintenance CapEx — Excluding Amortization**
 Physical Depreciation Only × 1.05 (excluding intangible amortization). For acquisition-heavy companies, most D&A is amortization of purchased intangibles (customer lists, technology, trade names) which don't require equivalent cash replacement. This view better reflects actual cash needs but is only available when depreciation is broken out separately.
 
 **Reinvestment Rate**
@@ -78,7 +81,7 @@ Calculated from the Stock-Based Compensation footnote: total units granted (RSUs
 Combined depreciation of physical assets and amortization of intangible assets. Found in the cash flow statement as an adjustment to net income. For the framework, D&A is the basis for estimating maintenance CapEx when not disclosed.
 
 **Depreciation Only**
-Physical depreciation of property, plant, and equipment — excluding amortization of intangible assets. Found in the cash flow statement adjustments (often broken out separately). Used for the Asset-Light maintenance CapEx view.
+Physical depreciation of property, plant, and equipment — excluding amortization of intangible assets. Found in the cash flow statement adjustments (often broken out separately). Used for the Excluding Amortization maintenance CapEx view.
 
 **Amortization**
 D&A minus Depreciation. Represents the accounting charge for acquired intangible assets losing value on a schedule. For acquisitive companies, this can be many times larger than physical depreciation. Important: amortization is an accounting convention — acquired customer relationships and technology often retain or grow in value even as they amortize to zero on the books.
@@ -102,10 +105,10 @@ Cash interest paid, from supplemental disclosures at the bottom of the cash flow
 Cash taxes paid, from supplemental disclosures. Often dramatically different from the tax provision on the income statement due to deferred taxes, credits, and timing differences.
 
 **STI (Short-Term Investments)**
-Current marketable securities on the balance sheet. Treated like cash in the framework — liquid assets not deployed in the business, so subtracted from Invested Capital.
+Current marketable securities on the balance sheet. Treated like cash in the framework — liquid assets not deployed in the business, so subtracted from Invested Capital and Enterprise Value.
 
 **EV (Enterprise Value)**
-Market Cap + Total Debt − Cash − STI. Represents the total price to acquire the entire business, including taking on its debt and receiving its cash.
+Market Cap + Total Debt − Cash − STI. Represents the total price to acquire the entire business, including taking on its debt and receiving its cash and short-term investments. For cash-rich companies (e.g., Alphabet, Microsoft), EV is materially lower than Market Cap — the ownership yield accounts for this difference.
 
 ---
 
@@ -131,7 +134,7 @@ Shows how much of each year's Real Economic Profit comes from the original organ
 
 ---
 
-## R&D Intensity (New in v3.0)
+## R&D Intensity
 
 **R&D Expense**
 Total research and development spending from the income statement. Under US GAAP, R&D is expensed immediately — it flows through the income statement and is already deducted from Cash From Operations. This means R&D is a real cash cost that's invisible to the CapEx-based growth framework.
@@ -140,19 +143,19 @@ Total research and development spending from the income statement. Under US GAAP
 R&D Expense divided by Revenue. Shows what percentage of revenue is reinvested in research. Typical ranges: 15–25% for semiconductor companies, 10–20% for software, 5–15% for diversified tech, near 0% for financial or service companies.
 
 **R&D / CapEx Ratio**
-R&D Expense divided by Total CapEx. When this exceeds 3x, R&D is the dominant investment channel — the company invests primarily through the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment for these companies because it only sees CapEx.
+R&D Expense divided by Total CapEx. When this exceeds 3x, R&D is the dominant investment channel — the company invests primarily through the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment for these companies because it only sees CapEx. The audit prompt's R&D Growth Potential section (Part 3D) is triggered at this threshold.
 
 **R&D / CFO**
 R&D Expense divided by Cash From Operations. Shows what fraction of cash generation is consumed by R&D. High ratios (above 50%) mean the company is plowing most of its cash back into research.
 
 **Total Reinvestment (CapEx + R&D)**
-The full picture of how much a company reinvests in its future. For traditional manufacturers, CapEx dominates. For technology companies, R&D can be 5–20x larger than CapEx. Comparing only CapEx across these company types is misleading.
+The full picture of how much a company reinvests in its future. For traditional manufacturers, CapEx dominates. For technology and pharma companies, R&D can be 5–20x larger than CapEx. Comparing only CapEx across these company types is misleading.
 
 **R&D-Dominant Investment Model**
-Flagged when R&D exceeds 3x CapEx. Indicates the Growth Decomposition's "Base Erosion" signal may be misleading — the company is investing heavily in growth through a channel the CapEx-based framework can't see. The Asset-Light view typically better reflects economics for these companies.
+Flagged when R&D exceeds 3x CapEx. Indicates the Growth Decomposition's "Base Erosion" signal may be misleading — the company is investing heavily in growth through a channel the CapEx-based framework can't see. The Excluding Amortization view typically better reflects economics for these companies.
 
 **Acquisition Amortization Distortion**
-When a company shows negative organic growth in the Growth Decomposition but has massive R&D spending (>3x CapEx), the "Base Erosion" diagnosis is replaced with this more accurate label. The distortion occurs because acquired intangible amortization inflates the Conservative maintenance CapEx estimate while R&D-driven growth is invisible to the framework.
+When a company shows negative organic growth in the Growth Decomposition but has massive R&D spending (>3x CapEx), the "Base Erosion" diagnosis is replaced with this more accurate label. The distortion occurs because acquired intangible amortization inflates the Full Cost maintenance CapEx estimate while R&D-driven growth is invisible to the framework.
 
 ---
 
@@ -164,6 +167,9 @@ Flagged when SBC Grant Value exceeds SBC Expense by more than 20%. Indicates the
 **SBC as % of CFO**
 Real SBC divided by Cash From Operations. Above 30% is a warning — shareholders are funding a large portion of employee compensation through dilution. Above 15% is worth monitoring.
 
+**Value Leakage**
+SBC growth rate divided by CFO growth rate (year-over-year). Shows what fraction of cash flow improvement was absorbed by rising compensation versus flowing to shareholders. Below 20% = good; 20–50% = meaningful; above 50% = majority of growth consumed by SBC.
+
 **Off-Balance-Sheet / Risk Flags**
 Extracted from SEC filing footnotes by Gemini. Covers: SPVs (Special Purpose Vehicles), VIEs (Variable Interest Entities), contingent liabilities, material contractual commitments, related-party transactions, and other items not captured in the financial statements.
 
@@ -173,12 +179,16 @@ Extracted from SEC filing footnotes by Gemini. Covers: SPVs (Special Purpose Veh
 
 **SEC 10-K**: Annual report filed with the Securities and Exchange Commission. Contains full-year financial statements, footnotes, and management discussion. Primary source for all cash flow items.
 
-**SEC 10-Q**: Quarterly report. Used to update balance sheet items with more current data than the annual filing.
+**SEC 10-Q**: Quarterly report. Used to build a TTM (Trailing Twelve Month) dataset using the formula: Current YTD + Prior Year Annual − Prior Year Same-Quarter YTD. Balance sheet items use the most recent quarter-end.
 
-**Gemini Extraction**: Google Gemini processes the full 10-K/10-Q PDF and extracts structured JSON data using a standardized prompt (v3.1). The prompt uses Chain of Thought prompting — Gemini first produces an Analyst Scratchpad showing its work (sources, math, reasoning), then outputs the final 27-field JSON. One prompt, one response, no follow-up needed.
+**NotebookLM / Gemini Extraction**: Processes the full 10-K or 10-Q + 10-K PDF and extracts structured JSON data using a standardized prompt. The prompt uses Chain of Thought prompting — first producing an Analyst Scratchpad showing work (sources, math, reasoning), then outputting the final 27-field JSON. NotebookLM is preferred for reliability; raw Gemini works for straightforward filings.
 
-**Claude Audit**: The complete Gemini response (scratchpad + JSON) is pasted into a Claude conversation along with the original filing PDF. Claude cross-checks every number against the source document, verifies the scratchpad reasoning, and produces a corrected JSON if needed. One company per conversation for searchability.
+**Claude Audit (Annual)**: The complete extraction output (scratchpad + JSON) is pasted into Claude along with the audit prompt (`CLAUDE_AUDIT_PROMPT_v4_2.md`). Claude cross-checks every field against the source filing, runs formula verification, generates a company-specific Gemini Deep Research prompt, and — after Gemini research is fed back — produces three PDF reports: Financial Snapshot (shareable), Full Audit (internal), and Research & Outlook (forward-looking).
+
+**Claude Audit (Quarterly)**: Uses `CLAUDE_QUARTERLY_AUDIT_v1_3.md`. Verifies TTM math, runs delta analysis vs. the prior period, and generates a Quarterly Brief PDF after Gemini research is returned. Lighter workflow than the annual audit — one PDF output, no three-stage report cycle.
+
+**Gemini Deep Research**: After Claude's Stage 1 audit, a structured research prompt is generated and pasted into Gemini Deep Research. Gemini researches post-filing developments, profit momentum evidence, risk flag updates, forward guidance, catalysts, and industry context. For R&D-intensive companies (R&D/CapEx ≥ 3x), the prompt also requests an estimate of the growth vs. maintenance split of R&D spending.
 
 ---
 
-*This glossary is current as of February 14, 2026 (v3.0). Definitions reflect the Real Economic Profit Analyzer framework and may differ from standard financial textbook definitions.*
+*This glossary is current as of March 5, 2026 (v3.4.8). Definitions reflect the Real Economic Profit Analyzer framework and may differ from standard financial textbook definitions.*

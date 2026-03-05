@@ -342,7 +342,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-03';
-  var buildId='v3.4.7';
+  var buildId='v3.4.8';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -2686,7 +2686,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   var mdDETag=mdDE>0?' · D/E '+mdDE.toFixed(1)+'x':'';
   d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+mdDETag+' | What you\'d earn buying the whole company, debt and all |\n\n';
   // Bridge explanations
-  var mdNetDebt=debt-cash;
+  var mdNetDebt=debt-cash-sti;
   var mdNetDebtB=mdNetDebt/1000;
   if(mdNetIncome!==null&&marketCap>0){
     var mdWsToReal=mdRepPerShare/price-mdNetIncome/marketCap;
@@ -2983,7 +2983,7 @@ function exportBrief(){
   h+='<tr><td style="text-align:left"><strong>Real Ownership Yield</strong></td><td><strong>'+pct(realYield)+'</strong></td><td>REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+expDETag+'</td><td style="text-align:left;font-size:.85rem;color:#666">What you\'d actually earn buying the whole company, taking on its debt and keeping its cash.</td></tr>';
   h+='</table>';
   // Bridge explanations
-  var expNetDebt=debt-cash;
+  var expNetDebt=debt-cash-sti;
   var expNetDebtB=expNetDebt/1000;
   h+='<div style="font-size:.85rem;margin:8px 0 4px;padding:10px 14px;background:#f5f5f5;border-radius:6px;line-height:1.6">';
   if(expNetIncome!==null&&marketCap>0){
@@ -4194,7 +4194,7 @@ function calculate(){
   var ownershipYield=realYield;
   var ownershipRatio=(realProfit>0)?ev/realProfit:null;
   // Net debt for bridge explanation
-  var netDebt=debt-cash;
+  var netDebt=debt-cash-sti;
 
   var verdictHTML='<div class="yield-num">'+pct(realYield)+'</div><div class="yield-label">Real Cash Yield on Enterprise Value — '+ticker+' (Full Cost)</div><div class="rating">'+rating+'</div>';
 

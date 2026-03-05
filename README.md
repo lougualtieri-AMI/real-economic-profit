@@ -20,7 +20,7 @@ Real Economic Profit = Cash From Operations
                      + Investment Income
 ```
 
-The app provides both a **Conservative** view (full D&A as maintenance) and an **Asset-Light** view (physical depreciation only, excluding acquisition amortization) — critical for evaluating companies that grow through M&A.
+The app provides both a **Full Cost** view (full D&A as maintenance) and an **Excluding Amortization** view (physical depreciation only, excluding acquisition amortization) — critical for evaluating companies that grow through M&A.
 
 Every Export Brief includes a self-contained appendix explaining the methodology, so anyone receiving the analysis can understand it without prior context.
 
@@ -28,12 +28,13 @@ Every Export Brief includes a self-contained appendix explaining the methodology
 
 ## Features
 
-- **Multi-Year Trends** — Import 2+ years to see ROIC trajectory, profit trends, and growth decomposition
-- **"When Does This Investment Work?"** — Model revenue growth scenarios to see when (or if) your yield hits 10% or 15%
-- **Conservative & Asset-Light** — Dual views for acquisition-heavy companies, shown side by side
-- **Portfolio Scorecard** — Rank and compare companies across all metrics
-- **Red Flags** — Automated alerts for SBC dilution, leverage, ROIC compression, and off-balance-sheet risks
-- **Export Brief** — One-click HTML/Markdown report with full appendix — ready for NotebookLM, Google Docs, or sharing
+* **Multi-Year Trends** — Import 2+ years to see ROIC trajectory, profit trends, and growth decomposition
+* **"When Does This Investment Work?"** — Model revenue growth scenarios to see when (or if) your yield hits 10% or 15%
+* **Full Cost & Excluding Amortization** — Dual views for acquisition-heavy companies, shown side by side
+* **Three-Tier Yield Display** — Wall Street Earnings Yield → Real Earnings Yield → Real Ownership Yield
+* **Portfolio Scorecard** — Rank and compare companies across all metrics
+* **Red Flags** — Automated alerts for SBC dilution, leverage, ROIC compression, and off-balance-sheet risks
+* **Export Brief** — One-click HTML/Markdown report with full appendix — ready for NotebookLM, Google Docs, or sharing
 
 ---
 
@@ -42,20 +43,33 @@ Every Export Brief includes a self-contained appendix explaining the methodology
 ```
 SEC Filing (10-K / 10-Q)
         ↓
-  Google Gemini  →  extracts structured JSON (large context window handles full filings)
+  NotebookLM / Gemini  →  extracts structured JSON (large context window handles full filings)
         ↓
   Paste JSON into the app  →  Real Economic Profit Analysis
         ↓
-  Claude  →  optional audit (cross-checks extraction, explains findings, flags risks)
+  Claude (audit prompt)  →  cross-checks extraction, explains findings, generates Gemini research prompt
+        ↓
+  Gemini Deep Research  →  post-filing developments, risk updates, forward guidance
+        ↓
+  Claude  →  synthesizes research + financials into PDF reports
 ```
 
-### Quick Start
+### Annual Workflow (10-K)
 
-1. Open a company's **10-K** in [Google Gemini](https://gemini.google.com/)
+1. Upload the 10-K to **NotebookLM** (or Gemini)
 2. Paste the extraction prompt from `10_K_extraction.md`
 3. Copy the JSON → paste into the app → enter ticker and share price → **Analyze**
-4. Repeat for additional years and companies
-5. Export the brief, audit with Claude if desired
+4. Repeat for additional years (2–3 years recommended for trend analysis)
+5. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT_v4_2.md` + the JSON output
+6. Claude audits the data, generates a Gemini research prompt, and produces three PDF reports after you feed back the Gemini research
+
+### Quarterly Workflow (10-Q TTM)
+
+1. Upload the 10-Q **and** the most recent 10-K to **NotebookLM**
+2. Paste the TTM extraction prompt from `10Q_extraction.md`
+3. Copy the JSON → paste into the app alongside the prior period JSON
+4. Open a new Claude chat, paste `CLAUDE_QUARTERLY_AUDIT_v1_3.md` + both JSONs
+5. Claude audits the TTM data, generates a Gemini research prompt, and produces a Quarterly Brief PDF after you feed back the Gemini research
 
 ### Try It Now (Sample Data)
 
@@ -63,25 +77,25 @@ Paste this into the Import field to test without a real filing:
 
 ```json
 {
-  "Fiscal Year Label": "FY2024",
-  "Fiscal Year End": "2024-12-31",
-  "Cash From Operations": 50000,
-  "SBC Expense addback": 5000,
-  "SBC Grant Date Fair Value": 6000,
-  "Total CapEx": 20000,
-  "D&A": 8000,
-  "Depreciation": 6000,
-  "Revenue": 150000,
-  "Net Income": 30000,
-  "Total Debt": 25000,
-  "Cash & Equivalents": 15000,
-  "Short-Term Investments": 5000,
-  "Diluted Shares Outstanding": 1000,
-  "Total Shareholders Equity": 80000,
-  "Total Assets": 200000,
-  "Goodwill": 10000,
-  "Intangible Assets": 3000,
-  "Risk Flags": "No material risks identified."
+  "fiscal_year_label": "FY2024",
+  "fiscal_year_end": "2024-12-31",
+  "cash_from_operations": 50000,
+  "sbc_expense_addback": 5000,
+  "sbc_grant_date_fair_value": 6000,
+  "total_capex": 20000,
+  "d_and_a": 8000,
+  "depreciation": 6000,
+  "revenue": 150000,
+  "net_income": 30000,
+  "total_debt": 25000,
+  "cash_and_equivalents": 15000,
+  "short_term_investments": 5000,
+  "diluted_shares_outstanding": 1000,
+  "total_shareholders_equity": 80000,
+  "total_assets": 200000,
+  "goodwill": 10000,
+  "intangible_assets": 3000,
+  "risk_flags": "No material risks identified."
 }
 ```
 
@@ -91,21 +105,23 @@ Enter ticker `TEST`, price `100`, click Analyze.
 
 ## Key Insights This Tool Reveals
 
-- **SBC is the hidden tax** — many tech companies have SBC running 15–25% of CFO. Grant value often exceeds the expense by 2–3x.
-- **Reported FCF overstates reality** — traditional FCF doesn't deduct SBC dilution. The Real vs. Reported Gap shows how much.
-- **Acquisitive companies need two views** — Broadcom shows negative Real Profit (conservative) but positive (asset-light), because 93% of their D&A is acquisition amortization.
-- **Real P/E is usually higher than traditional P/E** — typically 1.3–2x for quality companies. The brief's appendix explains why.
+* **SBC is the hidden tax** — many tech companies have SBC running 15–25% of CFO. Grant value often exceeds the expense by 2–3x. The app uses the higher of the two to capture real dilution.
+* **Reported FCF overstates reality** — traditional FCF doesn't deduct SBC dilution. The Real vs. Reported Gap shows how much.
+* **Acquisitive companies need two views** — Broadcom shows negative Real Profit (Full Cost) but positive (Excluding Amortization), because 93% of their D&A is acquisition amortization. The app shows both and explains which is more appropriate.
+* **Real P/E is usually higher than traditional P/E** — typically 1.3–2x for quality companies. The brief's appendix explains why.
+* **Net cash materially changes the ownership yield** — for cash-rich companies (e.g., Alphabet, Microsoft), Enterprise Value is meaningfully lower than Market Cap, making the ownership yield higher than the earnings yield.
 
 ---
 
 ## Files
 
 | File | Purpose |
-|------|---------|
-| `index.html` | The complete app — single file, no dependencies |
-| `10_K_extraction.md` | Gemini prompt for annual 10-K extraction |
-| `10Q_extraction.md` | Gemini prompt for quarterly 10-Q extraction |
-| `CLAUDE_AUDIT_PROMPT.md` | Claude audit prompt |
+| --- | --- |
+| `index.html` | The complete app — single file, no dependencies (v3.4.8) |
+| `10_K_extraction.md` | Gemini/NotebookLM prompt for annual 10-K extraction (v3.2) |
+| `10Q_extraction.md` | Gemini/NotebookLM prompt for quarterly 10-Q TTM extraction (v1.2) |
+| `CLAUDE_AUDIT_PROMPT_v4_2.md` | Claude audit prompt for annual 10-K filings |
+| `CLAUDE_QUARTERLY_AUDIT_v1_3.md` | Claude audit prompt for quarterly TTM updates |
 | `REP_Glossary.md` | Full glossary of all metrics and terms |
 | `README.md` | This file |
 
@@ -113,10 +129,20 @@ Enter ticker `TEST`, price `100`, click Analyze.
 
 ## Sharing
 
-- **Share the app**: Anyone can use the [GitHub Pages link](https://lougualtieri-ami.github.io/real-economic-profit/)
-- **Share analyses**: Export Briefs are self-contained with methodology appendix
-- **Share portfolios**: ⬇ Backup / ⬆ Restore portfolio as JSON
-- **Your data is private**: Everything lives in your browser's localStorage
+* **Share the app**: Anyone can use the [GitHub Pages link](https://lougualtieri-ami.github.io/real-economic-profit/)
+* **Share analyses**: Export Briefs are self-contained with methodology appendix
+* **Share portfolios**: ⬇ Backup / ⬆ Restore portfolio as JSON
+* **Your data is private**: Everything lives in your browser's localStorage
+
+---
+
+## Version History
+
+| Version | Date | Key Changes |
+| --- | --- | --- |
+| v3.4.8 | Mar 5, 2026 | Fixed net debt narrative (now correctly subtracts Cash + STI, not just Cash) |
+| v3.4.7 | Mar 5, 2026 | Terminology: "Conservative" → "Full Cost", "Asset-Light/Heavy" → "Low/High Intensity" throughout; fixed year selection default bug |
+| v3.4.6 | Prior | SBC deep-dive, CapEx maintenance/growth decomposition, amortization classification, R&D decomposition |
 
 ---
 
