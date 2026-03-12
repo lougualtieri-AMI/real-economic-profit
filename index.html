@@ -330,6 +330,42 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .amort-box.false .ab-title{color:var(--green)}
 .amort-box .ab-val{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--text)}
 .amort-box .ab-desc{font-size:.72rem;color:var(--text3);margin-top:4px;line-height:1.5}
+
+/* Dashboard Header - At-a-Glance Panel */
+#dashboardHeader{display:none;margin-bottom:16px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.dash-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.dash-panel-label{font-size:.72rem;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.dash-yield-display{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.dash-yield-big{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;line-height:1.2}
+.dash-yield-range{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--text2)}
+.dash-yield-arrow{color:var(--text3);font-size:.9rem}
+.dash-yield-math{font-size:.72rem;color:var(--text3);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.dash-amort-note{font-size:.7rem;color:var(--text3);margin-top:3px}
+.dash-amort-note.material{color:var(--orange)}
+.dash-wf{margin-top:10px}
+.dash-wf-row{display:flex;align-items:baseline;justify-content:space-between;padding:2px 0;font-size:.8rem}
+.dash-wf-row.total{border-top:1px solid var(--border);padding-top:5px;margin-top:3px;font-weight:600}
+.dash-wf-lbl{color:var(--text2)}
+.dash-wf-lbl .op{color:var(--text3);margin-right:4px}
+.dash-wf-val{font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.dash-wf-val.neg{color:var(--red)}
+.dash-wf-exnote{font-size:.68rem;color:var(--text3);padding-left:8px;margin-top:2px}
+.dash-roic-row{display:flex;align-items:center;gap:10px;font-size:.82rem}
+.dash-roic-num{font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:700}
+.dash-roic-sub{font-size:.72rem;color:var(--text2)}
+.dash-rd-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.dash-sens-row{display:flex;align-items:center;gap:8px;margin-top:4px;padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:.75rem}
+.dash-sens-label{color:var(--text2);white-space:nowrap;min-width:120px}
+.dash-sens-bar{flex:1;height:5px;background:var(--border);border-radius:3px;position:relative;overflow:hidden}
+.dash-sens-fill{height:100%;border-radius:3px}
+.dash-sens-val{font-family:'JetBrains Mono',monospace;min-width:50px;text-align:right;font-weight:600}
+.dash-sens-val.growth{color:var(--green)}
+.dash-signals{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.dash-signal{font-size:.7rem;padding:3px 8px;border-radius:4px;background:var(--card2);color:var(--text2);border:1px solid var(--border)}
+.dash-signal.good{background:rgba(46,204,113,.08);color:var(--green);border-color:rgba(46,204,113,.25)}
+.dash-signal.warn{background:rgba(230,126,34,.08);color:var(--orange);border-color:rgba(230,126,34,.25)}
+.dash-signal.bad{background:rgba(231,76,60,.08);color:var(--red);border-color:rgba(231,76,60,.25)}
 </style>
 </head>
 <body>
@@ -448,6 +484,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
 <div id="results">
   <div id="verdict" class="verdict"></div>
+  <div id="dashboardHeader"></div>
   <div id="metricsGrid" class="metrics"></div>
   <div class="card"><h2>📉 Profit Waterfall</h2><div id="waterfall" class="waterfall"></div></div>
   <div id="sbcDeepDive" style="display:none"></div>
@@ -4110,6 +4147,174 @@ function updateRDScenarios(rdExpense,cfo,realProfit,realSBC,maintCapex,ev,shares
   if(scenarioEl)scenarioEl.innerHTML=shtml;
 }
 
+// ============ Dashboard Header — At-a-Glance Panel ============
+function renderDashboardHeader(opts){
+  var el=document.getElementById('dashboardHeader');
+  el.style.display='block';
+  var o=opts;
+  // Yield colors
+  function yColor(y){return y>=0.07?'var(--green)':y>=0.04?'var(--blue)':y>=0.02?'var(--orange)':'var(--red)';}
+
+  // Amort spread
+  var hasLight=o.hasLightView&&o.realProfitLight!==null;
+  var yieldFull=o.ev>0?o.realProfit/o.ev:0;
+  var yieldLight=hasLight&&o.ev>0?o.realProfitLight/o.ev:0;
+  var amortSpreadBp=hasLight?Math.round((yieldLight-yieldFull)*10000):0;
+  var amortAmt=hasLight?(o.da-(o.deprOnly||0)):0;
+  var amortPctDA=o.da>0?amortAmt/o.da*100:0;
+  var amortMaterial=amortSpreadBp>=30;
+
+  // SBC info
+  var sbcLabel=o.sbcGrant>o.sbcExp?'grant, '+((o.sbcGrant/o.sbcExp).toFixed(1))+'× expense':'expense';
+  if(o.sbcGrant<=0||o.sbcExp<=0)sbcLabel='expense';
+
+  // R&D info
+  var hasRd=o.rdExpense&&o.rdExpense>0;
+  var rdCapexRatio=hasRd&&o.capex>0?o.rdExpense/o.capex:0;
+  // Industry-specific R&D maintenance preset
+  var rdMaintPctDash=70; // default software
+  var rdPresetLabel='Software/platform';
+  if(rdCapexRatio>3){
+    // Likely R&D-dominant - check if semi or pharma
+    // Use ticker heuristic or R&D/CapEx ratio
+    var tick=(o.ticker||'').toUpperCase();
+    var semiTickers=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
+    var pharmaTickers=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
+    if(semiTickers.indexOf(tick)>=0){rdMaintPctDash=50;rdPresetLabel='Semiconductor';}
+    else if(pharmaTickers.indexOf(tick)>=0){rdMaintPctDash=60;rdPresetLabel='Pharma (patent-adj)';}
+  }
+  var rdGrowthPct=100-rdMaintPctDash;
+  var rdGrowth=hasRd?o.rdExpense*rdGrowthPct/100:0;
+  var rdMaint=hasRd?o.rdExpense*rdMaintPctDash/100:0;
+  var adjOwnerEarnings=o.realProfit+rdGrowth;
+
+  // ROIC
+  var roic=o.investedCapital>0?o.realProfit/o.investedCapital:0;
+  var reinvestRate=o.investedCapital>0&&o.growthCapex>0?o.growthCapex/o.investedCapital:0;
+  var impliedGrowth=reinvestRate*roic;
+  var roicColor=roic>=0.12?'var(--green)':roic>=0.06?'var(--blue)':'var(--red)';
+
+  // Build HTML
+  var h='<div class="dash-grid">';
+
+  // LEFT PANEL: Yield + Waterfall
+  h+='<div class="dash-panel">';
+  h+='<div class="dash-panel-label">Real ownership yield (REP ÷ EV)</div>';
+  h+='<div class="dash-yield-display">';
+  h+='<span class="dash-yield-big" style="color:'+yColor(yieldFull)+'">'+pct(yieldFull)+'</span>';
+  if(hasLight&&amortSpreadBp>2){
+    h+='<span class="dash-yield-arrow">→</span>';
+    h+='<span class="dash-yield-range" style="color:'+yColor(yieldLight)+'">'+pct(yieldLight)+'</span>';
+  }else if(hasLight){
+    h+='<span class="dash-yield-range" style="font-size:.72rem;opacity:.5">≈ '+pct(yieldLight)+' ex-amort</span>';
+  }
+  h+='</div>';
+
+  // Math line
+  h+='<div class="dash-yield-math">'+fmtM(o.realProfit)+' ÷ '+fmtM(o.ev);
+  if(hasLight&&amortSpreadBp>2)h+=' → '+fmtM(o.realProfitLight)+' ÷ '+fmtM(o.ev);
+  h+='</div>';
+
+  // Amort note
+  if(hasLight){
+    h+='<div class="dash-amort-note'+(amortMaterial?' material':'')+'">'+
+      (amortSpreadBp>2?'+'+amortSpreadBp+'bp ex-amort · ':'No meaningful spread · ')+
+      'amort '+Math.round(amortPctDA)+'% of D&A ('+fmtM(amortAmt)+' / '+fmtM(o.da)+')'+
+      (amortMaterial?' — big swing':'')+'</div>';
+  }
+
+  // Compact waterfall
+  h+='<div class="dash-wf">';
+  h+='<div class="dash-wf-row"><span class="dash-wf-lbl">CFO</span><span class="dash-wf-val">'+fmtM(o.cfo)+'</span></div>';
+  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Real SBC ('+sbcLabel+')</span><span class="dash-wf-val neg">'+fmtM(o.realSBC)+'</span></div>';
+  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Maint CapEx (D&A×1.05)</span><span class="dash-wf-val neg">'+fmtM(o.maintCapex)+'</span></div>';
+  if(o.restructuring>0)
+    h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Restructuring</span><span class="dash-wf-val neg">'+fmtM(o.restructuring)+'</span></div>';
+  if(o.investmentIncome>0)
+    h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">+</span>Invest. Income</span><span class="dash-wf-val">'+fmtM(o.investmentIncome)+'</span></div>';
+  h+='<div class="dash-wf-row total"><span class="dash-wf-lbl">REP (full cost)</span><span class="dash-wf-val">'+fmtM(o.realProfit)+'</span></div>';
+  if(hasLight&&amortSpreadBp>2)
+    h+='<div class="dash-wf-exnote">Dep only × 1.05 → maint '+fmtM(o.maintCapexLight)+' → REP '+fmtM(o.realProfitLight)+'</div>';
+  h+='</div>'; // end dash-wf
+  h+='</div>'; // end left panel
+
+  // RIGHT PANEL: ROIC + R&D
+  h+='<div class="dash-panel">';
+  h+='<div class="dash-panel-label">Capital efficiency</div>';
+  h+='<div class="dash-roic-row">';
+  h+='<span class="dash-roic-num" style="color:'+roicColor+'">'+pct(roic)+'</span>';
+  h+='<span class="dash-roic-sub">ROIC · '+fmtM(o.realProfit)+' ÷ '+fmtM(o.investedCapital)+' invested</span>';
+  h+='</div>';
+
+  if(o.growthCapex>0){
+    h+='<div class="dash-roic-sub" style="margin-top:6px">Reinvestment: '+pct(reinvestRate,1)+' of REP ('+fmtM(o.growthCapex)+') → '+pct(impliedGrowth,1)+' implied growth</div>';
+    h+='<div class="dash-roic-sub">Growth CapEx: '+fmtM(o.growthCapex)+' ('+Math.round(o.growthCapex/(o.capex||1)*100)+'% of total '+fmtM(o.capex)+')</div>';
+  }else{
+    h+='<div class="dash-roic-sub" style="margin-top:6px">Reinvestment: 0% of REP → 0% implied growth</div>';
+    h+='<div class="dash-roic-sub">No growth CapEx (CapEx '+fmtM(o.capex)+' < maint CapEx '+fmtM(o.maintCapex)+')</div>';
+  }
+
+  // Debt flag
+  if(o.debt>0&&o.realProfit>0){
+    var debtMultiple=o.debt/o.realProfit;
+    if(debtMultiple>5)h+='<div class="dash-roic-sub" style="margin-top:4px;color:var(--red)">Debt: '+fmtM(o.debt)+' = '+debtMultiple.toFixed(1)+'× REP</div>';
+  }
+
+  // R&D section
+  if(hasRd){
+    h+='<div class="dash-rd-section">';
+    h+='<div class="dash-panel-label">R&D — where\'s the growth?</div>';
+    h+='<div class="dash-roic-sub">R&D '+fmtM(o.rdExpense)+' = '+rdCapexRatio.toFixed(0)+'× CapEx';
+    if(rdCapexRatio>3)h+=' — this is where growth lives';
+    else if(rdCapexRatio>1)h+=' — both channels active';
+    else h+=' — CapEx is primary channel';
+    h+='</div>';
+
+    h+='<div class="dash-sens-row"><span class="dash-sens-label">Growth R&D @ '+rdGrowthPct+'%</span>';
+    h+='<div class="dash-sens-bar"><div class="dash-sens-fill" style="width:'+rdGrowthPct+'%;background:var(--green)"></div></div>';
+    h+='<span class="dash-sens-val growth">'+fmtM(rdGrowth)+'</span></div>';
+
+    h+='<div class="dash-sens-row"><span class="dash-sens-label">Maint R&D @ '+rdMaintPctDash+'%</span>';
+    h+='<div class="dash-sens-bar"><div class="dash-sens-fill" style="width:'+rdMaintPctDash+'%;background:var(--blue)"></div></div>';
+    h+='<span class="dash-sens-val">'+fmtM(rdMaint)+'</span></div>';
+
+    h+='<div class="dash-roic-sub" style="margin-top:6px">Adj. owner earnings: '+fmtM(o.realProfit)+' + <span style="color:var(--green)">'+fmtM(rdGrowth)+'</span> growth R&D = <span style="color:var(--green)">'+fmtM(adjOwnerEarnings)+'</span></div>';
+    h+='<div style="font-size:.62rem;color:var(--text3);margin-top:2px">'+rdPresetLabel+' preset: '+rdMaintPctDash+'% maintenance. Adjust in Profit Adjustment Flow below.</div>';
+    h+='</div>'; // end rd section
+  }
+
+  h+='</div>'; // end right panel
+  h+='</div>'; // end grid
+
+  // Signal pills
+  h+='<div class="dash-signals">';
+  // SBC
+  var sbcPctCFO=o.cfo>0?o.realSBC/o.cfo:0;
+  if(sbcPctCFO>0.3)h+='<span class="dash-signal bad">SBC '+pct(sbcPctCFO,1)+' of CFO</span>';
+  else if(sbcPctCFO>0.15)h+='<span class="dash-signal warn">SBC '+pct(sbcPctCFO,1)+' of CFO</span>';
+  else h+='<span class="dash-signal good">SBC '+pct(sbcPctCFO,1)+' of CFO</span>';
+  // SBC gap
+  if(o.sbcGrant>0&&o.sbcExp>0){
+    var gapX=o.sbcGrant/o.sbcExp;
+    if(gapX>1.5)h+='<span class="dash-signal bad">SBC grant/expense gap '+gapX.toFixed(1)+'×</span>';
+    else if(gapX>1.2)h+='<span class="dash-signal warn">SBC grant/expense gap '+gapX.toFixed(1)+'×</span>';
+  }
+  // ROIC
+  if(roic>=0.12)h+='<span class="dash-signal good">ROIC '+pct(roic)+' exceptional</span>';
+  else if(roic>=0.06)h+='<span class="dash-signal">ROIC '+pct(roic)+'</span>';
+  else if(o.investedCapital>0)h+='<span class="dash-signal bad">ROIC '+pct(roic)+' below cost of capital</span>';
+  // R&D dominance
+  if(hasRd&&rdCapexRatio>3)h+='<span class="dash-signal">R&D dominant ('+rdCapexRatio.toFixed(0)+'× CapEx)</span>';
+  // Amort
+  if(hasLight){
+    if(amortMaterial)h+='<span class="dash-signal warn">Amort '+Math.round(amortPctDA)+'% of D&A — ex-amort view matters</span>';
+    else h+='<span class="dash-signal">Amort negligible ('+Math.round(amortPctDA)+'% of D&A)</span>';
+  }
+  h+='</div>';
+
+  el.innerHTML=h;
+}
+
 function calculate(){
   var ticker=document.getElementById('ticker').value||'Company';
   var price=v('price');
@@ -4274,6 +4479,22 @@ function calculate(){
     var width=Math.max(Math.abs(w.value)/maxVal*100,8);
     return '<div class="wf-bar"><span class="wf-label">'+w.label+'</span><div class="wf-track"><div class="wf-fill '+w.type+'" style="width:'+width+'%">'+fmtM(Math.abs(w.value))+'</div></div></div>';
   }).join('');
+
+  // ===== Dashboard Header — At-a-Glance =====
+  var dashRdExpense=null;
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
+    dashRdExpense=yearStore[currentYearKey].extra.rd_expense||null;
+  }
+  renderDashboardHeader({
+    ticker:ticker,realProfit:realProfit,realProfitLight:realProfitLight,
+    ev:ev,cfo:cfo,realSBC:realSBC,sbcExp:sbcExp,sbcGrant:sbcGrant,
+    maintCapex:maintCapex,maintCapexLight:maintCapexLight,
+    hasLightView:hasLightView,da:da,deprOnly:deprOnly,
+    capex:capex,growthCapex:growthCapex,
+    restructuring:restructuring,investmentIncome:investmentIncome,
+    investedCapital:investedCapital,debt:debt,
+    rdExpense:dashRdExpense,equity:equity
+  });
 
   // ===== Deep-Dive Sections =====
   var ddRevenue=null;
