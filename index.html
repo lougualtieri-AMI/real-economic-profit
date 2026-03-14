@@ -161,6 +161,34 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .decomp-stat .ds-val.total-color{color:var(--accent2)}
 .decomp-stat .ds-val.neg-color{color:var(--orange)}
 
+/* Profit-Capital Base Analysis */
+.pcba-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.pcba-metric{background:var(--bg);border-radius:8px;padding:12px 14px;text-align:center;border:1px solid var(--border)}
+.pcba-metric .pm-val{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:700}
+.pcba-metric .pm-lbl{font-size:.72rem;color:var(--text3);margin-top:2px}
+.pcba-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
+.pcba-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.3px}
+.pcba-table td{padding:10px 10px;border-bottom:1px solid rgba(51,51,51,.3);vertical-align:top}
+.pcba-table tr{transition:background .2s}
+.pcba-table tr.pcba-muted{opacity:.45}
+.pcba-table tr.pcba-muted:hover{opacity:.7}
+.pcba-table tr.pcba-active{border-left:4px solid;border-radius:4px}
+.pcba-table tr.pcba-active td{font-weight:600}
+.pcba-table tr.pcba-active.pcba-green{border-left-color:var(--green);background:rgba(46,204,113,.06)}
+.pcba-table tr.pcba-active.pcba-blue{border-left-color:var(--blue);background:rgba(52,152,219,.06)}
+.pcba-table tr.pcba-active.pcba-amber{border-left-color:var(--orange);background:rgba(230,126,34,.06)}
+.pcba-table tr.pcba-active.pcba-red{border-left-color:var(--red);background:rgba(231,76,60,.06)}
+.pcba-context{background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.15);border-radius:8px;padding:12px 14px;margin:12px 0;font-size:.82rem;color:var(--text2);line-height:1.65}
+.pcba-context strong{color:var(--blue)}
+.pcba-transition{margin:14px 0}
+.pcba-transition-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.82rem}
+.pcba-transition-label{min-width:130px;text-align:right;color:var(--text3);font-size:.78rem;flex-shrink:0}
+.pcba-transition-pill{padding:4px 10px;border-radius:12px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.pcba-transition-pill.green{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.3)}
+.pcba-transition-pill.blue{background:rgba(52,152,219,.12);color:var(--blue);border:1px solid rgba(52,152,219,.3)}
+.pcba-transition-pill.amber{background:rgba(230,126,34,.12);color:var(--orange);border:1px solid rgba(230,126,34,.3)}
+.pcba-transition-pill.red{background:rgba(231,76,60,.12);color:var(--red);border:1px solid rgba(231,76,60,.3)}
+
 /* Scorecard */
 .scorecard-table{width:100%;border-collapse:collapse;font-size:.82rem}
 .scorecard-table th{padding:10px 10px;border-bottom:2px solid var(--border);color:var(--text2);font-weight:600;font-size:.72rem;text-transform:uppercase;text-align:center;white-space:nowrap;position:sticky;top:0;background:var(--card)}
@@ -347,7 +375,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .dash-wf-row{display:flex;align-items:baseline;justify-content:space-between;padding:3px 0;font-size:.88rem}
 .dash-wf-row.total{border-top:1px solid var(--border);padding-top:6px;margin-top:4px;font-weight:600}
 .dash-wf-lbl{color:var(--text2)}
-.dash-wf-lbl .op{color:var(--text3);margin-right:4px}
+.dash-wf-lbl .op{color:var(--text2);margin-right:5px;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;display:inline-block;min-width:14px;text-align:center}
 .dash-wf-val{font-family:'JetBrains Mono',monospace;font-size:.85rem}
 .dash-wf-val.neg{color:var(--red)}
 .dash-wf-exnote{font-size:.78rem;color:var(--text2);padding-left:8px;margin-top:3px}
@@ -377,8 +405,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-03-12';
-  var buildId='v3.5.1';
+  var buildDate='2026-03-14';
+  var buildId='v3.6.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -769,13 +797,12 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Interest Paid</strong> — Cash interest from supplemental disclosures (bottom of cash flow statement).</p>
       <p><strong style="color:var(--accent2)">Income Tax Paid</strong> — Cash taxes from supplemental disclosures. Often very different from tax provision.</p>
 
-      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Growth Decomposition (Multi-Year)</h4>
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Profit-Capital Base Analysis (Multi-Year)</h4>
 
-      <p><strong style="color:var(--accent2)">Organic Growth</strong> — Profit growth from existing base getting more productive (pricing, margins, customers).</p>
-      <p><strong style="color:var(--accent2)">Reinvestment Growth</strong> — Profit from growth CapEx earning returns. Estimated as prior year Growth CapEx × ROIC.</p>
-      <p><strong style="color:var(--accent2)">Profit CAGR</strong> — Compound Annual Growth Rate of Real Profit.</p>
-      <p><strong style="color:var(--accent2)">Capital CAGR</strong> — Compound Annual Growth Rate of Invested Capital.</p>
-      <p><strong style="color:var(--accent2)">Profit / Capital Growth</strong> — Profit CAGR ÷ Capital CAGR. Above 1.0x = increasingly efficient. Below 1.0x = diminishing returns.</p>
+      <p><strong style="color:var(--accent2)">Profit Change / Profit CAGR</strong> — Single-period change or Compound Annual Growth Rate of Real Profit (CAGR shown when 3+ periods available).</p>
+      <p><strong style="color:var(--accent2)">Capital Change / Capital CAGR</strong> — Single-period change or Compound Annual Growth Rate of Invested Capital.</p>
+      <p><strong style="color:var(--accent2)">Growth Intensity</strong> — Total CapEx / Maintenance CapEx. Measures how much spending exceeds what's needed to maintain the existing base. 1.5x+ = high growth investment.</p>
+      <p><strong style="color:var(--accent2)">Five Patterns</strong> — Compounding (profit growing ≥ capital, green), Active Investment (profit growing but lagging capital, high intensity, blue), Investment Overhang (profit declining, high intensity, amber), Productivity Gap (profit growing but lagging capital, low intensity, amber), Deteriorating Base (profit declining, low intensity, red).</p>
 
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Yield-on-Cost Trajectory</h4>
 
@@ -2168,7 +2195,9 @@ function restoreForm(d){
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
-  if(d.price)document.getElementById('price').value=d.price;
+  // Price persists independently — only set from year data if the price field is currently empty
+  var priceEl=document.getElementById('price');
+  if(d.price&&(!priceEl.value||priceEl.value===''))priceEl.value=d.price;
   calcAmort();
 }
 
@@ -2494,177 +2523,146 @@ function renderTrend(){
     html+='</div>';
   }
 
-  // ============ Growth Decomposition ============
+  // ============ Profit-Capital Base Analysis ============
   if(years.length>=2){
-    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">🔬 Growth Decomposition</h3>';
-    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">Where is profit growth coming from? Reinvestment engine (growth CapEx earning returns) vs. organic engine (existing base getting more productive).</p>';
+    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">📐 Profit-Capital Base Analysis</h3>';
+    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">How is profit changing relative to the capital base? Where does this company fit?</p>';
 
-    // For each year-over-year transition
-    var decompData=[];
-    for(var di=1;di<years.length;di++){
-      var prev=years[di-1],curr=years[di];
-      var profitChange=curr.realProfit-prev.realProfit;
-      // Estimate reinvestment contribution: prior year growth capex * prior year ROIC
-      // This assumes 1 year lag for growth capex to start earning
-      var reinvestContrib=prev.growthCapex*prev.realROIC;
-      var organicContrib=profitChange-reinvestContrib;
-      decompData.push({
-        from:prev.label,to:curr.label,
-        profitChange:profitChange,
-        reinvest:reinvestContrib,
-        organic:organicContrib,
-        prevProfit:prev.realProfit,
-        currProfit:curr.realProfit,
-        totalGrowthPct:prev.realProfit!==0?profitChange/Math.abs(prev.realProfit):0,
-        capitalGrowthPct:(prev.investedCapital!==0)?(curr.investedCapital-prev.investedCapital)/Math.abs(prev.investedCapital):0
+    // Compute transitions for each period pair
+    var pcbaTransitions=[];
+    for(var pi=1;pi<years.length;pi++){
+      var pPrev=years[pi-1],pCurr=years[pi];
+      var profitChg=Math.abs(pPrev.realProfit)>0?(pCurr.realProfit-pPrev.realProfit)/Math.abs(pPrev.realProfit):0;
+      var capitalChg=Math.abs(pPrev.investedCapital)>0?(pCurr.investedCapital-pPrev.investedCapital)/Math.abs(pPrev.investedCapital):0;
+      var pCapex=pCurr.capex||0;
+      var pMaintCapex=pCurr.maintCapex||0;
+      var pGrowthCapex=Math.max(pCapex-pMaintCapex,0);
+      var growthIntensity=pMaintCapex>0?pCapex/pMaintCapex:1;
+      var growthCapexPct=pCapex>0?pGrowthCapex/pCapex:0;
+
+      // Pattern assignment
+      var pattern,patternColor;
+      if(profitChg>=capitalChg){
+        pattern='Compounding';patternColor='green';
+      }else if(profitChg>=0&&profitChg<capitalChg){
+        if(growthIntensity>=1.5){pattern='Active Investment';patternColor='blue';}
+        else{pattern='Productivity Gap';patternColor='amber';}
+      }else{
+        // profitChg < 0
+        if(growthIntensity>=1.5){pattern='Investment Overhang';patternColor='amber';}
+        else{pattern='Deteriorating Base';patternColor='red';}
+      }
+
+      pcbaTransitions.push({
+        from:pPrev.label,to:pCurr.label,
+        profitChg:profitChg,capitalChg:capitalChg,
+        growthIntensity:growthIntensity,growthCapexPct:growthCapexPct,
+        capex:pCapex,maintCapex:pMaintCapex,growthCapex:pGrowthCapex,
+        pattern:pattern,patternColor:patternColor,
+        profitDelta:pCurr.realProfit-pPrev.realProfit
       });
     }
 
-    // Summary metrics across all periods
-    var totalProfitGrowth=years[years.length-1].realProfit-years[0].realProfit;
-    var totalReinvest=decompData.reduce(function(s,d){return s+d.reinvest},0);
-    var totalOrganic=decompData.reduce(function(s,d){return s+d.organic},0);
-    var profitCAGR=years[0].realProfit>0?Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1:0;
-    var capitalCAGR=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
+    // Use latest transition for primary display
+    var latest_t=pcbaTransitions[pcbaTransitions.length-1];
 
-    // Capital efficiency ratio
-    var efficiencyRatio=(capitalCAGR>0&&profitCAGR>0)?(profitCAGR/capitalCAGR):0;
+    // Show CAGR if 3+ periods, otherwise simple change
+    var useCagr=years.length>=3;
+    var profitRateLabel,capitalRateLabel,profitRate,capitalRate;
+    if(useCagr&&years[0].realProfit>0){
+      profitRate=Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1;
+      capitalRate=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
+      profitRateLabel='Profit CAGR';
+      capitalRateLabel='Capital CAGR';
+    }else{
+      profitRate=latest_t.profitChg;
+      capitalRate=latest_t.capitalChg;
+      profitRateLabel='Profit Change';
+      capitalRateLabel='Capital Change';
+    }
 
-    // Summary boxes
-    html+='<div class="decomp-summary">';
-    html+='<div class="decomp-stat"><div class="ds-val total-color">'+pct(profitCAGR,1)+'</div><div class="ds-lbl">Profit CAGR</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val" style="color:var(--text2)">'+pct(capitalCAGR,1)+'</div><div class="ds-lbl">Capital CAGR</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val '+(efficiencyRatio>=1?'organic-color':'neg-color')+'">'+efficiencyRatio.toFixed(2)+'x</div><div class="ds-lbl">Profit / Capital Growth</div></div>';
+    // Top row: two metric boxes
+    var profitColor=profitRate>=0?'var(--green)':'var(--red)';
+    var capitalColor='var(--text2)';
+    html+='<div class="pcba-metrics">';
+    html+='<div class="pcba-metric"><div class="pm-val" style="color:'+profitColor+'">'+pct(profitRate,1)+'</div><div class="pm-lbl">'+profitRateLabel+'</div></div>';
+    html+='<div class="pcba-metric"><div class="pm-val" style="color:'+capitalColor+'">'+pct(capitalRate,1)+'</div><div class="pm-lbl">'+capitalRateLabel+'</div></div>';
     html+='</div>';
 
-    // Stacked bars for each period
-    decompData.forEach(function(d){
-      var absTotal=Math.abs(d.reinvest)+Math.abs(d.organic);
-      if(absTotal===0)return;
-      var reinvestPct=Math.abs(d.reinvest)/absTotal*100;
-      var organicPct=Math.abs(d.organic)/absTotal*100;
+    // The five-pattern table
+    var patterns=[
+      {name:'Compounding',profit:'\u2191 \u2265 Capital',intensity:'Any',meaning:'Capital deployed productively — or prior investments paying off',color:'green'},
+      {name:'Active Investment',profit:'\u2191 < Capital',intensity:'High (\u22651.5x)',meaning:'Investment cycle — spending running ahead of returns',color:'blue'},
+      {name:'Investment Overhang',profit:'\u2193',intensity:'High (\u22651.5x)',meaning:'Heavy investment pulling cash out. Watch for CFO recovery.',color:'amber'},
+      {name:'Productivity Gap',profit:'\u2191 < Capital',intensity:'Low (<1.5x)',meaning:'Capital expanding without clear growth thesis. Needs investigation.',color:'amber'},
+      {name:'Deteriorating Base',profit:'\u2193',intensity:'Low (<1.5x)',meaning:'Base getting less productive without growth investment to explain it. Most concerning.',color:'red'}
+    ];
 
-      html+='<div class="decomp-row">';
-      html+='<div class="decomp-label">'+d.from+' → '+d.to+'</div>';
-      html+='<div class="decomp-bar-track">';
-      if(d.reinvest!==0){
-        html+='<div class="decomp-seg reinvest" style="width:'+reinvestPct+'%" title="Reinvestment: '+fmtM(d.reinvest)+'">'+fmtM(d.reinvest)+'</div>';
-      }
-      if(d.organic!==0){
-        var orgClass=d.organic>=0?'organic':'negative-organic';
-        html+='<div class="decomp-seg '+orgClass+'" style="width:'+organicPct+'%" title="Organic: '+fmtM(d.organic)+'">'+(d.organic>=0?'+':'')+fmtM(d.organic)+'</div>';
-      }
-      html+='</div>';
-      html+='</div>';
-
-      // Period detail line
-      html+='<div style="font-size:.72rem;color:var(--text3);margin:-4px 0 12px 120px">Δ Profit: '+fmtM(d.profitChange)+' ('+pct(d.totalGrowthPct,1)+') · Capital grew '+pct(d.capitalGrowthPct,1)+'</div>';
-    });
-
-    // Legend
-    html+='<div class="chart-legend" style="margin:12px 0"><span><span class="dot" style="background:#9b59b6"></span> Reinvestment engine (Growth CapEx × ROIC)</span><span><span class="dot" style="background:#2ecc71"></span> Organic growth (base productivity)</span></div>';
-
-    // Interpretive narrative
-    var avgOrganicPct=totalProfitGrowth!==0?totalOrganic/Math.abs(totalProfitGrowth):0;
-    var narrative2='';
-    if(avgOrganicPct>0.6){
-      narrative2='<strong>Organic-Led Growth:</strong> ~'+Math.round(avgOrganicPct*100)+'% of profit growth comes from the existing base getting more productive — pricing power, expanding margins, or growing users. This is high-quality growth that requires less capital to sustain.';
-    }else if(avgOrganicPct>0.3){
-      narrative2='<strong>Balanced Growth:</strong> Profit growth is split between organic improvement (~'+Math.round(avgOrganicPct*100)+'%) and reinvestment returns. Both engines are contributing, which is healthy.';
-    }else if(avgOrganicPct>=0){
-      narrative2='<strong>Reinvestment-Led Growth:</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) comes from growth CapEx earning returns. The existing base is stable but not expanding much on its own. Growth sustainability depends heavily on continued high-ROIC investment opportunities.';
-    }else{
-      // Check if R&D-heavy company before declaring Base Erosion
-      var latestYearData=yearStore[currentYearKey];
-      var decompRD=latestYearData&&latestYearData.extra?latestYearData.extra.rd_expense||null:null;
-      var decompCapex=latestYearData&&latestYearData.formData?latestYearData.formData.capex||0:0;
-      if(decompRD&&decompCapex>0&&decompRD/decompCapex>3){
-        narrative2='<strong>Acquisition Amortization Distortion:</strong> The organic base appears to be shrinking, but this company invests '+Math.round(decompRD/decompCapex)+'x more through R&D than CapEx. The Growth Decomposition only sees CapEx-based reinvestment and misses R&D-driven growth entirely. The Ex-Amortization view and R&D Intensity section provide a more complete picture.';
+    html+='<table class="pcba-table"><thead><tr><th>Pattern</th><th>Profit</th><th>Growth Intensity</th><th>Typical Meaning</th></tr></thead><tbody>';
+    patterns.forEach(function(p){
+      var isActive=p.name===latest_t.pattern;
+      var cls=isActive?'pcba-active pcba-'+p.color:'pcba-muted';
+      html+='<tr class="'+cls+'">';
+      html+='<td>'+(isActive?'→ ':'')+p.name+'</td>';
+      if(isActive){
+        html+='<td>'+pct(latest_t.profitChg,1)+'</td>';
+        html+='<td>'+latest_t.growthIntensity.toFixed(1)+'x</td>';
       }else{
-        narrative2='<strong>Base Erosion Alert:</strong> The organic base is actually shrinking — existing operations are becoming less profitable. Growth CapEx is masking the decline. Watch for competitive pressure or margin compression in the core business.';
+        html+='<td>'+p.profit+'</td>';
+        html+='<td>'+p.intensity+'</td>';
       }
-    }
-    if(efficiencyRatio>=1.5){
-      narrative2+=' The profit-to-capital growth ratio of '+efficiencyRatio.toFixed(1)+'x is excellent — profit is growing significantly faster than capital deployed.';
-    }else if(efficiencyRatio<0.8&&efficiencyRatio>0){
-      narrative2+=' Profit is growing slower than capital ('+efficiencyRatio.toFixed(1)+'x) — incremental returns may be dilutive.';
-    }
-    html+='<div class="flag '+(avgOrganicPct>0.3?'ok':avgOrganicPct>=0?'caution':'warn')+'" style="margin-top:12px">'+narrative2+'</div>';
-    html+='<p class="section-note" style="margin-top:8px">Reinvestment contribution estimated as prior year Growth CapEx × ROIC (assumes ~1 year lag). Organic = total profit change minus reinvestment contribution.</p>';
-
-    // ============ Profit Composition View ============
-    html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">📊 Profit Composition</h3>';
-    html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">How much of each year\'s real profit comes from the original base vs. cumulative returns on growth investments.</p>';
-
-    // Build composition data
-    // Year 0 = 100% organic base. Each subsequent year accumulates reinvestment layer.
-    var baseProfit=years[0].realProfit;
-    var compData=years.map(function(y,i){
-      var reinvestLayer=0;
-      // Sum up all reinvestment contributions from prior years
-      for(var j=1;j<=i;j++){
-        reinvestLayer+=years[j-1].growthCapex*years[j-1].realROIC;
-      }
-      var organicBase=y.realProfit-reinvestLayer;
-      return {
-        label:y.label,
-        realProfit:y.realProfit,
-        reinvestLayer:reinvestLayer,
-        organicBase:organicBase,
-        reinvestPct:y.realProfit>0?reinvestLayer/y.realProfit:0,
-        organicPct:y.realProfit>0?organicBase/y.realProfit:0
-      };
+      html+='<td>'+p.meaning+'</td>';
+      html+='</tr>';
     });
+    html+='</tbody></table>';
 
-    // Summary stats
-    var latestComp=compData[compData.length-1];
-    html+='<div class="decomp-summary">';
-    html+='<div class="decomp-stat"><div class="ds-val organic-color">'+fmtM(latestComp.organicBase)+'</div><div class="ds-lbl">Organic Base ('+pct(latestComp.organicPct,0)+')</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val reinvest-color">'+fmtM(latestComp.reinvestLayer)+'</div><div class="ds-lbl">Reinvestment Layer ('+pct(latestComp.reinvestPct,0)+')</div></div>';
-    html+='<div class="decomp-stat"><div class="ds-val total-color">'+fmtM(latestComp.realProfit)+'</div><div class="ds-lbl">Total Real Profit</div></div>';
+    // Growth investment context line
+    if(latest_t.capex>0){
+      html+='<div class="pcba-context">';
+      html+='Total CapEx ('+fmtM(latest_t.capex)+') is <strong>'+latest_t.growthIntensity.toFixed(1)+'x</strong> Maintenance CapEx ('+fmtM(latest_t.maintCapex)+'). ';
+      html+='Growth CapEx of '+fmtM(latest_t.growthCapex)+' represents '+pct(latest_t.growthCapexPct,0)+' of total capital spending. ';
+      if(latest_t.growthIntensity>=1.5){
+        html+='This level of growth investment typically takes 2-4 quarters to convert to profit.';
+      }
+      html+='</div>';
+    }
+
+    // Period decomposition (simplified)
+    html+='<div style="margin-top:14px">';
+    pcbaTransitions.forEach(function(t){
+      var reinvestContrib=0;
+      // Estimate reinvestment return from prior period
+      var tidx=pcbaTransitions.indexOf(t);
+      if(tidx>=0&&tidx<years.length-1){
+        var prevY=years[tidx];
+        reinvestContrib=prevY.growthCapex*prevY.realROIC;
+      }
+      var baseChg=t.profitDelta-reinvestContrib;
+      html+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:6px">';
+      html+='<strong>'+t.from+' → '+t.to+':</strong> Profit changed <strong style="color:'+(t.profitDelta>=0?'var(--green)':'var(--red)')+'">'+fmtM(t.profitDelta)+'</strong>';
+      if(Math.abs(reinvestContrib)>0.5||Math.abs(baseChg)>0.5){
+        html+='<br><span style="margin-left:12px">Return on new investment: <strong>'+fmtM(reinvestContrib)+'</strong></span>';
+        html+='<br><span style="margin-left:12px">Change in base profitability: <strong style="color:'+(baseChg>=0?'var(--green)':'var(--orange)')+'">'+fmtM(baseChg)+'</strong></span>';
+      }
+      html+='</div>';
+    });
     html+='</div>';
 
-    // Stacked bars for each year
-    var maxProfit=Math.max.apply(null,compData.map(function(c){return Math.abs(c.realProfit)}));
-    if(maxProfit===0)maxProfit=1;
-    compData.forEach(function(c){
-      var barWidth=Math.max(Math.abs(c.realProfit)/maxProfit*100,10);
-      var orgPct=c.realProfit>0?Math.max(c.organicBase/c.realProfit*100,0):100;
-      var reinPct=c.realProfit>0?Math.max(c.reinvestLayer/c.realProfit*100,0):0;
-      // Clamp
-      if(orgPct+reinPct>100){var scale=100/(orgPct+reinPct);orgPct*=scale;reinPct*=scale;}
-      if(orgPct<0){reinPct=100;orgPct=0;}
-
-      html+='<div class="decomp-row">';
-      html+='<div class="decomp-label">'+c.label+'</div>';
-      html+='<div class="decomp-bar-track" style="width:'+barWidth+'%">';
-      if(orgPct>0){
-        html+='<div class="decomp-seg organic" style="width:'+orgPct+'%">'+fmtM(c.organicBase)+'</div>';
-      }
-      if(reinPct>0){
-        html+='<div class="decomp-seg reinvest" style="width:'+reinPct+'%">'+fmtM(c.reinvestLayer)+'</div>';
-      }
+    // Multi-period pattern journey (if 3+ transitions)
+    if(pcbaTransitions.length>=2){
+      html+='<div class="pcba-transition" style="margin-top:16px">';
+      html+='<div style="font-size:.78rem;color:var(--text3);margin-bottom:8px;font-weight:600">Pattern journey:</div>';
+      html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+      pcbaTransitions.forEach(function(t,idx){
+        var pillColor=t.patternColor==='green'?'green':t.patternColor==='blue'?'blue':t.patternColor==='amber'?'amber':'red';
+        html+='<span class="pcba-transition-pill '+pillColor+'">'+t.from+' → '+t.to+': '+t.pattern+'</span>';
+        if(idx<pcbaTransitions.length-1)html+='<span style="color:var(--text3)">→</span>';
+      });
       html+='</div>';
       html+='</div>';
-    });
-
-    html+='<div class="chart-legend" style="margin:12px 0"><span><span class="dot" style="background:#2ecc71"></span> Organic base earnings</span><span><span class="dot" style="background:#9b59b6"></span> Cumulative reinvestment returns</span></div>';
-
-    // Interpretive note
-    var orgTrend=compData.length>=2?(latestComp.organicBase-compData[0].organicBase):'';
-    var compNarr='';
-    if(latestComp.reinvestPct>0.4){
-      compNarr='<strong>Compounding Engine Active:</strong> '+pct(latestComp.reinvestPct,0)+' of current profit comes from cumulative reinvestment returns ('+fmtM(latestComp.reinvestLayer)+'). The growth CapEx flywheel is a significant part of the earnings story.';
-    }else if(latestComp.reinvestPct>0.15){
-      compNarr='<strong>Growing Reinvestment Layer:</strong> '+pct(latestComp.reinvestPct,0)+' of profit now comes from reinvestment returns. The compounding engine is building but the organic base still dominates.';
-    }else{
-      compNarr='<strong>Organic-Dominant Earnings:</strong> '+pct(latestComp.organicPct,0)+' of profit comes from the organic base. The reinvestment layer is small — either the company invests modestly or returns take more time to materialize.';
     }
-    if(typeof orgTrend==='number'&&orgTrend<-compData[0].organicBase*0.1){
-      compNarr+=' <span style="color:var(--orange)">Note: organic base has eroded by '+fmtM(Math.abs(orgTrend))+' — core profitability may be declining.</span>';
-    }
-    html+='<div class="flag info" style="margin-top:8px">'+compNarr+'</div>';
-    html+='<p class="section-note">Organic base = current profit minus cumulative reinvestment returns. Reinvestment layer = sum of each prior year\'s Growth CapEx × ROIC.</p>';
+
+    html+='<p class="section-note" style="margin-top:10px">Growth Intensity = Total CapEx / Maintenance CapEx (D&A x 1.05). Threshold: 1.5x separates high from low growth investment. The highlighted row is a suggestion based on the math — not a verdict.</p>';
   }
 
   // ROIC trajectory narrative
@@ -3037,7 +3035,7 @@ function exportBrief(){
 
   // LEFT: Yield + Waterfall
   h+='<div style="background:#f8f9fa;border:1px solid #ddd;border-radius:8px;padding:16px">';
-  h+='<div style="font-size:.78rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Real ownership yield (REP ÷ EV)</div>';
+  h+='<div style="font-size:.78rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Real ownership yield (REP / EV)</div>';
   h+='<div style="display:flex;align-items:baseline;gap:8px">';
   h+='<span style="font-size:1.8rem;font-weight:700;color:'+ratingColor+'">'+pct(briefYieldFull)+'</span>';
   if(briefHasLight&&briefAmortSpreadBp>2){
@@ -3048,8 +3046,8 @@ function exportBrief(){
     h+='<span style="font-size:.88rem;color:#aaa">≈ '+pct(briefYieldLight)+' ex-amort</span>';
   }
   h+='</div>';
-  h+='<div style="font-size:.82rem;color:#888;font-family:monospace;margin-top:3px">'+fmtM(latest.realProfit)+' ÷ '+fmtM(ev);
-  if(briefHasLight&&briefAmortSpreadBp>2)h+=' → '+fmtM(latest.realProfitLight)+' ÷ '+fmtM(ev);
+  h+='<div style="font-size:.82rem;color:#888;font-family:monospace;margin-top:3px">'+fmtM(latest.realProfit)+' / '+fmtM(ev);
+  if(briefHasLight&&briefAmortSpreadBp>2)h+=' → '+fmtM(latest.realProfitLight)+' / '+fmtM(ev);
   h+='</div>';
   if(briefHasLight){
     h+='<div style="font-size:.8rem;color:'+(briefAmortMaterial?'#e67e22':'#888')+';margin-top:3px">';
@@ -3061,12 +3059,12 @@ function exportBrief(){
   // Compact waterfall
   h+='<div style="margin-top:10px;font-size:.88rem">';
   h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666">CFO</span><span style="font-family:monospace">'+fmtM(latest.cfo)+'</span></div>';
-  h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px">−</span>Real SBC ('+briefSBCLabel+')</span><span style="font-family:monospace;color:#c0392b">'+fmtM(latest.realSBC)+'</span></div>';
-  h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px">−</span>Maint CapEx (D&A×1.05)</span><span style="font-family:monospace;color:#c0392b">'+fmtM(latest.maintCapex)+'</span></div>';
-  if(restruct>0)h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px">−</span>Restructuring</span><span style="font-family:monospace;color:#c0392b">'+fmtM(restruct)+'</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px;font-weight:700">-</span>Real SBC ('+briefSBCLabel+')</span><span style="font-family:monospace;color:#c0392b">'+fmtM(latest.realSBC)+'</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px;font-weight:700">-</span>Maint CapEx (D&A x 1.05)</span><span style="font-family:monospace;color:#c0392b">'+fmtM(latest.maintCapex)+'</span></div>';
+  if(restruct>0)h+='<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#666"><span style="color:#aaa;margin-right:3px;font-weight:700">-</span>Restructuring</span><span style="font-family:monospace;color:#c0392b">'+fmtM(restruct)+'</span></div>';
   h+='<div style="display:flex;justify-content:space-between;padding:5px 0 2px;border-top:1px solid #ccc;margin-top:3px;font-weight:600"><span>REP (full cost)</span><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span></div>';
   if(briefHasLight&&briefAmortSpreadBp>2)
-    h+='<div style="font-size:.78rem;color:#888;padding-left:8px;margin-top:2px">Dep only × 1.05 → maint '+fmtM(latest.maintCapexLight)+' → REP '+fmtM(latest.realProfitLight)+'</div>';
+    h+='<div style="font-size:.78rem;color:#888;padding-left:8px;margin-top:2px">Dep only x 1.05 → maint '+fmtM(latest.maintCapexLight)+' → REP '+fmtM(latest.realProfitLight)+'</div>';
   h+='</div>';
   h+='</div>'; // end left
 
@@ -3075,7 +3073,7 @@ function exportBrief(){
   h+='<div style="font-size:.78rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Capital efficiency</div>';
   h+='<div style="display:flex;align-items:center;gap:10px">';
   h+='<span style="font-size:1.4rem;font-weight:700;font-family:monospace;color:'+briefRoicColor+'">'+pct(briefRoic)+'</span>';
-  h+='<span style="font-size:.82rem;color:#888">ROIC · '+fmtM(latest.realProfit)+' ÷ '+fmtM(latest.investedCapital)+' invested</span>';
+  h+='<span style="font-size:.82rem;color:#888">ROIC · '+fmtM(latest.realProfit)+' / '+fmtM(latest.investedCapital)+' invested</span>';
   h+='</div>';
   if(briefGrowthCapex>0){
     h+='<div style="font-size:.82rem;color:#888;margin-top:6px">Reinvestment: '+pct(briefReinvestRate,1)+' of REP ('+fmtM(briefGrowthCapex)+') → '+pct(briefImpliedGrowth,1)+' implied growth</div>';
@@ -3234,13 +3232,13 @@ function exportBrief(){
     h+='</table>';
 
     if(bRdCapex!==null&&bRdCapex>3){
-      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The Ex-Amortization view likely better reflects actual economics.</div>';
+      h+='<div class="flag info"><strong>📊 R&amp;D-Dominant Investment Model:</strong> R&amp;D is '+bRdCapex.toFixed(0)+'x physical CapEx. The primary investment channel is the income statement, not the balance sheet. Profit-Capital Base Analysis understates actual reinvestment. The Ex-Amortization view likely better reflects actual economics.</div>';
     }else if(bRdCapex!==null&&bRdCapex>1){
       h+='<div class="flag info"><strong>📊 Significant R&amp;D Investment:</strong> R&amp;D spending is '+bRdCapex.toFixed(1)+'x physical CapEx. Consider R&amp;D alongside CapEx when evaluating total reinvestment.</div>';
     }
 
     // R&D Decomposition in Export
-    h+='<div class="narrative"><strong>R&amp;D Maintenance vs. Growth Decomposition</strong><br>';
+    h+='<div class="narrative"><strong>R&amp;D Maintenance vs. Profit-Capital Base Analysis</strong><br>';
     h+='R&amp;D is expensed under GAAP, so it reduces CFO directly. But not all R&amp;D is growth investment — a significant portion is functionally maintenance spending (bug fixes, security patches, patent replacement, regulatory compliance). Using the app\'s current estimate of '+rdMaintPct+'% maintenance R&amp;D:<br><br>';
     var expMaintRD=latest.rd_expense*rdMaintPct/100;
     var expGrowthRD=latest.rd_expense-expMaintRD;
@@ -3462,65 +3460,68 @@ function exportBrief(){
     });
     h+='</table>';
 
-    // Growth Decomposition
-    h+='<h2>Growth Decomposition</h2>';
+    // Profit-Capital Base Analysis
+    h+='<h2>Profit-Capital Base Analysis</h2>';
     var profitCAGR=years[0].realProfit>0?Math.pow(years[years.length-1].realProfit/years[0].realProfit,1/(years.length-1))-1:0;
     var capitalCAGR=years[0].investedCapital>0?Math.pow(years[years.length-1].investedCapital/years[0].investedCapital,1/(years.length-1))-1:0;
-    var effRatio=(capitalCAGR>0&&profitCAGR>0)?(profitCAGR/capitalCAGR):0;
+    var useBriefCagr=years.length>=3;
 
     h+='<table style="max-width:400px"><tr><th style="text-align:left">Metric</th><th>Value</th></tr>';
-    h+='<tr><td style="text-align:left">Profit CAGR</td><td>'+pct(profitCAGR,1)+'</td></tr>';
-    h+='<tr><td style="text-align:left">Capital CAGR</td><td>'+pct(capitalCAGR,1)+'</td></tr>';
-    h+='<tr><td style="text-align:left">Profit / Capital Growth</td><td '+(effRatio>=1?'class="pos"':'class="neg"')+'>'+effRatio.toFixed(2)+'x</td></tr>';
+    h+='<tr><td style="text-align:left">'+(useBriefCagr?'Profit CAGR':'Profit Change')+'</td><td>'+pct(profitCAGR,1)+'</td></tr>';
+    h+='<tr><td style="text-align:left">'+(useBriefCagr?'Capital CAGR':'Capital Change')+'</td><td>'+pct(capitalCAGR,1)+'</td></tr>';
     h+='</table>';
 
-    // Period-by-period decomposition — FIX: handle negative organic cleanly
-    var totalPG=years[years.length-1].realProfit-years[0].realProfit;
-    var totalReinvest=0,totalOrganic=0;
-    var decompPeriods=[];
+    // Compute pattern for each transition
+    var briefPcbaData=[];
     for(var di=1;di<years.length;di++){
       var prev=years[di-1],curr=years[di];
-      var pc=curr.realProfit-prev.realProfit;
-      var rc=prev.growthCapex*prev.realROIC;
-      var oc=pc-rc;
-      totalReinvest+=rc;totalOrganic+=oc;
-      decompPeriods.push({from:prev.label,to:curr.label,profitChange:pc,reinvest:rc,organic:oc});
+      var bProfitChg=Math.abs(prev.realProfit)>0?(curr.realProfit-prev.realProfit)/Math.abs(prev.realProfit):0;
+      var bCapitalChg=Math.abs(prev.investedCapital)>0?(curr.investedCapital-prev.investedCapital)/Math.abs(prev.investedCapital):0;
+      var bCapex=curr.capex||0,bMaint=curr.maintCapex||0;
+      var bGI=bMaint>0?bCapex/bMaint:1;
+      var bGrowthCapex=Math.max(bCapex-bMaint,0);
+      var bPattern,bColor;
+      if(bProfitChg>=bCapitalChg){bPattern='Compounding';bColor='green';}
+      else if(bProfitChg>=0){bPattern=bGI>=1.5?'Active Investment':'Productivity Gap';bColor=bGI>=1.5?'blue':'amber';}
+      else{bPattern=bGI>=1.5?'Investment Overhang':'Deteriorating Base';bColor=bGI>=1.5?'amber':'red';}
+      var bReinvest=prev.growthCapex*prev.realROIC;
+      var bBaseChg=(curr.realProfit-prev.realProfit)-bReinvest;
+      briefPcbaData.push({from:prev.label,to:curr.label,pattern:bPattern,color:bColor,
+        profitChg:bProfitChg,growthIntensity:bGI,profitDelta:curr.realProfit-prev.realProfit,
+        reinvest:bReinvest,baseChg:bBaseChg,capex:bCapex,maintCapex:bMaint,growthCapex:bGrowthCapex});
     }
-    var avgOrganicPct=totalPG!==0?totalOrganic/Math.abs(totalPG):0;
 
-    h+='<table><tr><th style="text-align:left">Period</th><th>Δ Profit</th><th>Reinvestment</th><th>Organic</th><th>Assessment</th></tr>';
-    decompPeriods.forEach(function(d){
-      // FIX: show readable assessment instead of raw %
-      var assessment='';
-      if(d.profitChange<=0&&d.organic<0)assessment='Organic base contracted';
-      else if(d.organic<0)assessment='Organic drag; reinvestment offset it';
-      else if(d.organic>Math.abs(d.reinvest)*2)assessment='Organic-led growth';
-      else if(d.organic>d.reinvest)assessment='Mostly organic';
-      else assessment='Reinvestment-led';
-      var orgClass=d.organic>=0?'pos':'neg';
-      h+='<tr><td style="text-align:left">'+d.from+' → '+d.to+'</td><td>'+fmtM(d.profitChange)+'</td><td>'+fmtM(d.reinvest)+'</td><td class="'+orgClass+'">'+fmtM(d.organic)+'</td><td style="text-align:left;font-size:.82rem;color:#666">'+assessment+'</td></tr>';
+    // Pattern table
+    var bLatest=briefPcbaData[briefPcbaData.length-1];
+    h+='<table><tr><th style="text-align:left">Pattern</th><th>Profit</th><th>Growth Intensity</th><th style="text-align:left">Typical Meaning</th></tr>';
+    var bPatterns=[
+      {name:'Compounding',desc:'Productive deployment or prior investment payoff'},
+      {name:'Active Investment',desc:'Investment cycle — returns lag spending'},
+      {name:'Investment Overhang',desc:'Heavy investment pulling cash out. Watch for conversion.'},
+      {name:'Productivity Gap',desc:'Capital expanding without clear growth thesis'},
+      {name:'Deteriorating Base',desc:'Base getting less productive. Most concerning.'}
+    ];
+    bPatterns.forEach(function(bp){
+      var isAct=bp.name===bLatest.pattern;
+      var style=isAct?' style="font-weight:700;background:rgba(212,160,37,.08)"':'style="opacity:.5"';
+      h+='<tr '+style+'><td style="text-align:left">'+(isAct?'→ ':'')+bp.name+'</td>';
+      h+='<td>'+(isAct?pct(bLatest.profitChg,1):'—')+'</td>';
+      h+='<td>'+(isAct?bLatest.growthIntensity.toFixed(1)+'x':'—')+'</td>';
+      h+='<td style="text-align:left;font-size:.82rem">'+bp.desc+'</td></tr>';
     });
     h+='</table>';
 
-    // Growth narrative
-    var narrative='';
-    if(avgOrganicPct>0.6){
-      narrative='<strong>Growth Assessment: Organic-Led.</strong> ~'+Math.round(avgOrganicPct*100)+'% of profit growth comes from the existing base getting more productive — pricing power, expanding margins, or growing users. High-quality growth requiring less capital.';
-    }else if(avgOrganicPct>0.3){
-      narrative='<strong>Growth Assessment: Balanced.</strong> Profit growth split between organic improvement (~'+Math.round(avgOrganicPct*100)+'%) and reinvestment returns. Both engines contributing.';
-    }else if(avgOrganicPct>=0){
-      narrative='<strong>Growth Assessment: Reinvestment-Led.</strong> Most profit growth (~'+Math.round((1-avgOrganicPct)*100)+'%) from growth CapEx earning returns. Sustainability depends on continued investment opportunities.';
-    }else{
-      // Check if R&D-heavy before declaring Base Erosion
-      var briefRD=latest.rd_expense||null;
-      var briefCapex=latest.capex||0;
-      if(briefRD&&briefCapex>0&&briefRD/briefCapex>3){
-        narrative='<strong>Growth Assessment: Acquisition Amortization Distortion.</strong> Organic base appears to shrink, but R&D investment ('+Math.round(briefRD/briefCapex)+'x CapEx) is the primary growth channel — invisible to CapEx-based decomposition. See R&D Intensity and Ex-Amortization view.';
-      }else{
-        narrative='<strong>Growth Assessment: Base Erosion.</strong> Organic base is shrinking. Growth CapEx masking decline in core profitability.';
-      }
+    // Context
+    if(bLatest.capex>0){
+      h+='<div class="narrative">Total CapEx ('+fmtM(bLatest.capex)+') is '+bLatest.growthIntensity.toFixed(1)+'x Maintenance CapEx ('+fmtM(bLatest.maintCapex)+'). Growth CapEx of '+fmtM(bLatest.growthCapex)+' represents '+pct(bLatest.growthCapex/(bLatest.capex||1),0)+' of total capital spending.</div>';
     }
-    h+='<div class="narrative">'+narrative+'</div>';
+
+    // Period decomposition
+    h+='<table><tr><th style="text-align:left">Period</th><th>Pattern</th><th>Profit Δ</th><th>New Investment Return</th><th>Base Change</th></tr>';
+    briefPcbaData.forEach(function(d){
+      h+='<tr><td style="text-align:left">'+d.from+' → '+d.to+'</td><td>'+d.pattern+'</td><td>'+fmtM(d.profitDelta)+'</td><td>'+fmtM(d.reinvest)+'</td><td class="'+(d.baseChg>=0?'pos':'neg')+'">'+fmtM(d.baseChg)+'</td></tr>';
+    });
+    h+='</table>';
 
     // ROIC trajectory — FIX: detect V-shape / non-linear patterns
     var fR=years[0].realROIC,lR=years[years.length-1].realROIC;
@@ -3637,8 +3638,8 @@ function exportBrief(){
 
   h+='<h3>R&amp;D Intensity</h3>';
   h+='<p>For technology and R&amp;D-intensive companies, the traditional CapEx-based framework can miss the primary investment channel. Under GAAP, R&amp;D is expensed immediately — it flows through the income statement, not the balance sheet. This means:</p>';
-  h+='<p>• R&amp;D is already deducted from Cash From Operations (it\'s a real cash cost)<br>• But it doesn\'t appear in CapEx, Growth CapEx, or the Growth Decomposition<br>• Companies spending 5–20x more on R&amp;D than CapEx may show zero "growth investment" despite massive reinvestment</p>';
-  h+='<p>When the R&amp;D Intensity section is present, it reveals the full reinvestment picture: CapEx + R&amp;D combined. If R&amp;D is 3x or more than CapEx, the Growth Decomposition\'s "Base Erosion" signal may be misleading — the company is investing heavily in growth, just through a channel the framework can\'t see.</p>';
+  h+='<p>• R&amp;D is already deducted from Cash From Operations (it\'s a real cash cost)<br>• But it doesn\'t appear in CapEx, Growth CapEx, or the Profit-Capital Base Analysis<br>• Companies spending 5–20x more on R&amp;D than CapEx may show zero "growth investment" despite massive reinvestment</p>';
+  h+='<p>When the R&amp;D Intensity section is present, it reveals the full reinvestment picture: CapEx + R&amp;D combined. If R&amp;D is 3x or more than CapEx, the Profit-Capital Base Analysis\'s "Deteriorating Base" signal may be misleading — the company is investing heavily in growth, just through a channel the framework can\'t see.</p>';
 
   h+='<h3>Key Metrics in This Brief</h3>';
   h+='<table><tr><th>Metric</th><th>What It Tells You</th></tr>';
@@ -3649,7 +3650,7 @@ function exportBrief(){
   h+='<tr><td>Invested Capital</td><td>Equity + Debt − Cash − Short-Term Investments. Total capital deployed in the business.</td></tr>';
   h+='<tr><td>Enterprise Value (EV)</td><td>Market Cap + Debt − Cash − STI. Total price to acquire the entire business.</td></tr>';
   h+='<tr><td>Growth CapEx</td><td>Total CapEx minus Maintenance CapEx. Investment in future growth beyond maintaining current capacity.</td></tr>';
-  h+='<tr><td>R&amp;D / CapEx</td><td>Ratio of R&amp;D spending to physical CapEx. Above 3x = R&amp;D is the primary investment channel. Growth Decomposition understates reinvestment for these companies.</td></tr>';
+  h+='<tr><td>R&amp;D / CapEx</td><td>Ratio of R&amp;D spending to physical CapEx. Above 3x = R&amp;D is the primary investment channel. Profit-Capital Base Analysis understates reinvestment for these companies.</td></tr>';
   h+='<tr><td>Reinvestment Rate × ROIC</td><td>Implied organic profit growth. Shows whether growth spending is creating or destroying value.</td></tr>';
   h+='</table>';
 
@@ -3756,7 +3757,7 @@ function renderCapExDeepDive(capex,da,maintCapex,growthCapex,deprOnly,maintMetho
   var amort=(deprOnly>0&&da>0)?da-deprOnly:null;
 
   var html='<div class="deep-dive" id="ddCapEx">';
-  html+='<div class="dd-header" onclick="toggleDD(\'ddCapEx\')"><h3>🏭 CapEx Analysis — Maintenance vs. Growth Decomposition</h3><span class="dd-arrow">▶</span></div>';
+  html+='<div class="dd-header" onclick="toggleDD(\'ddCapEx\')"><h3>🏭 CapEx Analysis — Maintenance vs. Profit-Capital Base Analysis</h3><span class="dd-arrow">▶</span></div>';
   html+='<div class="dd-summary">Total: '+fmtM(capex)+' · Maintenance: '+fmtM(maintCapex)+' ('+pct(maintPct,0)+') · Growth: '+fmtM(growthCapex)+' ('+pct(growthPct,0)+')</div>';
   html+='<div class="dd-body">';
 
@@ -4308,7 +4309,7 @@ function renderDashboardHeader(opts){
 
   // LEFT PANEL: Yield + Waterfall
   h+='<div class="dash-panel">';
-  h+='<div class="dash-panel-label">Real ownership yield (REP ÷ EV)</div>';
+  h+='<div class="dash-panel-label">Real ownership yield (REP / EV)</div>';
   h+='<div class="dash-yield-display">';
   h+='<span class="dash-yield-big" style="color:'+yColor(yieldFull)+'">'+pct(yieldFull)+'</span>';
   if(hasLight&&amortSpreadBp>2){
@@ -4320,8 +4321,8 @@ function renderDashboardHeader(opts){
   h+='</div>';
 
   // Math line
-  h+='<div class="dash-yield-math">'+fmtM(o.realProfit)+' ÷ '+fmtM(o.ev);
-  if(hasLight&&amortSpreadBp>2)h+=' → '+fmtM(o.realProfitLight)+' ÷ '+fmtM(o.ev);
+  h+='<div class="dash-yield-math">'+fmtM(o.realProfit)+' / '+fmtM(o.ev);
+  if(hasLight&&amortSpreadBp>2)h+=' → '+fmtM(o.realProfitLight)+' / '+fmtM(o.ev);
   h+='</div>';
 
   // Amort note
@@ -4335,15 +4336,15 @@ function renderDashboardHeader(opts){
   // Compact waterfall
   h+='<div class="dash-wf">';
   h+='<div class="dash-wf-row"><span class="dash-wf-lbl">CFO</span><span class="dash-wf-val">'+fmtM(o.cfo)+'</span></div>';
-  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Real SBC ('+sbcLabel+')</span><span class="dash-wf-val neg">'+fmtM(o.realSBC)+'</span></div>';
-  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Maint CapEx (D&A×1.05)</span><span class="dash-wf-val neg">'+fmtM(o.maintCapex)+'</span></div>';
+  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">-</span>Real SBC ('+sbcLabel+')</span><span class="dash-wf-val neg">'+fmtM(o.realSBC)+'</span></div>';
+  h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">-</span>Maint CapEx (D&A x 1.05)</span><span class="dash-wf-val neg">'+fmtM(o.maintCapex)+'</span></div>';
   if(o.restructuring>0)
-    h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">−</span>Restructuring</span><span class="dash-wf-val neg">'+fmtM(o.restructuring)+'</span></div>';
+    h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">-</span>Restructuring</span><span class="dash-wf-val neg">'+fmtM(o.restructuring)+'</span></div>';
   if(o.investmentIncome>0)
     h+='<div class="dash-wf-row"><span class="dash-wf-lbl"><span class="op">+</span>Invest. Income</span><span class="dash-wf-val">'+fmtM(o.investmentIncome)+'</span></div>';
   h+='<div class="dash-wf-row total"><span class="dash-wf-lbl">REP (full cost)</span><span class="dash-wf-val">'+fmtM(o.realProfit)+'</span></div>';
   if(hasLight&&amortSpreadBp>2)
-    h+='<div class="dash-wf-exnote">Dep only × 1.05 → maint '+fmtM(o.maintCapexLight)+' → REP '+fmtM(o.realProfitLight)+'</div>';
+    h+='<div class="dash-wf-exnote">Dep only x 1.05 → maint '+fmtM(o.maintCapexLight)+' → REP '+fmtM(o.realProfitLight)+'</div>';
   h+='</div>'; // end dash-wf
   h+='</div>'; // end left panel
 
@@ -4352,7 +4353,7 @@ function renderDashboardHeader(opts){
   h+='<div class="dash-panel-label">Capital efficiency</div>';
   h+='<div class="dash-roic-row">';
   h+='<span class="dash-roic-num" style="color:'+roicColor+'">'+pct(roic)+'</span>';
-  h+='<span class="dash-roic-sub">ROIC · '+fmtM(o.realProfit)+' ÷ '+fmtM(o.investedCapital)+' invested</span>';
+  h+='<span class="dash-roic-sub">ROIC · '+fmtM(o.realProfit)+' / '+fmtM(o.investedCapital)+' invested</span>';
   h+='</div>';
 
   if(o.growthCapex>0){
@@ -4710,7 +4711,7 @@ function calculate(){
     rdHTML+='</div>';
 
     if(rdIsHeavy){
-      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Growth Decomposition understates actual reinvestment. The <strong>Ex-Amortization view</strong> likely better reflects actual economics.</div>';
+      rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 R&D-Dominant Investment Model:</strong> This company invests '+rdCapexRatio.toFixed(0)+'x more through R&D than through CapEx. The primary investment channel is the income statement, not the balance sheet. Profit-Capital Base Analysis understates actual reinvestment. The <strong>Ex-Amortization view</strong> likely better reflects actual economics.</div>';
     }else if(rdCapexRatio!==null&&rdCapexRatio>1){
       rdHTML+='<div class="flag info" style="margin-top:12px"><strong>📊 Significant R&D Investment:</strong> R&D spending is '+rdCapexRatio.toFixed(1)+'x physical CapEx. Consider R&D alongside CapEx when evaluating total reinvestment.</div>';
     }
