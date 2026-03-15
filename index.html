@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.6';
+  var buildId='v3.6.9';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -419,7 +419,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <option value="">— New Company —</option>
   </select>
   <button class="pb-btn save" onclick="saveToPortfolio()">💾 Save</button>
-  <button class="pb-btn" onclick="loadFromPortfolio()">📂 Load</button>
+  <button class="pb-btn" onclick="shareCompany()">📤 Share</button>
   <button class="pb-btn danger" onclick="deleteFromPortfolio()">🗑</button>
   <span class="pb-sep"></span>
   <button class="pb-btn" onclick="comparePortfolio()">📊 Compare</button>
@@ -935,6 +935,26 @@ function deleteFromPortfolio(){
   putPortfolio(p);
   refreshPortfolioSelect();
   clearForNewCompany();
+}
+
+function shareCompany(){
+  var sel=document.getElementById('portfolioSelect');
+  var ticker=sel.value;
+  if(!ticker){alert('Select a company to share.');return;}
+  // Save current form state first
+  if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
+  var p=getPortfolio();
+  var entry=p[ticker];
+  if(!entry){alert('Company not found in portfolio. Save it first.');return;}
+  // Export just this company in the same format as full backup (so Restore can import it)
+  var exportData={};
+  exportData[ticker]=entry;
+  var yearCount=Object.keys(entry.years||{}).length;
+  var blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  a.download=ticker+'_REPA_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(url);
 }
 
 function downloadPortfolio(){
@@ -1864,7 +1884,10 @@ function openJsonInspector(){
     html+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">'+jsonSummary+'</div>';
 
     html+='<pre id="'+entryId+'_pre">'+escapeHtml(yr.rawJson)+'</pre>';
+    html+='<div style="display:flex;gap:6px;margin-top:8px">';
     html+='<button class="json-copy-btn" onclick="copyJsonEntry(\''+entryId+'_pre\')">📋 Copy JSON</button>';
+    html+='<button class="json-copy-btn" onclick="downloadJsonEntry(\''+entryId+'_pre\',\''+escapeHtml(ticker||'company')+'_'+escapeHtml(label)+'\')">⬇ Download JSON</button>';
+    html+='</div>';
     html+='</div></div>';
   });
 
@@ -1893,6 +1916,17 @@ function copyJsonEntry(preId){
   navigator.clipboard.writeText(text).then(function(){
     var btn=event.target;btn.textContent='✓ Copied!';setTimeout(function(){btn.textContent='📋 Copy JSON'},1500);
   });
+}
+
+function downloadJsonEntry(preId,filename){
+  var text=document.getElementById(preId).textContent;
+  var safeName=filename.replace(/[^a-zA-Z0-9_\-]/g,'_');
+  var blob=new Blob([text],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  a.download=safeName+'_extraction.json';
+  a.click();URL.revokeObjectURL(url);
+  var btn=event.target;btn.textContent='✓ Downloaded!';setTimeout(function(){btn.textContent='⬇ Download JSON'},1500);
 }
 
 function formatImportTime(iso){
