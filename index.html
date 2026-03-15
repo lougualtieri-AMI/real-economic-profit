@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.4';
+  var buildId='v3.6.5';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -4293,9 +4293,9 @@ function renderRDDeepDive(rdExpense,cfo,capex,revenue,realProfit,realSBC,maintCa
 
   // Slider
   html+='<div class="rd-range-group">';
-  html+='<label>Maintenance + Replacement R&D: <strong id="rdMaintLabel">'+rdMaintPct+'%</strong> of total R&D ('+fmtM(rdExpense*rdMaintPct/100)+') &nbsp;→&nbsp; Growth R&D: <strong id="rdGrowthLabel">'+(100-rdMaintPct)+'%</strong> ('+fmtM(rdExpense*(100-rdMaintPct)/100)+')</label>';
+  html+='<label>Growth R&D: <strong id="rdGrowthLabel" style="color:var(--green)">'+(100-rdMaintPct)+'%</strong> ('+fmtM(rdExpense*(100-rdMaintPct)/100)+') of total R&D ('+fmtM(rdExpense)+') &nbsp;—&nbsp; Maintenance: <strong id="rdMaintLabel">'+rdMaintPct+'%</strong> ('+fmtM(rdExpense*rdMaintPct/100)+')</label>';
   html+='<input type="range" id="rdMaintSlider" min="10" max="95" step="5" value="'+rdMaintPct+'" oninput="updateRDSlider()">';
-  html+='<div class="rd-range-output"><span>10% maintenance</span><span>95% maintenance</span></div>';
+  html+='<div class="rd-range-output"><span>More growth (10% maint)</span><span>Less growth (95% maint)</span></div>';
   html+='</div>';
 
   // Stacked bar for R&D split
@@ -4378,41 +4378,132 @@ function updateRDSlider(){
 }
 
 function updateRDScenarios(rdExpense,cfo,realProfit,realSBC,maintCapex,ev,shares,price,capex){
-  // Three scenarios: Low/Mid/High maintenance
-  var lowPct=Math.max(rdMaintPct-20,10);
-  var midPct=rdMaintPct;
-  var highPct=Math.min(rdMaintPct+15,95);
+  // Three scenarios: Low/Mid/High growth R&D
+  var midMaintPct=rdMaintPct;
+  var lowMaintPct=Math.max(rdMaintPct-20,10);
+  var highMaintPct=Math.min(rdMaintPct+15,95);
+
+  // Get invested capital from form
+  var eq=v('equity')||0,dbt=v('debt')||0,csh=v('cash')||0,st=v('sti')||0;
+  var investedCapital=eq>0?(eq+dbt-csh-st):0;
+  var stdROIC=investedCapital>0?realProfit/investedCapital:0;
+
+  // Sector-matched asset life
+  var rdTicker2='';
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
+    rdTicker2=(yearStore[currentYearKey].formData.ticker||'').toUpperCase();
+  }
+  var semiT=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
+  var pharmaT=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
+  var assetLife=5; // default
+  if(pharmaT.indexOf(rdTicker2)>=0)assetLife=7;
+  else if(semiT.indexOf(rdTicker2)>=0)assetLife=5;
+  else assetLife=3; // software
 
   var scenarios=[
-    {label:'Low Maintenance',pct:lowPct},
-    {label:'Base Estimate',pct:midPct},
-    {label:'High Maintenance',pct:highPct}
+    {label:'More Growth R&D',growthPct:100-lowMaintPct,maintPct:lowMaintPct},
+    {label:'Base Estimate',growthPct:100-midMaintPct,maintPct:midMaintPct},
+    {label:'Less Growth R&D',growthPct:100-highMaintPct,maintPct:highMaintPct}
   ];
 
-  var shtml='<h4 style="font-size:.82rem;color:var(--text2);margin:16px 0 8px">Impact on Owner Earnings — What If R&D Maintenance Is Higher or Lower?</h4>';
-  shtml+='<div class="rd-scenario-grid">';
-  scenarios.forEach(function(s,i){
-    var maintRD=rdExpense*s.pct/100;
-    var growthRD=rdExpense-maintRD;
-    // Adjusted REP: the maintenance R&D is already in CFO (good), but growth R&D could be capitalized
-    // Show "R&D-Adjusted Owner Earnings" = Real Profit + Growth R&D (since that portion is investment, not cost)
-    var adjustedProfit=realProfit+growthRD;
-    var adjustedYield=ev>0?adjustedProfit/ev:0;
-    var adjustedPerShare=shares>0?adjustedProfit/shares:0;
-    var cls=i===1?' highlight':'';
-    shtml+='<div class="rd-scenario'+cls+'">';
-    shtml+='<div class="rs-label">'+s.label+' ('+s.pct+'%)</div>';
-    shtml+='<div class="rs-val" style="color:var(--accent2)">'+fmtM(adjustedProfit)+'</div>';
-    shtml+='<div class="rs-sub">R&D-Adjusted Profit</div>';
-    shtml+='<div style="margin-top:6px;font-size:.78rem;color:var(--text2)">Yield: <span style="font-family:\'JetBrains Mono\',monospace">'+pct(adjustedYield)+'</span></div>';
-    shtml+='<div style="font-size:.72rem;color:var(--text3)">Maint R&D: '+fmtM(maintRD)+' · Growth R&D: '+fmtM(growthRD)+'</div>';
-    shtml+='</div>';
-  });
-  shtml+='</div>';
-  shtml+='<p class="section-note" style="margin-top:6px">R&D-Adjusted Profit = Real Economic Profit + Growth R&D. This treats the growth portion as a capitalizable investment rather than a current expense, similar to how Damodaran capitalizes R&D. The maintenance portion remains in CFO as a true operating cost.</p>';
+  var shtml='<h4 style="font-size:.88rem;color:var(--accent2);margin:16px 0 8px">What If Growth R&D Is Capitalized? — ROIC Impact</h4>';
+  shtml+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">Standard ROIC ignores R&D as capital. If we treat growth R&D like growth CapEx — capitalize it as an asset and add it back to profit — how does ROIC change?</p>';
 
-  // Total reinvestment view
-  var maintRDBase=rdExpense*midPct/100;
+  // Build the scenario comparison table
+  shtml+='<div class="trend-table-wrap"><table class="trend-table" style="font-size:.82rem">';
+  shtml+='<thead><tr><th style="text-align:left">Component</th><th style="text-align:right">Standard<br><span style="font-size:.65rem;font-weight:400">No R&D capital</span></th>';
+  scenarios.forEach(function(s){
+    shtml+='<th style="text-align:right">'+s.label+'<br><span style="font-size:.65rem;font-weight:400">'+s.growthPct+'% growth R&D</span></th>';
+  });
+  shtml+='</tr></thead><tbody>';
+
+  // Precompute each scenario
+  var scenarioData=scenarios.map(function(s){
+    var growthRD=rdExpense*s.growthPct/100;
+    var rdAddback=growthRD*0.79; // after-tax
+    var adjProfit=realProfit+rdAddback;
+    // R&D asset: growth R&D × asset life factor (simplified: current year × asset life × avg remaining)
+    // More accurate: assume steady-state, avg remaining life = (life+1)/(2*life) × growthRD × life
+    var rdAsset=growthRD*assetLife*(assetLife+1)/(2*assetLife); // simplified accumulation
+    var adjIC=investedCapital+rdAsset;
+    var adjROIC=adjIC>0?adjProfit/adjIC:0;
+    return {growthPct:s.growthPct,maintPct:s.maintPct,growthRD:growthRD,rdAddback:rdAddback,adjProfit:adjProfit,rdAsset:rdAsset,adjIC:adjIC,adjROIC:adjROIC,adjYield:ev>0?adjProfit/ev:0};
+  });
+
+  // NUMERATOR section
+  shtml+='<tr><td colspan="'+(scenarios.length+2)+'" style="font-weight:700;color:var(--accent);padding-top:10px;border-bottom:none;font-size:.78rem">NUMERATOR</td></tr>';
+
+  shtml+='<tr><td>Real Economic Profit</td><td style="text-align:right">'+fmtM(realProfit)+'</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right">'+fmtM(realProfit)+'</td>';});
+  shtml+='</tr>';
+
+  shtml+='<tr style="background:rgba(46,204,113,.06)"><td><span style="color:var(--green);font-weight:700;margin-right:4px">+</span> Growth R&D addback (x 0.79)</td><td style="text-align:right;color:var(--text3)">—</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right;color:var(--green);font-weight:600">+'+fmtM(d.rdAddback)+'</td>';});
+  shtml+='</tr>';
+
+  shtml+='<tr><td style="font-size:.72rem;color:var(--text3);padding-left:20px">Growth R&D (pre-tax)</td><td></td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right;font-size:.72rem;color:var(--text3)">'+fmtM(d.growthRD)+' ('+d.growthPct+'%)</td>';});
+  shtml+='</tr>';
+
+  shtml+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Adjusted Profit</td><td style="text-align:right;font-weight:700">'+fmtM(realProfit)+'</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right;font-weight:700;color:var(--green)">'+fmtM(d.adjProfit)+'</td>';});
+  shtml+='</tr>';
+
+  // DENOMINATOR section
+  shtml+='<tr><td colspan="'+(scenarios.length+2)+'" style="font-weight:700;color:var(--accent);padding-top:14px;border-bottom:none;font-size:.78rem">DENOMINATOR</td></tr>';
+
+  shtml+='<tr><td>Invested Capital</td><td style="text-align:right">'+fmtM(investedCapital)+'</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right">'+fmtM(investedCapital)+'</td>';});
+  shtml+='</tr>';
+
+  shtml+='<tr style="background:rgba(155,89,182,.06)"><td><span style="color:var(--purple);font-weight:700;margin-right:4px">+</span> R&D Capital Asset ('+assetLife+'yr life)</td><td style="text-align:right;color:var(--text3)">—</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right;color:var(--purple);font-weight:600">+'+fmtM(d.rdAsset)+'</td>';});
+  shtml+='</tr>';
+
+  shtml+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Adjusted Capital</td><td style="text-align:right;font-weight:700">'+fmtM(investedCapital)+'</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right;font-weight:700;color:var(--purple)">'+fmtM(d.adjIC)+'</td>';});
+  shtml+='</tr>';
+
+  // RESULT section
+  shtml+='<tr><td colspan="'+(scenarios.length+2)+'" style="font-weight:700;color:var(--accent);padding-top:14px;border-bottom:none;font-size:.78rem">RESULT</td></tr>';
+
+  shtml+='<tr style="border-top:2px solid var(--accent-dim);background:rgba(212,160,37,.04)"><td style="font-weight:700;color:var(--accent2);font-size:.88rem">ROIC</td>';
+  var stdRoicColor=stdROIC>=0.12?'var(--green)':stdROIC>=0.06?'var(--blue)':'var(--red)';
+  shtml+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+stdRoicColor+'">'+pct(stdROIC)+'</td>';
+  scenarioData.forEach(function(d){
+    var c=d.adjROIC>=0.12?'var(--green)':d.adjROIC>=0.06?'var(--blue)':'var(--red)';
+    var drop=stdROIC-d.adjROIC;
+    shtml+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+c+'">'+pct(d.adjROIC)+'<div style="font-size:.7rem;font-weight:500;color:'+(drop>0.05?'var(--red)':drop>0.02?'var(--orange)':'var(--green)')+'">'+( drop>0?'-':'+')+Math.abs(drop*100).toFixed(1)+'pp</div></td>';
+  });
+  shtml+='</tr>';
+
+  // Yield row
+  shtml+='<tr><td style="color:var(--text2)">Yield on EV</td>';
+  var stdYield=ev>0?realProfit/ev:0;
+  shtml+='<td style="text-align:right">'+pct(stdYield)+'</td>';
+  scenarioData.forEach(function(d){shtml+='<td style="text-align:right">'+pct(d.adjYield)+'</td>';});
+  shtml+='</tr>';
+
+  shtml+='</tbody></table></div>';
+
+  // Verdict
+  var baseData=scenarioData[1]; // mid scenario
+  var baseDrop=stdROIC-baseData.adjROIC;
+  shtml+='<div style="margin-top:12px;padding:12px 14px;border-radius:8px;font-size:.82rem;line-height:1.6;';
+  if(baseData.adjROIC>=0.12){
+    shtml+='background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);color:var(--green)">';
+    shtml+='<strong>R&D-adjusted ROIC still strong at '+pct(baseData.adjROIC)+'.</strong> Even treating '+fmtM(baseData.growthRD)+' in growth R&D as capital, returns remain well above cost of capital. Growth R&D is productive.';
+  }else if(baseData.adjROIC>=0.06){
+    shtml+='background:rgba(230,126,34,.06);border:1px solid rgba(230,126,34,.2);color:var(--orange)">';
+    shtml+='<strong>R&D-adjusted ROIC adequate at '+pct(baseData.adjROIC)+'.</strong> The '+(baseDrop*100).toFixed(1)+'pp drop from '+pct(stdROIC)+' means the R&D capital base ('+fmtM(baseData.rdAsset)+') is significant. Still clearing cost of capital, but efficiency matters.';
+  }else{
+    shtml+='background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.2);color:var(--red)">';
+    shtml+='<strong>R&D-adjusted ROIC below cost of capital at '+pct(baseData.adjROIC)+'.</strong> Standard ROIC of '+pct(stdROIC)+' flatters the picture. When you account for '+fmtM(baseData.rdAsset)+' in accumulated R&D capital, returns don\'t clear the hurdle.';
+  }
+  shtml+='</div>';
+
+  // Full reinvestment bar
+  var maintRDBase=rdExpense*midMaintPct/100;
   var growthRDBase=rdExpense-maintRDBase;
   var totalMaint=maintCapex+maintRDBase;
   var totalGrowth=(Math.max(capex-maintCapex,0))+growthRDBase;
