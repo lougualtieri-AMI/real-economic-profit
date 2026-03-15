@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.5';
+  var buildId='v3.6.6';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -3937,10 +3937,10 @@ function renderCapExDeepDive(capex,da,maintCapex,growthCapex,deprOnly,maintMetho
 
   // Stacked bar
   html+='<div class="dd-stacked-bar">';
-  if(maintPct>0)html+='<div class="seg maint" style="width:'+Math.max(maintPct*100,8)+'%">'+fmtM(maintCapex)+'</div>';
   if(growthPct>0)html+='<div class="seg growth" style="width:'+Math.max(growthPct*100,8)+'%">'+fmtM(growthCapex)+'</div>';
+  if(maintPct>0)html+='<div class="seg maint" style="width:'+Math.max(maintPct*100,8)+'%">'+fmtM(maintCapex)+'</div>';
   html+='</div>';
-  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#e74c3c"></span>Maintenance</span><span><span class="dot" style="background:#2ecc71"></span>Growth</span></div>';
+  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#2ecc71"></span>Growth</span><span><span class="dot" style="background:#e74c3c"></span>Maintenance</span></div>';
 
   // Stats
   html+='<div class="dd-stat-row">';
@@ -4300,10 +4300,10 @@ function renderRDDeepDive(rdExpense,cfo,capex,revenue,realProfit,realSBC,maintCa
 
   // Stacked bar for R&D split
   html+='<div class="dd-stacked-bar" id="rdStackedBar">';
-  html+='<div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div>';
   html+='<div class="seg discretionary" style="width:'+(100-rdMaintPct)+'%">Growth '+(100-rdMaintPct)+'%</div>';
+  html+='<div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div>';
   html+='</div>';
-  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#e74c3c"></span>Maintenance/Replacement R&D</span><span><span class="dot" style="background:#9b59b6"></span>Growth/Discretionary R&D</span></div>';
+  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#9b59b6"></span>Growth/Discretionary R&D</span><span><span class="dot" style="background:#e74c3c"></span>Maintenance/Replacement R&D</span></div>';
 
   // Scenario grid — Low/Mid/High maintenance estimates
   html+='<div id="rdScenarios"></div>';
@@ -4352,7 +4352,7 @@ function updateRDSlider(){
   // Update stacked bar
   var bar=document.getElementById('rdStackedBar');
   if(bar){
-    bar.innerHTML='<div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div><div class="seg discretionary" style="width:'+(100-rdMaintPct)+'%">Growth '+(100-rdMaintPct)+'%</div>';
+    bar.innerHTML='<div class="seg discretionary" style="width:'+(100-rdMaintPct)+'%">Growth '+(100-rdMaintPct)+'%</div><div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div>';
   }
 
   // Recalculate scenarios with current values from the form
@@ -4513,10 +4513,10 @@ function updateRDScenarios(rdExpense,cfo,realProfit,realSBC,maintCapex,ev,shares
   shtml+='<div class="dd-stacked-bar">';
   var mPct=totalReinvest>0?totalMaint/totalReinvest*100:50;
   var gPct=100-mPct;
-  shtml+='<div class="seg maint" style="width:'+Math.max(mPct,8)+'%">Maint '+fmtM(totalMaint)+'</div>';
   shtml+='<div class="seg growth" style="width:'+Math.max(gPct,8)+'%">Growth '+fmtM(totalGrowth)+'</div>';
+  shtml+='<div class="seg maint" style="width:'+Math.max(mPct,8)+'%">Maint '+fmtM(totalMaint)+'</div>';
   shtml+='</div>';
-  shtml+='<div class="dd-bar-legend"><span><span class="dot" style="background:#e74c3c"></span>Total Maintenance (CapEx + R&D): '+fmtM(totalMaint)+'</span><span><span class="dot" style="background:#2ecc71"></span>Total Growth (CapEx + R&D): '+fmtM(totalGrowth)+'</span></div>';
+  shtml+='<div class="dd-bar-legend"><span><span class="dot" style="background:#2ecc71"></span>Total Growth (CapEx + R&D): '+fmtM(totalGrowth)+'</span><span><span class="dot" style="background:#e74c3c"></span>Total Maintenance (CapEx + R&D): '+fmtM(totalMaint)+'</span></div>';
 
   var scenarioEl=document.getElementById('rdScenarios');
   if(scenarioEl)scenarioEl.innerHTML=shtml;
