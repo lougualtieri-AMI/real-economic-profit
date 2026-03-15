@@ -379,7 +379,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-15';
-  var buildId='v3.7.2';
+  var buildId='v3.7.3';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -4099,7 +4099,7 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
         updateAdjustmentFlow(rep,amort,rdExpense,ev);
         // Sync the R&D deep-dive slider if it exists
         var ddSlider=document.getElementById('rdMaintSlider');
-        if(ddSlider&&p.val!==null){ddSlider.value=p.val;updateRDSlider();}
+        if(ddSlider&&p.val!==null){ddSlider.value=100-p.val;updateRDSlider();}
       };
       prc.appendChild(b);
     });
@@ -4140,7 +4140,7 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
       updateAdjustmentFlow(rep,amort,rdExpense,ev);
       // Sync R&D deep-dive
       var ddSlider=document.getElementById('rdMaintSlider');
-      if(ddSlider){ddSlider.value=rdMaintPct;updateRDSlider();}
+      if(ddSlider){ddSlider.value=100-rdMaintPct;updateRDSlider();}
     };
   }
 
@@ -4296,8 +4296,8 @@ function renderRDDeepDive(rdExpense,cfo,capex,revenue,realProfit,realSBC,maintCa
   // Slider
   html+='<div class="rd-range-group">';
   html+='<label>Growth R&D: <strong id="rdGrowthLabel" style="color:var(--green)">'+(100-rdMaintPct)+'%</strong> ('+fmtM(rdExpense*(100-rdMaintPct)/100)+') of total R&D ('+fmtM(rdExpense)+') &nbsp;—&nbsp; Maintenance: <strong id="rdMaintLabel">'+rdMaintPct+'%</strong> ('+fmtM(rdExpense*rdMaintPct/100)+')</label>';
-  html+='<input type="range" id="rdMaintSlider" min="10" max="95" step="5" value="'+rdMaintPct+'" oninput="updateRDSlider()">';
-  html+='<div class="rd-range-output"><span>More growth (10% maint)</span><span>Less growth (95% maint)</span></div>';
+  html+='<input type="range" id="rdMaintSlider" min="5" max="90" step="5" value="'+(100-rdMaintPct)+'" oninput="updateRDSlider()">';
+  html+='<div class="rd-range-output"><span>Less growth (5%)</span><span>More growth (90%)</span></div>';
   html+='</div>';
 
   // Growth bar with maintenance as context
@@ -4332,7 +4332,7 @@ function setRDPreset(id,maint){
   rdCurrentPreset=id;
   rdMaintPct=maint;
   var slider=document.getElementById('rdMaintSlider');
-  if(slider)slider.value=maint;
+  if(slider)slider.value=100-maint;
   updateRDSlider();
   // Update active state
   document.querySelectorAll('.rd-preset').forEach(function(b){b.classList.remove('active')});
@@ -4342,7 +4342,7 @@ function setRDPreset(id,maint){
 function updateRDSlider(){
   var slider=document.getElementById('rdMaintSlider');
   if(!slider)return;
-  rdMaintPct=parseInt(slider.value);
+  rdMaintPct=100-parseInt(slider.value);
   rdCurrentPreset='custom';
   document.querySelectorAll('.rd-preset').forEach(function(b){b.classList.remove('active')});
   var customBtn=document.querySelector('.rd-preset[onclick*="\'custom\'"]');
