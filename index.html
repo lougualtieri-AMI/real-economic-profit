@@ -145,21 +145,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .compare-table tr:hover td{background:rgba(212,160,37,.04)}
 .compare-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px 8px}
 .compare-close:hover{color:var(--text)}
-.decomp-row{display:flex;align-items:center;margin-bottom:10px;font-size:.82rem}
-.decomp-label{width:110px;text-align:right;padding-right:10px;color:var(--text2);flex-shrink:0;font-size:.78rem}
-.decomp-bar-track{flex:1;height:32px;background:var(--bg);border-radius:6px;position:relative;overflow:hidden;display:flex}
-.decomp-seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:500;color:#fff;white-space:nowrap;min-width:30px;transition:width .4s ease}
-.decomp-seg.organic{background:linear-gradient(90deg,#2ecc71,#27ae60)}
-.decomp-seg.reinvest{background:linear-gradient(90deg,#9b59b6,#8e44ad)}
-.decomp-seg.negative-organic{background:linear-gradient(90deg,#e67e22,#d35400)}
-.decomp-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
-.decomp-stat{background:var(--bg);border-radius:8px;padding:10px 12px;text-align:center}
-.decomp-stat .ds-val{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600}
-.decomp-stat .ds-lbl{font-size:.72rem;color:var(--text3);margin-top:2px}
-.decomp-stat .ds-val.organic-color{color:var(--green)}
-.decomp-stat .ds-val.reinvest-color{color:var(--purple)}
-.decomp-stat .ds-val.total-color{color:var(--accent2)}
-.decomp-stat .ds-val.neg-color{color:var(--orange)}
 
 /* Profit-Capital Base Analysis */
 .pcba-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
@@ -181,8 +166,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .pcba-context{background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.15);border-radius:8px;padding:12px 14px;margin:12px 0;font-size:.82rem;color:var(--text2);line-height:1.65}
 .pcba-context strong{color:var(--blue)}
 .pcba-transition{margin:14px 0}
-.pcba-transition-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.82rem}
-.pcba-transition-label{min-width:130px;text-align:right;color:var(--text3);font-size:.78rem;flex-shrink:0}
 .pcba-transition-pill{padding:4px 10px;border-radius:12px;font-size:.75rem;font-weight:600;white-space:nowrap}
 .pcba-transition-pill.green{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.3)}
 .pcba-transition-pill.blue{background:rgba(52,152,219,.12);color:var(--blue);border:1px solid rgba(52,152,219,.3)}
@@ -213,11 +196,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .proj-inputs .field{margin-bottom:0}
 .proj-inputs .field label{font-size:.75rem}
 .proj-inputs .field input{padding:8px 10px;font-size:.82rem}
-.proj-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
 .proj-result{background:var(--bg);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)}
 .proj-result .pr-val{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600}
 .proj-result .pr-lbl{font-size:.72rem;color:var(--text3);margin-top:2px}
-.proj-result .pr-delta{font-size:.72rem;margin-top:4px;font-family:'JetBrains Mono',monospace}
 .proj-result .pr-delta.up{color:var(--green)}
 .proj-result .pr-delta.down{color:var(--red)}
 .proj-result .pr-delta.flat{color:var(--text3)}
@@ -254,7 +235,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .yield-bridge{font-size:.75rem;color:var(--text3);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
 
 /* Target price calculator */
-.target-calc{margin-top:12px}
 .target-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
 .target-table th{text-align:center;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;font-size:.72rem;text-transform:uppercase}
 .target-table td{text-align:center;padding:8px 6px;border-bottom:1px solid rgba(51,51,51,.5);font-family:'JetBrains Mono',monospace;font-size:.82rem}
@@ -337,12 +317,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .rd-range-group label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px}
 .rd-range-group input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 .rd-range-output{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text3);margin-top:2px}
-.rd-scenario-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-.rd-scenario{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
-.rd-scenario .rs-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
-.rd-scenario .rs-val{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:600}
-.rd-scenario .rs-sub{font-size:.7rem;color:var(--text3);margin-top:2px}
-.rd-scenario.highlight{border-color:var(--accent);background:rgba(212,160,37,.04)}
 .rd-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .rd-preset{padding:5px 12px;border-radius:16px;font-size:.75rem;font-weight:500;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;transition:all .2s}
 .rd-preset:hover{border-color:var(--accent);color:var(--text)}
@@ -356,7 +330,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .amort-box .ab-title{font-size:.78rem;font-weight:600;margin-bottom:4px}
 .amort-box.real .ab-title{color:var(--red)}
 .amort-box.false .ab-title{color:var(--green)}
-.amort-box .ab-val{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--text)}
 .amort-box .ab-desc{font-size:.72rem;color:var(--text3);margin-top:4px;line-height:1.5}
 
 /* Dashboard Header - At-a-Glance Panel */
@@ -405,8 +378,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-03-14';
-  var buildId='v3.6.9';
+  var buildDate='2026-03-15';
+  var buildId='v3.7.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -636,7 +609,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">What price do you need for the yield you want? Flips the equation: instead of yield-at-price, price-at-yield.</p>
     <div class="row" style="margin-bottom:12px">
       <div class="field"><label>Custom Target Yield (%)</label><input type="number" id="targetYieldCustom" step="0.1" placeholder="e.g. 6" oninput="renderTargetCalc()"></div>
-      <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="conservative">Full Cost (Full D&A)</option><option value="light">Ex-Amortization (Depr Only)</option></select></div>
+      <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="full_cost">Full Cost (Full D&A)</option><option value="ex_amort">Ex-Amortization (Depr Only)</option></select></div>
     </div>
     <div id="targetCalcContent"></div>
   </div>
@@ -1330,9 +1303,7 @@ function runThesis(){
   var currDeprOnly=v('depr_only')||0;
   var currRestructuring=v('restructuring')||0;
   var currLtInv=v('lt_investments')||0,currInvRate=(v('inv_return_rate')||4)/100;
-  var currMaintCapex,currMC=v('maint_capex');
-  if(currMC!==null&&currMC>0)currMaintCapex=currMC;
-  else{var ratio=currDA>0?currCapex/currDA:999;if(ratio>=0.8&&ratio<=1.2)currMaintCapex=currCapex;else currMaintCapex=currDA*1.05;}
+  var currMaintCapex=calcMaintCapex(currCapex,currDA,v('maint_capex')).value;
   var currInvIncome=currLtInv*currInvRate;
   var currRealProfit=currCFO-currRealSBC-currMaintCapex-currRestructuring+currInvIncome;
   var currEV=currPrice*currShares+currDebt-(currCash+currSTI);
@@ -1439,7 +1410,7 @@ function runThesis(){
     if(!hitTarget&&yieldOnEV>=targetYield)hitTarget=yr;
   }
 
-  // Also find when asset-light hits target
+  // Also find when ex-amortization hits target
   var hitTargetLight=null;
   if(hasLightView){
     for(var i=1;i<rows.length;i++){
@@ -1550,12 +1521,7 @@ function prefillYOC(){
   var cfo=v('cfo')||0,sbcExp=v('sbc_expense')||0,sbcGrant=v('sbc_grant')||0;
   var realSBC=Math.max(sbcExp,sbcGrant);
   var da=v('da')||0,capex=v('capex')||0;
-  var ratio=da>0?capex/da:999;
-  var maintCapex;
-  var mc=v('maint_capex');
-  if(mc!==null&&mc>0)maintCapex=mc;
-  else if(ratio>=0.8&&ratio<=1.2)maintCapex=capex;
-  else maintCapex=da*1.05;
+  var maintCapex=calcMaintCapex(capex,da,v('maint_capex')).value;
   var realProfit=cfo-realSBC-maintCapex-(v('restructuring')||0);
   var realROIC=ic>0?realProfit/ic:0;
   if(!roiicEl.value&&realROIC>0)roiicEl.placeholder='Current ROIC: '+(realROIC*100).toFixed(1)+'%';
@@ -1598,12 +1564,7 @@ function runYOC(){
   var realSBC=Math.max(sbcExp,sbcGrant);
   var da=v('da')||0;
   var capex=v('capex')||0;
-  var mc=v('maint_capex');
-  var ratio=da>0?capex/da:999;
-  var maintCapex;
-  if(mc!==null&&mc>0)maintCapex=mc;
-  else if(ratio>=0.8&&ratio<=1.2)maintCapex=capex;
-  else maintCapex=da*1.05;
+  var maintCapex=calcMaintCapex(capex,da,v('maint_capex')).value;
   var growthCapex=Math.max(capex-maintCapex,0);
   var restructuring=v('restructuring')||0;
   var ltInv=v('lt_investments')||0;
@@ -1798,8 +1759,8 @@ function renderTargetCalc(){
   var debt=m.debt||0;
   
   var viewMode=document.getElementById('targetCalcView').value;
-  var rep=(viewMode==='light'&&m.realProfitLight!==null)?m.realProfitLight:m.realProfit;
-  var viewLabel=viewMode==='light'?'Ex-Amortization':'Full Cost';
+  var rep=(viewMode==='ex_amort'&&m.realProfitLight!==null)?m.realProfitLight:m.realProfit;
+  var viewLabel=viewMode==='ex_amort'?'Ex-Amortization':'Full Cost';
   
   if(rep<=0){
     content.innerHTML='<p style="color:var(--red);font-size:.85rem">Current Real Economic Profit ('+viewLabel+') is negative ('+fmtM(rep)+') — no positive yield is achievable at any price.</p>';
@@ -1828,9 +1789,9 @@ function renderTargetCalc(){
   h+='</table>';
   h+='<p class="section-note">Based on '+viewLabel+' REP of '+fmtM(rep)+'. Target EV = REP ÷ yield, then subtract debt, add cash to get equity value per share.</p>';
   
-  // Hide asset-light option if not available
+  // Hide ex-amortization option if not available
   var hasLight=m.realProfitLight!==null;
-  document.getElementById('targetCalcView').querySelector('option[value="light"]').disabled=!hasLight;
+  document.getElementById('targetCalcView').querySelector('option[value="ex_amort"]').disabled=!hasLight;
   
   content.innerHTML=h;
 }
@@ -2266,8 +2227,8 @@ function computeMetrics(entry){
   var totalAssets=d.total_assets||0,goodwill=d.goodwill||0,intangibles=d.intangibles||0;
   var maintCapex;
   if(mcIn!==null&&mcIn>0){maintCapex=mcIn;}
-  else{var ratio=da>0?capex/da:999;if(ratio>=0.8&&ratio<=1.2)maintCapex=capex;else maintCapex=da*1.05;}
-  // Asset-light maintenance CapEx (depreciation-only × 1.05)
+  else{maintCapex=calcMaintCapex(capex,da,null).value;}
+  // Ex-Amortization maintenance CapEx (depreciation-only × 1.05)
   var maintCapexLight=null,realProfitLight=null,realROICLight=null,returnOnNTALight=null;
   if(deprOnly>0&&da>0&&deprOnly<da*0.95){
     maintCapexLight=deprOnly*1.05;
@@ -2291,6 +2252,57 @@ function computeMetrics(entry){
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
   return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null,rd_expense:entry.extra.rd_expense||null};
+}
+
+// Shared helper: build enriched years array from yearStore keys
+function enrichYears(keys,opts){
+  opts=opts||{};
+  return keys.map(function(k){
+    var yr=yearStore[k];
+    var m=computeMetrics(yr);
+    m.label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
+    if(yr.isInterim)m.label+=' *';
+    m.isInterim=yr.isInterim||false;
+    m.interimLabel=yr.interimLabel||'';
+    m.endDate=yr.fiscal_year_end||k;
+    if(opts.shares!==false){
+      var shares=yr.formData.shares||0;
+      m.repPerShare=shares>0?m.realProfit/shares:null;
+      m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
+    }
+    m.sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:null;
+    if(opts.formData)m.formData=yr.formData;
+    if(opts.extra)m.extra=yr.extra||{};
+    return m;
+  });
+}
+
+// Shared helper: get R&D sector preset for current ticker
+function getRdSectorPreset(){
+  var rdTicker='';
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData)
+    rdTicker=(yearStore[currentYearKey].formData.ticker||'').toUpperCase();
+  var semiTickers=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
+  var pharmaTickers=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
+  if(pharmaTickers.indexOf(rdTicker)>=0) return {maintPct:60,assetLife:7,label:'Pharma'};
+  if(semiTickers.indexOf(rdTicker)>=0) return {maintPct:50,assetLife:5,label:'Semiconductor'};
+  return {maintPct:70,assetLife:3,label:'Software/Platform'};
+}
+
+// Shared helper: compute yield rating
+function yieldRating(y){
+  if(y>=0.07) return {text:'Strong Value',cls:'strong',color:'#2ecc71',cssColor:'var(--green)',bg:'rgba(46,204,113,.15)'};
+  if(y>=0.04) return {text:'Fair Value',cls:'fair',color:'#3498db',cssColor:'var(--blue)',bg:'rgba(52,152,219,.15)'};
+  if(y>=0.02) return {text:'Growth Priced In',cls:'growth',color:'#e67e22',cssColor:'var(--orange)',bg:'rgba(230,126,34,.15)'};
+  return {text:'Expensive',cls:'expensive',color:'#e74c3c',cssColor:'var(--red)',bg:'rgba(231,76,60,.15)'};
+}
+
+// Shared helper: estimate maintenance CapEx from inputs
+function calcMaintCapex(capex,da,mcOverride){
+  if(mcOverride!==null&&mcOverride!==undefined&&mcOverride>0) return {value:mcOverride,method:'Disclosed'};
+  var ratio=da>0?capex/da:999;
+  if(ratio>=0.8&&ratio<=1.2) return {value:capex,method:'CapEx ≈ D&A → using total CapEx'};
+  return {value:da*1.05,method:'D&A + 5% inflation buffer'};
 }
 
 function renderPills(){
@@ -2329,22 +2341,7 @@ function renderTrend(){
   if(keys.length<2){trendCard.style.display='none';return;}
   trendCard.style.display='block';
 
-  var years=keys.map(function(k){
-    var yr=yearStore[k];
-    var m=computeMetrics(yr);
-    m.label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
-    if(yr.isInterim)m.label+=' *';
-    m.isInterim=yr.isInterim||false;
-    m.interimLabel=yr.interimLabel||'';
-    m.endDate=yr.fiscal_year_end||k;
-    // Feature 2: REP per share
-    var shares=yr.formData.shares||0;
-    m.repPerShare=shares>0?m.realProfit/shares:null;
-    m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
-    // SBC % of CFO
-    m.sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:null;
-    return m;
-  });
+  var years=enrichYears(keys);
 
   var html='';
   var hasInterim=years.some(function(y){return y.isInterim;});
@@ -2442,7 +2439,7 @@ function renderTrend(){
     {label:'Implied Profit Growth',key:'impliedGrowth',f:function(v){return pct(v,1)}},
     {label:'Reported FCF',key:'reportedFCF',f:fmtM}
   ];
-  // Add asset-light rows if any year has depreciation data
+  // Add ex-amortization rows if any year has depreciation data
   if(years.some(function(y){return y.maintCapexLight!==null})){
     // Insert after Maint CapEx row (index 4)
     var insertIdx=trendRows.length;
@@ -2709,20 +2706,8 @@ function renderTrend(){
       if(rdCapexRatio>0.5||rdRevPct>0.03){
 
         // Sector presets: maintenance % and asset life
-        var rdTicker='';
-        if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
-          rdTicker=(yearStore[currentYearKey].formData.ticker||'').toUpperCase();
-        }
-        var semiTickers3=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
-        var pharmaTickers3=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
-        var rdMaintPct3,rdAssetLife,rdSectorLabel;
-        if(pharmaTickers3.indexOf(rdTicker)>=0){
-          rdMaintPct3=60;rdAssetLife=7;rdSectorLabel='Pharma';
-        }else if(semiTickers3.indexOf(rdTicker)>=0){
-          rdMaintPct3=50;rdAssetLife=5;rdSectorLabel='Semiconductor';
-        }else{
-          rdMaintPct3=70;rdAssetLife=3;rdSectorLabel='Software/Platform';
-        }
+        var rdSector=getRdSectorPreset();
+        var rdMaintPct3=rdSector.maintPct,rdAssetLife=rdSector.assetLife,rdSectorLabel=rdSector.label;
         var rdGrowthPct3=100-rdMaintPct3;
 
         // Accumulate R&D capital asset: sum of growth R&D over last N years, straight-line amortized
@@ -2903,11 +2888,7 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   d+='## Executive Summary\n\nReal Cash Yield on Enterprise Value (Full Cost): '+pct(realYield)+' — '+rating+'\n';
   if(latest.realProfitLight!==null){
     var realYieldLightMD=latest.realProfitLight/ev;
-    var ratingLightMD;
-    if(realYieldLightMD>=0.07)ratingLightMD='Strong Value';
-    else if(realYieldLightMD>=0.04)ratingLightMD='Fair Value';
-    else if(realYieldLightMD>=0.02)ratingLightMD='Growth Priced In';
-    else ratingLightMD='Expensive';
+    var ratingLightMD=yieldRating(realYieldLightMD).text;
     d+='Ex-Amortization Yield on EV (excludes acquisition amortization): '+pct(realYieldLightMD)+' — '+ratingLightMD+'\n';
     var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
     if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Full Cost and Ex-Amortization views tell materially different stories. The gap is acquisition amortization — a non-cash accounting charge, may not be a real cost of running the business. See Capital & ROIC section for details.\n';
@@ -3061,18 +3042,7 @@ function exportBrief(){
   var price=v('price');
   var keys=getActiveYearKeys();
 
-  var years=keys.map(function(k){
-    var yr=yearStore[k];
-    var m=computeMetrics(yr);
-    m.label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
-    if(yr.isInterim)m.label+=' *';
-    m.isInterim=yr.isInterim||false;
-    m.interimLabel=yr.interimLabel||'';
-    m.endDate=yr.fiscal_year_end||k;
-    m.formData=yr.formData;
-    m.extra=yr.extra;
-    return m;
-  });
+  var years=enrichYears(keys,{formData:true,extra:true});
 
   if(years.length===0){
     var fd=captureForm();
@@ -3081,8 +3051,7 @@ function exportBrief(){
     var restructuring=fd.restructuring||0;
     var ltInv=fd.lt_investments||0,invRate=(fd.inv_return_rate||4)/100;
     var eq=fd.equity||0,dbt=fd.debt||0,csh=fd.cash||0,st=fd.sti||0;
-    var maintCapex;
-    if(mc!==null&&mc>0){maintCapex=mc;}else{var ratio=da>0?capex/da:999;if(ratio>=0.8&&ratio<=1.2)maintCapex=capex;else maintCapex=da*1.05;}
+    var maintCapex=calcMaintCapex(capex,da,mc).value;
     var realSBC=Math.max(sbcExp,sbcGrant);
     var invIncome=ltInv*invRate;
     var rp=cfo-realSBC-maintCapex-restructuring+invIncome;
@@ -3108,11 +3077,8 @@ function exportBrief(){
   var taxPaid=latest.formData.tax_paid||0;
   var totalAssets=latest.formData.total_assets||0;
 
-  var rating,ratingColor;
-  if(realYield>=0.07){rating='Strong Value';ratingColor='#2ecc71';}
-  else if(realYield>=0.04){rating='Fair Value';ratingColor='#3498db';}
-  else if(realYield>=0.02){rating='Growth Priced In';ratingColor='#e67e22';}
-  else{rating='Expensive';ratingColor='#e74c3c';}
+  var yr=yieldRating(realYield);
+  var rating=yr.text,ratingColor=yr.color;
 
   var now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
@@ -4048,7 +4014,7 @@ function renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,r
 
   // Impact analysis
   html+='<table class="dd-mini-table"><tr><th>View</th><th>Maint CapEx</th><th>Real Profit</th><th>Yield on EV</th></tr>';
-  html+='<tr><td>Conservative (includes all amortization)</td><td>'+fmtM(maintCapex)+'</td><td>'+fmtM(realProfit)+'</td><td>'+pct(ev>0?realProfit/ev:0)+'</td></tr>';
+  html+='<tr><td>Full Cost (includes all amortization)</td><td>'+fmtM(maintCapex)+'</td><td>'+fmtM(realProfit)+'</td><td>'+pct(ev>0?realProfit/ev:0)+'</td></tr>';
   if(realProfitLight!==null){
     html+='<tr style="color:var(--accent2)"><td>Ex-Amortization (depreciation only)</td><td>'+fmtM(maintCapexLight)+'</td><td>'+fmtM(realProfitLight)+'</td><td>'+pct(ev>0?realProfitLight/ev:0)+'</td></tr>';
   }
@@ -4396,11 +4362,9 @@ function updateRDSlider(){
   }
   if(rdE&&rdE>0){
     var cfo=v('cfo')||0,sbcExp=v('sbc_expense')||0,sbcGrant=v('sbc_grant')||0;
-    var capex=v('capex')||0,da=v('da')||0,mc=v('maint_capex');
+    var capex=v('capex')||0,da=v('da')||0;
     var realSBC=Math.max(sbcExp,sbcGrant);
-    var maintCapex;
-    if(mc!==null&&mc>0)maintCapex=mc;
-    else{var ratio=da>0?capex/da:999;if(ratio>=0.8&&ratio<=1.2)maintCapex=capex;else maintCapex=da*1.05;}
+    var maintCapex=calcMaintCapex(capex,da,v('maint_capex')).value;
     var restructuring=v('restructuring')||0;
     var ltInv=v('lt_investments')||0,invRate=(v('inv_return_rate')||4)/100;
     var realProfit=cfo-realSBC-maintCapex-restructuring+ltInv*invRate;
@@ -4584,13 +4548,9 @@ function renderDashboardHeader(opts){
   var rdMaintPctDash=70; // default software
   var rdPresetLabel='Software/platform';
   if(rdCapexRatio>3){
-    // Likely R&D-dominant - check if semi or pharma
-    // Use ticker heuristic or R&D/CapEx ratio
-    var tick=(o.ticker||'').toUpperCase();
-    var semiTickers=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
-    var pharmaTickers=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
-    if(semiTickers.indexOf(tick)>=0){rdMaintPctDash=50;rdPresetLabel='Semiconductor';}
-    else if(pharmaTickers.indexOf(tick)>=0){rdMaintPctDash=60;rdPresetLabel='Pharma (patent-adj)';}
+    var rdSectorDash=getRdSectorPreset();
+    rdMaintPctDash=rdSectorDash.maintPct;
+    rdPresetLabel=rdSectorDash.label;
   }
   var rdGrowthPct=100-rdMaintPctDash;
   var rdGrowth=hasRd?o.rdExpense*rdGrowthPct/100:0;
@@ -4753,9 +4713,9 @@ function calculate(){
 
   var maintCapex,maintMethod;
   if(maintCapexInput!==null&&maintCapexInput>0){maintCapex=maintCapexInput;maintMethod='Disclosed';}
-  else{var ratio=da>0?capex/da:999;if(ratio>=0.8&&ratio<=1.2){maintCapex=capex;maintMethod='CapEx ≈ D&A → using total CapEx';}else{maintCapex=da*1.05;maintMethod='D&A + 5% inflation buffer';}}
+  else{var mc=calcMaintCapex(capex,da,null);maintCapex=mc.value;maintMethod=mc.method;}
 
-  // Asset-light view: depreciation-only × 1.05
+  // Ex-Amortization view: depreciation-only × 1.05
   var deprOnly=v('depr_only')||0;
   var hasLightView=deprOnly>0&&da>0&&deprOnly<da*0.95;
   var maintCapexLight=hasLightView?deprOnly*1.05:null;
@@ -4778,11 +4738,8 @@ function calculate(){
   var investedCapital=equity>0?(equity+debt-cash-sti):0;
   var realROIC=investedCapital>0?realProfit/investedCapital:0;
 
-  var rating,ratingClass;
-  if(realYield>=0.07){rating='Strong Value';ratingClass='strong';}
-  else if(realYield>=0.04){rating='Fair Value';ratingClass='fair';}
-  else if(realYield>=0.02){rating='Growth Priced In';ratingClass='growth';}
-  else{rating='Expensive';ratingClass='expensive';}
+  var yr=yieldRating(realYield);
+  var rating=yr.text,ratingClass=yr.cls;
 
   document.getElementById('verdict').className='verdict '+ratingClass;
 
@@ -4797,7 +4754,7 @@ function calculate(){
     wallStreetPE=marketCap/netIncome;
     eps=netIncome/shares;
   }
-  // Real Earnings Yield (default to Ex-Amortization if available, else Conservative)
+  // Real Earnings Yield (default to Ex-Amortization if available, else Full Cost)
   var repForYield=(hasLightView&&realProfitLight!==null)?realProfitLight:realProfit;
   var repPerShare=repForYield/shares;
   var realEarningsYield=repPerShare/price;
@@ -4843,11 +4800,8 @@ function calculate(){
 
   if(hasLightView&&realProfitLight!==null){
     var realYieldLight=realProfitLight/ev;
-    var ratingLight,ratingColorLight,ratingBgLight;
-    if(realYieldLight>=0.07){ratingLight='Strong Value';ratingColorLight='var(--green)';ratingBgLight='rgba(46,204,113,.15)';}
-    else if(realYieldLight>=0.04){ratingLight='Fair Value';ratingColorLight='var(--blue)';ratingBgLight='rgba(52,152,219,.15)';}
-    else if(realYieldLight>=0.02){ratingLight='Growth Priced In';ratingColorLight='var(--orange)';ratingBgLight='rgba(230,126,34,.15)';}
-    else{ratingLight='Expensive';ratingColorLight='var(--red)';ratingBgLight='rgba(231,76,60,.15)';}
+    var yrLight=yieldRating(realYieldLight);
+    var ratingLight=yrLight.text,ratingColorLight=yrLight.cssColor,ratingBgLight=yrLight.bg;
     var viewsDiverge=(realProfit<0&&realProfitLight>0)||(realProfit>0&&realProfitLight<0)||Math.abs(realProfitLight-realProfit)>(Math.abs(cfo)*0.3);
     if(viewsDiverge){
       verdictHTML+='<div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3)"><div style="font-size:.78rem;font-weight:600;color:var(--orange);margin-bottom:8px">⚠ VIEWS DIVERGE — Excluding acquisition amortization tells a materially different story</div>';
