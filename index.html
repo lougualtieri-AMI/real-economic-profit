@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.0';
+  var buildId='v3.6.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -2663,6 +2663,125 @@ function renderTrend(){
     }
 
     html+='<p class="section-note" style="margin-top:10px">Growth Intensity = Total CapEx / Maintenance CapEx (D&A x 1.05). Threshold: 1.5x separates high from low growth investment. The highlighted row is a suggestion based on the math — not a verdict.</p>';
+
+    // ============ R&D Capital Efficiency (inside PCBA) ============
+    var rdYears=years.filter(function(y){return y.rd_expense&&y.rd_expense>0&&y.revenue&&y.revenue>0;});
+    if(rdYears.length>=1){
+      var latestRd=rdYears[rdYears.length-1];
+      var rdCapexRatio=latestRd.capex>0?latestRd.rd_expense/latestRd.capex:0;
+
+      // Only show if R&D is material (> 50% of capex or > 3% of revenue)
+      var rdRevPct=latestRd.revenue>0?latestRd.rd_expense/latestRd.revenue:0;
+      if(rdCapexRatio>0.5||rdRevPct>0.03){
+
+        // Sector presets: maintenance % and asset life
+        var rdTicker='';
+        if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
+          rdTicker=(yearStore[currentYearKey].formData.ticker||'').toUpperCase();
+        }
+        var semiTickers3=['CRUS','QCOM','NVDA','AMD','AVGO','INTC','MRVL','TXN','LRCX','KLAC','ASML','MU'];
+        var pharmaTickers3=['NVO','MRK','LLY','VRTX','ABBV','BMY','PFE','AZN','NVS','JNJ','RHHBY'];
+        var rdMaintPct3,rdAssetLife,rdSectorLabel;
+        if(pharmaTickers3.indexOf(rdTicker)>=0){
+          rdMaintPct3=60;rdAssetLife=7;rdSectorLabel='Pharma';
+        }else if(semiTickers3.indexOf(rdTicker)>=0){
+          rdMaintPct3=50;rdAssetLife=5;rdSectorLabel='Semiconductor';
+        }else{
+          rdMaintPct3=70;rdAssetLife=3;rdSectorLabel='Software/Platform';
+        }
+        var rdGrowthPct3=100-rdMaintPct3;
+
+        // Accumulate R&D capital asset: sum of growth R&D over last N years, straight-line amortized
+        var rdAsset=0;
+        var availYrs=Math.min(rdAssetLife,rdYears.length);
+        for(var ri=rdYears.length-availYrs;ri<rdYears.length;ri++){
+          var yrGrowthRd=rdYears[ri].rd_expense*(rdGrowthPct3/100);
+          var age=rdYears.length-1-ri;
+          var remaining=Math.max(rdAssetLife-age,0)/rdAssetLife;
+          rdAsset+=yrGrowthRd*remaining;
+        }
+
+        var latestGrowthRd=latestRd.rd_expense*(rdGrowthPct3/100);
+        var rdAddback=latestGrowthRd*0.79; // after-tax (1 - 21%)
+        var stdIC=latestRd.investedCapital;
+        var stdROIC=stdIC>0?latestRd.realProfit/stdIC:0;
+        var adjIC=stdIC+rdAsset;
+        var adjProfit=latestRd.realProfit+rdAddback;
+        var adjROIC=adjIC>0?adjProfit/adjIC:0;
+        var roicDrop=stdROIC-adjROIC;
+
+        html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">🧪 R&D Capital Efficiency</h3>';
+        html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">ROIC treats R&D as an expense, not capital. For R&D-intensive companies this understates the capital base and inflates returns. What happens when we capitalize growth R&D?</p>';
+
+        // Side-by-side comparison
+        html+='<div class="dd-stat-row" style="grid-template-columns:1fr 1fr 1fr">';
+
+        // Standard ROIC
+        var stdColor=stdROIC>=0.12?'var(--green)':stdROIC>=0.06?'var(--blue)':'var(--red)';
+        html+='<div class="dd-stat"><div class="ds-val" style="color:'+stdColor+'">'+pct(stdROIC)+'</div><div class="ds-lbl">Standard ROIC</div>';
+        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">IC: '+fmtM(stdIC)+'</div></div>';
+
+        // R&D-Adjusted ROIC
+        var adjColor=adjROIC>=0.12?'var(--green)':adjROIC>=0.06?'var(--blue)':'var(--red)';
+        html+='<div class="dd-stat" style="border-color:var(--accent)"><div class="ds-val" style="color:'+adjColor+'">'+pct(adjROIC)+'</div><div class="ds-lbl">R&D-Adjusted ROIC</div>';
+        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">IC: '+fmtM(adjIC)+' (+'+fmtM(rdAsset)+' R&D)</div></div>';
+
+        // ROIC Impact
+        var impactColor=roicDrop>0.05?'var(--red)':roicDrop>0.02?'var(--orange)':'var(--green)';
+        html+='<div class="dd-stat"><div class="ds-val" style="color:'+impactColor+'">-'+(roicDrop*100).toFixed(1)+'pp</div><div class="ds-lbl">ROIC Impact</div>';
+        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">'+rdSectorLabel+' ('+rdAssetLife+'yr life)</div></div>';
+
+        html+='</div>';
+
+        // The math walkthrough
+        html+='<div style="margin-top:12px;font-size:.82rem;color:var(--text2);line-height:1.7">';
+        html+='<div style="margin-bottom:4px"><strong style="color:var(--text)">What changes:</strong></div>';
+        html+='<div style="padding-left:12px">';
+        html+='Profit: '+fmtM(latestRd.realProfit)+' + '+fmtM(rdAddback)+' growth R&D addback (after-tax) = <strong>'+fmtM(adjProfit)+'</strong><br>';
+        html+='Capital: '+fmtM(stdIC)+' + '+fmtM(rdAsset)+' R&D asset ('+rdAssetLife+'yr amortized) = <strong>'+fmtM(adjIC)+'</strong>';
+        html+='</div>';
+        html+='</div>';
+
+        // Verdict
+        html+='<div class="pcba-context" style="margin-top:12px">';
+        if(adjROIC>=0.12){
+          html+='<strong>Still strong.</strong> Even capitalizing growth R&D, ROIC remains '+pct(adjROIC)+' — well above cost of capital. R&D spending is genuinely productive.';
+        }else if(adjROIC>=0.06){
+          html+='<strong>Adequate but watch it.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' clears the cost-of-capital hurdle, but the '+pct(roicDrop,1)+' drop from standard ROIC ('+pct(stdROIC)+') means the R&D capital base is material. Efficiency matters here.';
+        }else{
+          html+='<strong>Below cost of capital.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' suggests the combined capital base (physical + R&D) is not generating adequate returns. The standard ROIC of '+pct(stdROIC)+' flatters the picture by ignoring R&D as capital.';
+        }
+        html+='</div>';
+
+        // Incremental R&D returns (if multi-year)
+        if(rdYears.length>=2){
+          html+='<div style="margin-top:14px">';
+          html+='<div style="font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:6px">Incremental R&D Returns</div>';
+          html+='<div class="trend-table-wrap"><table class="trend-table"><thead><tr><th style="text-align:left">Period</th><th>R&D Spent</th><th>ΔRevenue</th><th>Revenue / R&D</th><th>ΔProfit</th><th>Profit / R&D</th></tr></thead><tbody>';
+          for(var rdi=1;rdi<rdYears.length;rdi++){
+            var rdPrev=rdYears[rdi-1],rdCurr=rdYears[rdi];
+            var dRev=rdCurr.revenue-rdPrev.revenue;
+            var dProfit=rdCurr.realProfit-rdPrev.realProfit;
+            var revPerRd=rdPrev.rd_expense>0?dRev/rdPrev.rd_expense:0;
+            var profPerRd=rdPrev.rd_expense>0?dProfit/rdPrev.rd_expense:0;
+            var revColor=revPerRd>0.5?'var(--green)':revPerRd>0?'var(--text2)':'var(--red)';
+            var profColor=profPerRd>0.05?'var(--green)':profPerRd>0?'var(--text2)':'var(--red)';
+            html+='<tr><td style="text-align:left">'+rdPrev.label+' → '+rdCurr.label+'</td>';
+            html+='<td>'+fmtM(rdPrev.rd_expense)+'</td>';
+            html+='<td>'+fmtM(dRev)+'</td>';
+            html+='<td class="trend-val" style="color:'+revColor+'">'+revPerRd.toFixed(2)+'x</td>';
+            html+='<td>'+fmtM(dProfit)+'</td>';
+            html+='<td class="trend-val" style="color:'+profColor+'">'+pct(profPerRd,1)+'</td>';
+            html+='</tr>';
+          }
+          html+='</tbody></table></div>';
+          html+='<p class="section-note">Revenue / R&D: how much incremental revenue each prior-year R&D dollar generated. Profit / R&D: how much flowed through to real profit. A company spending $5B on R&D that generates $2B in new revenue (0.40x) is very different from one getting $500M (0.10x).</p>';
+          html+='</div>';
+        }
+
+        html+='<p class="section-note" style="margin-top:8px">'+rdSectorLabel+' preset: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth. Asset life: '+rdAssetLife+' years (straight-line). Profit addback at 79% (1 - 21% tax rate). R&D asset = cumulative growth R&D over '+rdAssetLife+' years, amortized.</p>';
+      }
+    }
   }
 
   // ROIC trajectory narrative
