@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.2';
+  var buildId='v3.6.3';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -2711,35 +2711,90 @@ function renderTrend(){
         var roicDrop=stdROIC-adjROIC;
 
         html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">🧪 R&D Capital Efficiency</h3>';
-        html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">ROIC treats R&D as an expense, not capital. For R&D-intensive companies this understates the capital base and inflates returns. What happens when we capitalize growth R&D?</p>';
+        html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">Standard ROIC treats R&D as an expense — it reduces profit but never appears as capital. For R&D-intensive companies, this understates the capital base and inflates returns. Here\'s the full breakdown, standard vs. R&D-capitalized:</p>';
 
-        // Side-by-side comparison
-        html+='<div class="dd-stat-row" style="grid-template-columns:1fr 1fr 1fr">';
+        // Get the component values we need for the breakdown
+        var rdInvIncome=0;
+        // Investment income - check if available
+        var rdLtInv=0,rdInvRate=0.04;
+        if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
+          rdLtInv=yearStore[currentYearKey].formData.lt_investments||0;
+          rdInvRate=(yearStore[currentYearKey].formData.inv_return_rate||4)/100;
+        }
+        rdInvIncome=rdLtInv*rdInvRate;
+        var rdRestructuring=latestRd.maintCapex?0:0; // already in realProfit calc
+        // Get restructuring from formData
+        var rdRestruct=0;
+        if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
+          rdRestruct=yearStore[currentYearKey].formData.restructuring||0;
+        }
 
-        // Standard ROIC
-        var stdColor=stdROIC>=0.12?'var(--green)':stdROIC>=0.06?'var(--blue)':'var(--red)';
-        html+='<div class="dd-stat"><div class="ds-val" style="color:'+stdColor+'">'+pct(stdROIC)+'</div><div class="ds-lbl">Standard ROIC</div>';
-        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">IC: '+fmtM(stdIC)+'</div></div>';
+        // Full side-by-side decomposition table
+        html+='<div class="trend-table-wrap"><table class="trend-table" style="font-size:.82rem">';
+        html+='<thead><tr><th style="text-align:left;width:45%">Component</th><th style="text-align:right">Standard</th><th style="text-align:right">R&D-Adjusted</th><th style="text-align:left;width:25%">What changed</th></tr></thead>';
+        html+='<tbody>';
 
-        // R&D-Adjusted ROIC
-        var adjColor=adjROIC>=0.12?'var(--green)':adjROIC>=0.06?'var(--blue)':'var(--red)';
-        html+='<div class="dd-stat" style="border-color:var(--accent)"><div class="ds-val" style="color:'+adjColor+'">'+pct(adjROIC)+'</div><div class="ds-lbl">R&D-Adjusted ROIC</div>';
-        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">IC: '+fmtM(adjIC)+' (+'+fmtM(rdAsset)+' R&D)</div></div>';
+        // === NUMERATOR: Real Economic Profit ===
+        html+='<tr><td colspan="4" style="font-weight:700;color:var(--accent);padding-top:12px;border-bottom:none">NUMERATOR: Real Economic Profit</td></tr>';
 
-        // ROIC Impact
+        html+='<tr><td>Cash From Operations</td><td style="text-align:right">'+fmtM(latestRd.cfo)+'</td><td style="text-align:right">'+fmtM(latestRd.cfo)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+
+        html+='<tr><td><span style="color:var(--text3);font-weight:700;margin-right:4px">-</span> Real SBC (MAX of exp/grant)</td><td style="text-align:right;color:var(--red)">'+fmtM(latestRd.realSBC)+'</td><td style="text-align:right;color:var(--red)">'+fmtM(latestRd.realSBC)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+
+        html+='<tr><td><span style="color:var(--text3);font-weight:700;margin-right:4px">-</span> Maintenance CapEx (D&A x 1.05)</td><td style="text-align:right;color:var(--red)">'+fmtM(latestRd.maintCapex)+'</td><td style="text-align:right;color:var(--red)">'+fmtM(latestRd.maintCapex)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+
+        if(rdRestruct>0){
+          html+='<tr><td><span style="color:var(--text3);font-weight:700;margin-right:4px">-</span> Restructuring</td><td style="text-align:right;color:var(--red)">'+fmtM(rdRestruct)+'</td><td style="text-align:right;color:var(--red)">'+fmtM(rdRestruct)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+        }
+        if(rdInvIncome>0){
+          html+='<tr><td><span style="color:var(--text3);font-weight:700;margin-right:4px">+</span> Investment Income</td><td style="text-align:right">'+fmtM(rdInvIncome)+'</td><td style="text-align:right">'+fmtM(rdInvIncome)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+        }
+
+        // The R&D addback line — only in adjusted column
+        html+='<tr style="background:rgba(46,204,113,.06)"><td><span style="color:var(--green);font-weight:700;margin-right:4px">+</span> Growth R&D addback (after-tax)</td><td style="text-align:right;color:var(--text3)">—</td><td style="text-align:right;color:var(--green);font-weight:600">+'+fmtM(rdAddback)+'</td><td style="font-size:.75rem;color:var(--green)">'+fmtM(latestGrowthRd)+' x 79% tax adj</td></tr>';
+
+        // Totals
+        html+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Real Economic Profit</td><td style="text-align:right;font-weight:700;color:var(--accent2)">'+fmtM(latestRd.realProfit)+'</td><td style="text-align:right;font-weight:700;color:var(--green)">'+fmtM(adjProfit)+'</td><td style="font-size:.75rem;color:var(--green)">+'+fmtM(rdAddback)+'</td></tr>';
+
+        // === DENOMINATOR: Invested Capital ===
+        html+='<tr><td colspan="4" style="font-weight:700;color:var(--accent);padding-top:16px;border-bottom:none">DENOMINATOR: Invested Capital</td></tr>';
+
+        html+='<tr><td>Equity + Debt - Cash - STI</td><td style="text-align:right">'+fmtM(stdIC)+'</td><td style="text-align:right">'+fmtM(stdIC)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
+
+        // R&D asset — only in adjusted column
+        html+='<tr style="background:rgba(155,89,182,.06)"><td><span style="color:var(--purple);font-weight:700;margin-right:4px">+</span> Capitalized R&D Asset</td><td style="text-align:right;color:var(--text3)">—</td><td style="text-align:right;color:var(--purple);font-weight:600">+'+fmtM(rdAsset)+'</td><td style="font-size:.75rem;color:var(--purple)">'+rdAssetLife+'yr life, amortized</td></tr>';
+
+        // R&D asset breakdown — show what went into it
+        var rdAssetNote='';
+        var availYrs2=Math.min(rdAssetLife,rdYears.length);
+        for(var rbi=rdYears.length-availYrs2;rbi<rdYears.length;rbi++){
+          var rbAge=rdYears.length-1-rbi;
+          var rbGrowthRd=rdYears[rbi].rd_expense*(rdGrowthPct3/100);
+          var rbRemaining=Math.max(rdAssetLife-rbAge,0)/rdAssetLife;
+          var rbValue=rbGrowthRd*rbRemaining;
+          if(rbValue>0){
+            html+='<tr style="opacity:.6"><td style="padding-left:24px;font-size:.75rem">'+rdYears[rbi].label+': '+fmtM(rdYears[rbi].rd_expense)+' total → '+fmtM(rbGrowthRd)+' growth → '+pct(rbRemaining,0)+' remaining</td><td></td><td style="text-align:right;font-size:.75rem">'+fmtM(rbValue)+'</td><td style="font-size:.7rem;color:var(--text3)">Age '+rbAge+'yr of '+rdAssetLife+'yr</td></tr>';
+          }
+        }
+
+        // Totals
+        html+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Invested Capital</td><td style="text-align:right;font-weight:700;color:var(--accent2)">'+fmtM(stdIC)+'</td><td style="text-align:right;font-weight:700;color:var(--purple)">'+fmtM(adjIC)+'</td><td style="font-size:.75rem;color:var(--purple)">+'+fmtM(rdAsset)+'</td></tr>';
+
+        // === RESULT ===
+        html+='<tr><td colspan="4" style="font-weight:700;color:var(--accent);padding-top:16px;border-bottom:none">RESULT: ROIC = Profit / Capital</td></tr>';
+
+        html+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Real ROIC</td>';
+        html+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+stdColor+'">'+pct(stdROIC)+'</td>';
+        html+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+adjColor+'">'+pct(adjROIC)+'</td>';
         var impactColor=roicDrop>0.05?'var(--red)':roicDrop>0.02?'var(--orange)':'var(--green)';
-        html+='<div class="dd-stat"><div class="ds-val" style="color:'+impactColor+'">-'+(roicDrop*100).toFixed(1)+'pp</div><div class="ds-lbl">ROIC Impact</div>';
-        html+='<div style="font-size:.65rem;color:var(--text3);margin-top:2px">'+rdSectorLabel+' ('+rdAssetLife+'yr life)</div></div>';
+        html+='<td style="font-weight:700;color:'+impactColor+'">'+(roicDrop>0?'-':'+')+Math.abs(roicDrop*100).toFixed(1)+'pp</td></tr>';
 
-        html+='</div>';
+        html+='</tbody></table></div>';
 
-        // The math walkthrough
-        html+='<div style="margin-top:12px;font-size:.82rem;color:var(--text2);line-height:1.7">';
-        html+='<div style="margin-bottom:4px"><strong style="color:var(--text)">What changes:</strong></div>';
-        html+='<div style="padding-left:12px">';
-        html+='Profit: '+fmtM(latestRd.realProfit)+' + '+fmtM(rdAddback)+' growth R&D addback (after-tax) = <strong>'+fmtM(adjProfit)+'</strong><br>';
-        html+='Capital: '+fmtM(stdIC)+' + '+fmtM(rdAsset)+' R&D asset ('+rdAssetLife+'yr amortized) = <strong>'+fmtM(adjIC)+'</strong>';
-        html+='</div>';
+        // R&D split context
+        html+='<div style="margin-top:10px;font-size:.78rem;color:var(--text3);line-height:1.6">';
+        html+='<strong style="color:var(--text2)">R&D Split ('+rdSectorLabel+' preset):</strong> Total R&D '+fmtM(latestRd.rd_expense)+' = '+rdMaintPct3+'% maintenance ('+fmtM(latestRd.rd_expense*rdMaintPct3/100)+') + '+rdGrowthPct3+'% growth ('+fmtM(latestGrowthRd)+'). ';
+        html+='Only growth R&D is capitalized — maintenance R&D stays expensed because it\'s the cost of keeping existing products competitive.';
         html+='</div>';
 
         // Verdict
@@ -2747,7 +2802,7 @@ function renderTrend(){
         if(adjROIC>=0.12){
           html+='<strong>Still strong.</strong> Even capitalizing growth R&D, ROIC remains '+pct(adjROIC)+' — well above cost of capital. R&D spending is genuinely productive.';
         }else if(adjROIC>=0.06){
-          html+='<strong>Adequate but watch it.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' clears the cost-of-capital hurdle, but the '+pct(roicDrop,1)+' drop from standard ROIC ('+pct(stdROIC)+') means the R&D capital base is material. Efficiency matters here.';
+          html+='<strong>Adequate but watch it.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' clears the cost-of-capital hurdle, but the '+(roicDrop*100).toFixed(1)+'pp drop from standard ROIC ('+pct(stdROIC)+') means the R&D capital base is material. Efficiency matters here.';
         }else{
           html+='<strong>Below cost of capital.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' suggests the combined capital base (physical + R&D) is not generating adequate returns. The standard ROIC of '+pct(stdROIC)+' flatters the picture by ignoring R&D as capital.';
         }
