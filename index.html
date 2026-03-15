@@ -292,10 +292,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .dd-stat .ds-lbl{font-size:.7rem;color:var(--text3);margin-top:2px}
 .dd-stacked-bar{display:flex;height:32px;border-radius:6px;overflow:hidden;margin:10px 0;background:var(--bg)}
 .dd-stacked-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:500;color:#fff;white-space:nowrap;min-width:30px;transition:width .4s ease}
-.dd-stacked-bar .seg.maint{background:linear-gradient(90deg,#e74c3c,#c0392b)}
-.dd-stacked-bar .seg.growth{background:linear-gradient(90deg,#2ecc71,#27ae60)}
-.dd-stacked-bar .seg.replace{background:linear-gradient(90deg,#e67e22,#d35400)}
-.dd-stacked-bar .seg.discretionary{background:linear-gradient(90deg,#9b59b6,#8e44ad)}
+.dd-stacked-bar .seg.maint{background:rgba(255,255,255,.08);color:var(--text3);font-weight:400}
+.dd-stacked-bar .seg.growth{background:linear-gradient(90deg,#2ecc71,#27ae60);font-weight:700}
+.dd-stacked-bar .seg.replace{background:rgba(255,255,255,.08);color:var(--text3);font-weight:400}
+.dd-stacked-bar .seg.discretionary{background:linear-gradient(90deg,#2ecc71,#27ae60);font-weight:700}
 .dd-stacked-bar .seg.core{background:linear-gradient(90deg,#3498db,#2980b9)}
 .dd-stacked-bar .seg.adjacent{background:linear-gradient(90deg,#1abc9c,#16a085)}
 .dd-bar-legend{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px;font-size:.72rem;color:var(--text2)}
@@ -379,7 +379,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-15';
-  var buildId='v3.7.0';
+  var buildId='v3.7.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -3935,12 +3935,14 @@ function renderCapExDeepDive(capex,da,maintCapex,growthCapex,deprOnly,maintMetho
   html+='<div class="dd-summary">Total: '+fmtM(capex)+' · Maintenance: '+fmtM(maintCapex)+' ('+pct(maintPct,0)+') · Growth: '+fmtM(growthCapex)+' ('+pct(growthPct,0)+')</div>';
   html+='<div class="dd-body">';
 
-  // Stacked bar
-  html+='<div class="dd-stacked-bar">';
-  if(growthPct>0)html+='<div class="seg growth" style="width:'+Math.max(growthPct*100,8)+'%">'+fmtM(growthCapex)+'</div>';
-  if(maintPct>0)html+='<div class="seg maint" style="width:'+Math.max(maintPct*100,8)+'%">'+fmtM(maintCapex)+'</div>';
+  // Growth bar with maintenance as context
+  html+='<div style="margin:10px 0">';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">';
+  html+='<span style="font-size:.75rem;color:var(--green);font-weight:600;min-width:60px">Growth</span>';
+  html+='<div style="flex:1;height:28px;background:var(--bg);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+Math.max(growthPct*100,5)+'%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:\'JetBrains Mono\',monospace;font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap">'+fmtM(growthCapex)+' ('+pct(growthPct,0)+')</div></div>';
   html+='</div>';
-  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#2ecc71"></span>Growth</span><span><span class="dot" style="background:#e74c3c"></span>Maintenance</span></div>';
+  html+='<div style="font-size:.78rem;color:var(--text3);margin-left:70px">Maintenance: '+fmtM(maintCapex)+' ('+pct(maintPct,0)+') — '+maintMethod+'</div>';
+  html+='</div>';
 
   // Stats
   html+='<div class="dd-stat-row">';
@@ -4298,12 +4300,15 @@ function renderRDDeepDive(rdExpense,cfo,capex,revenue,realProfit,realSBC,maintCa
   html+='<div class="rd-range-output"><span>More growth (10% maint)</span><span>Less growth (95% maint)</span></div>';
   html+='</div>';
 
-  // Stacked bar for R&D split
-  html+='<div class="dd-stacked-bar" id="rdStackedBar">';
-  html+='<div class="seg discretionary" style="width:'+(100-rdMaintPct)+'%">Growth '+(100-rdMaintPct)+'%</div>';
-  html+='<div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div>';
+  // Growth bar with maintenance as context
+  var growthPctRD=100-rdMaintPct;
+  html+='<div style="margin:10px 0">';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">';
+  html+='<span style="font-size:.75rem;color:var(--green);font-weight:600;min-width:60px">Growth</span>';
+  html+='<div id="rdStackedBar" style="flex:1;height:28px;background:var(--bg);border-radius:6px;overflow:hidden"><div class="seg discretionary" style="height:100%;width:'+growthPctRD+'%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:\'JetBrains Mono\',monospace;font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap">'+growthPctRD+'% — '+fmtM(rdExpense*growthPctRD/100)+'</div></div>';
   html+='</div>';
-  html+='<div class="dd-bar-legend"><span><span class="dot" style="background:#9b59b6"></span>Growth/Discretionary R&D</span><span><span class="dot" style="background:#e74c3c"></span>Maintenance/Replacement R&D</span></div>';
+  html+='<div style="font-size:.78rem;color:var(--text3);margin-left:70px">Maintenance: '+rdMaintPct+'% ('+fmtM(rdExpense*rdMaintPct/100)+') — sustaining the existing product/platform</div>';
+  html+='</div>';
 
   // Scenario grid — Low/Mid/High maintenance estimates
   html+='<div id="rdScenarios"></div>';
@@ -4349,10 +4354,17 @@ function updateRDSlider(){
   if(lbl)lbl.textContent=rdMaintPct+'%';
   if(glbl)glbl.textContent=(100-rdMaintPct)+'%';
 
-  // Update stacked bar
+  // Update growth bar
   var bar=document.getElementById('rdStackedBar');
   if(bar){
-    bar.innerHTML='<div class="seg discretionary" style="width:'+(100-rdMaintPct)+'%">Growth '+(100-rdMaintPct)+'%</div><div class="seg maint" style="width:'+rdMaintPct+'%">Maint '+rdMaintPct+'%</div>';
+    var rdE2=null;
+    if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra)rdE2=yearStore[currentYearKey].extra.rd_expense||null;
+    var growthPctU=100-rdMaintPct;
+    var innerBar='<div class="seg discretionary" style="height:100%;width:'+growthPctU+'%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:\'JetBrains Mono\',monospace;font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap">'+growthPctU+'%'+(rdE2?' — '+fmtM(rdE2*growthPctU/100):'')+'</div>';
+    bar.innerHTML=innerBar;
+    // Update maintenance context line
+    var maintCtx=bar.parentElement.parentElement.querySelector('div:last-child');
+    if(maintCtx&&rdE2)maintCtx.textContent='Maintenance: '+rdMaintPct+'% ('+fmtM(rdE2*rdMaintPct/100)+') — sustaining the existing product/platform';
   }
 
   // Recalculate scenarios with current values from the form
@@ -4508,13 +4520,15 @@ function updateRDScenarios(rdExpense,cfo,realProfit,realSBC,maintCapex,ev,shares
   var totalReinvest=totalMaint+totalGrowth;
 
   shtml+='<h4 style="font-size:.82rem;color:var(--text2);margin:16px 0 8px">Full Reinvestment Picture (CapEx + R&D)</h4>';
-  shtml+='<div class="dd-stacked-bar">';
   var mPct=totalReinvest>0?totalMaint/totalReinvest*100:50;
   var gPct=100-mPct;
-  shtml+='<div class="seg growth" style="width:'+Math.max(gPct,8)+'%">Growth '+fmtM(totalGrowth)+'</div>';
-  shtml+='<div class="seg maint" style="width:'+Math.max(mPct,8)+'%">Maint '+fmtM(totalMaint)+'</div>';
+  shtml+='<div style="margin:8px 0">';
+  shtml+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">';
+  shtml+='<span style="font-size:.75rem;color:var(--green);font-weight:600;min-width:60px">Growth</span>';
+  shtml+='<div style="flex:1;height:28px;background:var(--bg);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+Math.max(gPct,5)+'%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:\'JetBrains Mono\',monospace;font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap">'+fmtM(totalGrowth)+' ('+Math.round(gPct)+'%)</div></div>';
   shtml+='</div>';
-  shtml+='<div class="dd-bar-legend"><span><span class="dot" style="background:#2ecc71"></span>Total Growth (CapEx + R&D): '+fmtM(totalGrowth)+'</span><span><span class="dot" style="background:#e74c3c"></span>Total Maintenance (CapEx + R&D): '+fmtM(totalMaint)+'</span></div>';
+  shtml+='<div style="font-size:.78rem;color:var(--text3);margin-left:70px">Maintenance: '+fmtM(totalMaint)+' ('+Math.round(mPct)+'%) — the baseline cost of running the business</div>';
+  shtml+='</div>';
 
   var scenarioEl=document.getElementById('rdScenarios');
   if(scenarioEl)scenarioEl.innerHTML=shtml;
