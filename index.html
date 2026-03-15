@@ -406,7 +406,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-14';
-  var buildId='v3.6.3';
+  var buildId='v3.6.4';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -4810,23 +4810,23 @@ function calculate(){
     var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
     var impliedGrowth=reinvestRate*realROIC;
     var roicItems=[
-      {label:'Real ROIC (Full Cost)',value:pct(realROIC),sub:'Real Profit ÷ Invested Capital'},
-      {label:'Invested Capital',value:fmtM(investedCapital),sub:'Equity + Debt − Cash − STI'},
-      {label:'Growth CapEx',value:fmtM(growthCapex),sub:'Total CapEx − Maint CapEx'},
+      {label:'Real ROIC (Full Cost)',value:pct(realROIC),sub:fmtM(realProfit)+' / '+fmtM(investedCapital)},
+      {label:'Invested Capital',value:fmtM(investedCapital),sub:fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash'},
+      {label:'Growth CapEx',value:fmtM(growthCapex),sub:fmtM(capex)+' total - '+fmtM(maintCapex)+' maint'},
       {label:'Maint CapEx (Full Cost)',value:fmtM(maintCapex),sub:maintMethod},
-      {label:'Reinvestment Rate',value:pct(reinvestRate,1),sub:'Growth CapEx ÷ Invested Capital'},
-      {label:'Implied Profit Growth',value:pct(impliedGrowth,1),sub:'Reinvest Rate × ROIC'}
+      {label:'Reinvestment Rate',value:pct(reinvestRate,1),sub:fmtM(growthCapex)+' / '+fmtM(investedCapital)},
+      {label:'Implied Profit Growth',value:pct(impliedGrowth,1),sub:pct(reinvestRate,1)+' x '+pct(realROIC)}
     ];
     if(hasLightView){
       var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-      roicItems.push({label:'Maint CapEx (Ex-Amortization)',value:fmtM(maintCapexLight),sub:'Depreciation Only × 1.05'});
-      roicItems.push({label:'Real ROIC (Ex-Amortization)',value:pct(realROICLight),sub:'Ex-Amort Profit ÷ IC'});
+      roicItems.push({label:'Maint CapEx (Ex-Amortization)',value:fmtM(maintCapexLight),sub:'Depr Only x 1.05'});
+      roicItems.push({label:'Real ROIC (Ex-Amortization)',value:pct(realROICLight),sub:fmtM(realProfitLight)+' / '+fmtM(investedCapital)});
     }
     if(nta>0){
-      roicItems.push({label:'Return on NTA',value:pct(returnOnNTA),sub:'Real Profit ÷ Net Tangible Assets'});
-      roicItems.push({label:'Net Tangible Assets',value:fmtM(nta),sub:'Assets − GW − Intang − Cash − STI'});
+      roicItems.push({label:'Return on NTA',value:pct(returnOnNTA),sub:fmtM(realProfit)+' / '+fmtM(nta)});
+      roicItems.push({label:'Net Tangible Assets',value:fmtM(nta),sub:'Assets - GW - Intang - Cash - STI'});
     }
-    document.getElementById('roicMetrics').innerHTML=roicItems.map(function(m){return '<div class="metric"><div class="val">'+m.value+'</div><div class="lbl">'+m.label+' · '+m.sub+'</div></div>'}).join('');
+    document.getElementById('roicMetrics').innerHTML=roicItems.map(function(m){return '<div class="metric"><div class="val">'+m.value+'</div><div class="lbl">'+m.label+'</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+m.sub+'</div></div>'}).join('');
 
     var scenarios=[{label:'Bear (10%)',roic:0.10},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull ('+pct(Math.max(realROIC*1.25,realROIC+0.05),0)+')',roic:Math.max(realROIC*1.25,realROIC+0.05)}];
     if(realROIC<=0.10){scenarios=[{label:'Bear (5%)',roic:0.05},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull (20%)',roic:0.20}];}
@@ -4847,13 +4847,13 @@ function calculate(){
   }else{
     roicCard.style.display=equity>0?'block':'none';
     if(equity>0){
-      var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Full Cost) · Real Profit ÷ Invested Capital</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital · Equity + Debt − Cash − STI</div></div>';
+      var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Full Cost)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfit)+' / '+fmtM(investedCapital)+'</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash</div></div>';
       if(hasLightView){
         var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Ex-Amortization) · Depr Only × 1.05</div></div>';
+        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (Ex-Amortization)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfitLight)+' / '+fmtM(investedCapital)+'</div></div>';
         ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (Ex-Amortization)</div></div>';
       }
-      if(nta>0)ntaHTML+='<div class="metric"><div class="val">'+pct(returnOnNTA)+'</div><div class="lbl">Return on NTA · Real Profit ÷ Net Tangible Assets</div></div><div class="metric"><div class="val">'+fmtM(nta)+'</div><div class="lbl">Net Tangible Assets · Assets − GW − Intang − Cash</div></div>';
+      if(nta>0)ntaHTML+='<div class="metric"><div class="val">'+pct(returnOnNTA)+'</div><div class="lbl">Return on NTA</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfit)+' / '+fmtM(nta)+'</div></div><div class="metric"><div class="val">'+fmtM(nta)+'</div><div class="lbl">Net Tangible Assets</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">Assets - GW - Intang - Cash</div></div>';
       document.getElementById('roicMetrics').innerHTML=ntaHTML;
       document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' Ex-Amortization view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
       document.getElementById('yocSection').style.display='none';
@@ -4877,10 +4877,10 @@ function calculate(){
 
     var rdHTML='<div class="metrics" style="grid-template-columns:1fr 1fr 1fr">';
     rdHTML+='<div class="metric"><div class="val"'+(rdIsHeavy?' style="color:var(--purple)"':'')+'>'+fmtM(rdExpense)+'</div><div class="lbl">R&D Expense</div></div>';
-    if(rdRevPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdRevPct)+'</div><div class="lbl">R&D / Revenue</div></div>';
-    if(rdCapexRatio!==null)rdHTML+='<div class="metric"><div class="val"'+(rdIsHeavy?' style="color:var(--purple)"':'')+'>'+rdCapexRatio.toFixed(1)+'x</div><div class="lbl">R&D / CapEx</div></div>';
-    if(rdCfoPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdCfoPct)+'</div><div class="lbl">R&D / CFO</div></div>';
-    rdHTML+='<div class="metric"><div class="val" style="color:var(--accent2)">'+fmtM(totalReinvestment)+'</div><div class="lbl">Total Reinvestment (CapEx + R&D)</div></div>';
+    if(rdRevPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdRevPct)+'</div><div class="lbl">R&D / Revenue</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(rdExpense)+' / '+fmtM(rdRevenue)+'</div></div>';
+    if(rdCapexRatio!==null)rdHTML+='<div class="metric"><div class="val"'+(rdIsHeavy?' style="color:var(--purple)"':'')+'>'+rdCapexRatio.toFixed(1)+'x</div><div class="lbl">R&D / CapEx</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(rdExpense)+' / '+fmtM(capex)+'</div></div>';
+    if(rdCfoPct!==null)rdHTML+='<div class="metric"><div class="val">'+pct(rdCfoPct)+'</div><div class="lbl">R&D / CFO</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(rdExpense)+' / '+fmtM(cfo)+'</div></div>';
+    rdHTML+='<div class="metric"><div class="val" style="color:var(--accent2)">'+fmtM(totalReinvestment)+'</div><div class="lbl">Total Reinvestment (CapEx + R&D)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(capex)+' + '+fmtM(rdExpense)+'</div></div>';
     rdHTML+='<div class="metric"><div class="val">'+fmtM(capex)+'</div><div class="lbl">CapEx Alone</div></div>';
     rdHTML+='</div>';
 
