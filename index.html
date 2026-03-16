@@ -379,7 +379,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-15';
-  var buildId='v3.7.3';
+  var buildId='v3.7.4';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -1002,7 +1002,7 @@ function showPicker(mode){
   document.getElementById('pickerGoBtn').textContent=mode==='compare'?'Compare':'Scorecard';
   var grid=document.getElementById('pickerGrid');
   grid.innerHTML=tickers.map(function(t){
-    return '<label class="picker-chip selected" onclick="togglePickerChip(this)"><span class="picker-check">✓</span><input type="checkbox" value="'+t+'" checked>'+t+'</label>';
+    return '<label class="picker-chip" onclick="togglePickerChip(this)"><span class="picker-check">✓</span><input type="checkbox" value="'+t+'">'+t+'</label>';
   }).join('');
   document.getElementById('pickerModal').classList.add('active');
 }
