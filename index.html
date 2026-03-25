@@ -2997,7 +2997,13 @@ function renderRoiicAnalysis(){
   var preset=getRdSectorPreset();
 
   // Build enriched data using ALL years (not just selected)
-  var years=enrichYears(allKeys,{formData:true,extra:true});
+  var years;
+  try{
+    years=enrichYears(allKeys,{formData:true,extra:true});
+  }catch(e){
+    document.getElementById('roiicStats').innerHTML='<div style="color:var(--red);font-size:.8rem;padding:10px;grid-column:1/-1">Error loading year data: '+e.message+'</div>';
+    return;
+  }
 
   // Compute ROIIC-specific metrics per year
   var roiicData=years.map(function(y){
@@ -3034,7 +3040,8 @@ function renderRoiicAnalysis(){
       if(i>=w){
         var deltaRep=d.rep-roiicData[i-w].rep;
         var deltaIC=d.ic-roiicData[i-w].ic;
-        d['roiic'+w]=deltaIC!==0?(deltaRep/deltaIC):null;
+        var val=deltaIC!==0?(deltaRep/deltaIC):null;
+        d['roiic'+w]=(val!==null&&isFinite(val))?val:null;
       }else{
         d['roiic'+w]=null;
       }
@@ -3045,14 +3052,14 @@ function renderRoiicAnalysis(){
   var first=roiicData[0],last=roiicData[roiicData.length-1];
   var cumulDeltaRep=last.rep-first.rep;
   var cumulDeltaIC=last.ic-first.ic;
-  var cumulRoiic=cumulDeltaIC!==0?(cumulDeltaRep/cumulDeltaIC):null;
+  var cumulRoiic=(cumulDeltaIC!==0&&isFinite(cumulDeltaRep/cumulDeltaIC))?(cumulDeltaRep/cumulDeltaIC):null;
 
   // Average reinvestment rate
   var avgReinvRate=roiicData.length>0?
     roiicData.reduce(function(s,d){return s+d.reinvestmentRate},0)/roiicData.length:0;
 
   // Implied growth
-  var impliedGrowth=cumulRoiic!==null?(cumulRoiic*avgReinvRate):null;
+  var impliedGrowth=(cumulRoiic!==null&&isFinite(cumulRoiic*avgReinvRate))?(cumulRoiic*avgReinvRate):null;
 
   // Render stat cards
   var statsHtml='';
@@ -3073,9 +3080,13 @@ function renderRoiicAnalysis(){
 
   // Render chart
   var chartArea=document.getElementById('roiicChartArea');
-  if(roiicActiveTab==='dual') chartArea.innerHTML=renderRoiicDualChart(roiicData);
-  else if(roiicActiveTab==='roiic') chartArea.innerHTML=renderRoiicRollingChart(roiicData);
-  else chartArea.innerHTML=renderRoiicBucketChart(roiicData);
+  try{
+    if(roiicActiveTab==='dual') chartArea.innerHTML=renderRoiicDualChart(roiicData);
+    else if(roiicActiveTab==='roiic') chartArea.innerHTML=renderRoiicRollingChart(roiicData);
+    else chartArea.innerHTML=renderRoiicBucketChart(roiicData);
+  }catch(e){
+    chartArea.innerHTML='<div style="color:var(--red);font-size:.8rem;padding:10px">Chart error: '+e.message+'</div>';
+  }
 
   // Render data table
   var tbl='<tr><th style="text-align:left">Year</th><th>REP</th><th>IC</th><th>Maint CapEx</th><th>Growth CapEx</th>';
@@ -3109,13 +3120,16 @@ function renderRoiicDualChart(data){
   var plotW=cW-pL-pR,plotH=cH-pT-pB;
   var n=data.length;
 
-  var repVals=data.map(function(d){return d.rep});
-  var icVals=data.map(function(d){return d.ic});
-  var allVals=repVals.concat(icVals).filter(function(v){return v!=null});
-  var yMin=Math.min.apply(null,allVals.concat([0]))*0.9;
+  var repVals=data.map(function(d){return d.rep||0});
+  var icVals=data.map(function(d){return d.ic||0});
+  var allVals=repVals.concat(icVals).filter(function(v){return v!=null&&isFinite(v)});
+  if(allVals.length===0)return '<div style="color:var(--text3);font-size:.85rem;padding:20px">No valid data to chart.</div>';
+  var yMin=Math.min.apply(null,allVals)*1.1;
   var yMax=Math.max.apply(null,allVals)*1.15;
+  if(yMin>0)yMin=0;
   if(yMax-yMin<1){yMin-=100;yMax+=100;}
   var yRange=yMax-yMin;
+  if(yRange===0)yRange=1;
 
   function xP(i){return pL+(n>1?i/(n-1)*plotW:plotW/2)}
   function yP(val){return pT+plotH-((val-yMin)/yRange*plotH)}
