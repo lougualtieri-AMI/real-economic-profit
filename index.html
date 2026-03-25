@@ -622,9 +622,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <p style="font-size:.78rem;color:var(--text3);margin:-8px 0 14px;line-height:1.5">Measures the return on each incremental dollar of invested capital (ROIIC) to project sustainable REP growth. Uses all loaded years automatically — longer history = more reliable signal.</p>
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:10px;flex:1;min-width:240px">
-        <span style="font-size:.75rem;color:var(--text3);white-space:nowrap">R&D Maintenance %</span>
-        <input type="range" id="roiicRdMaint" min="0" max="100" value="50" style="flex:1;accent-color:var(--blue);cursor:pointer" oninput="renderRoiicAnalysis()">
-        <span id="roiicRdMaintLabel" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;color:var(--blue);min-width:36px;text-align:right">50%</span>
+        <span style="font-size:.75rem;color:var(--text3);white-space:nowrap">R&D Growth %</span>
+        <input type="range" id="roiicRdGrowth" min="0" max="100" value="50" style="flex:1;accent-color:var(--green);cursor:pointer" oninput="renderRoiicAnalysis()">
+        <span id="roiicRdGrowthLabel" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;color:var(--green);min-width:36px;text-align:right">50%</span>
+        <span id="roiicRdStatus" style="font-size:.6rem;color:var(--text3)"></span>
       </div>
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:10px;flex:1;min-width:240px">
         <span style="font-size:.75rem;color:var(--text3);white-space:nowrap">Competitive Necessity %</span>
@@ -883,7 +884,7 @@ function loadFromPortfolio(){
   currentYearKey=null;
   selectedYears=[];
   // Reset ROIIC slider preset flag
-  var roiicSlider=document.getElementById('roiicRdMaint');if(roiicSlider)roiicSlider.dataset.initialized='';
+  var roiicSlider=document.getElementById('roiicRdGrowth');if(roiicSlider)roiicSlider.dataset.initialized='';
   // Restore
   var ys=entry.years;
   for(var k in ys){yearStore[k]=ys[k];}
@@ -909,7 +910,7 @@ function clearForNewCompany(){
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
   selectedYears=[];
-  var roiicSlider=document.getElementById('roiicRdMaint');if(roiicSlider)roiicSlider.dataset.initialized='';
+  var roiicSlider=document.getElementById('roiicRdGrowth');if(roiicSlider)roiicSlider.dataset.initialized='';
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
@@ -2953,27 +2954,41 @@ function renderRoiicAnalysis(){
 
   // Set R&D preset from ticker on first load
   var preset=getRdSectorPreset();
-  var slider=document.getElementById('roiicRdMaint');
+  var slider=document.getElementById('roiicRdGrowth');
   if(!slider.dataset.initialized){
     // Use the adjustment flow slider value if it exists, otherwise sector preset
     var adjRdSlider=document.getElementById('adjRdSlider');
-    var adjMaintPct=adjRdSlider?100-parseInt(adjRdSlider.value):preset.maintPct;
-    slider.value=adjMaintPct;
+    var growthPct=adjRdSlider?parseInt(adjRdSlider.value):(100-preset.maintPct);
+    slider.value=growthPct;
     slider.dataset.initialized='1';
   }
 
-  var rdMaintPct=parseInt(slider.value)||50;
+  var rdGrowthPct=parseInt(slider.value)||50;
+  var rdMaintPct=100-rdGrowthPct;
   var necessityPct=parseInt(document.getElementById('roiicNecessity').value)||0;
-  document.getElementById('roiicRdMaintLabel').textContent=rdMaintPct+'%';
+  document.getElementById('roiicRdGrowthLabel').textContent=rdGrowthPct+'%';
   document.getElementById('roiicNecessityLabel').textContent=necessityPct+'%';
+
+  // Check if any year has R&D data
+  var hasRdData=allKeys.some(function(k){
+    var ex=yearStore[k].extra||{};
+    return ex.rd_expense&&ex.rd_expense>0;
+  });
+  var rdStatus=document.getElementById('roiicRdStatus');
+  if(!hasRdData){
+    rdStatus.textContent='(no R&D data)';
+    rdStatus.style.color='var(--orange)';
+  }else{
+    rdStatus.textContent='';
+  }
 
   // Show/hide necessity note
   var necessityNote=document.getElementById('roiicNecessityNote');
   if(necessityPct>0){
     necessityNote.style.display='block';
-    var effectiveGrowthRd=(100-rdMaintPct)*(100-necessityPct)/100;
+    var trueDiscretionaryPct=rdGrowthPct*(100-necessityPct)/100;
     document.getElementById('roiicNecessityDesc').textContent=
-      necessityPct+'% of "growth" R&D reclassified as competitive necessity. Only '+effectiveGrowthRd.toFixed(0)+'% of total R&D treated as truly discretionary. This reduces measured reinvestment but gives a more honest ROIIC for R&D-heavy companies where spending is required to maintain position.';
+      necessityPct+'% of growth R&D reclassified as competitive necessity. Only '+trueDiscretionaryPct.toFixed(0)+'% of total R&D treated as truly discretionary. This reduces measured reinvestment but gives a more honest ROIIC for R&D-heavy companies where spending is required to maintain position.';
   }else{
     necessityNote.style.display='none';
   }
@@ -2988,7 +3003,7 @@ function renderRoiicAnalysis(){
   var roiicData=years.map(function(y){
     var rd=y.rd_expense||0;
     var maintenanceRD=rd*(rdMaintPct/100);
-    var rawGrowthRD=rd*(1-rdMaintPct/100);
+    var rawGrowthRD=rd*(rdGrowthPct/100);
     var nonDiscGrowthRD=rawGrowthRD*(necessityPct/100);
     var trueGrowthRD=rawGrowthRD*(1-necessityPct/100);
     var growthCapex=y.growthCapex||0;
