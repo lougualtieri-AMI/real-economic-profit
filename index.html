@@ -391,22 +391,22 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <select id="portfolioSelect" onchange="onPortfolioSelect()">
     <option value="">— New Company —</option>
   </select>
-  <button class="pb-btn save" onclick="saveToPortfolio()">💾 Save</button>
-  <button class="pb-btn" onclick="shareCompany()">📤 Share</button>
-  <button class="pb-btn danger" onclick="deleteFromPortfolio()">🗑</button>
+  <button class="pb-btn save" onclick="saveToPortfolio()" title="Save the current company and all its year data to your local portfolio">💾 Save</button>
+  <button class="pb-btn" onclick="shareCompany()" title="Download this company's data as a JSON file you can send to someone else">📤 Share</button>
+  <button class="pb-btn danger" onclick="deleteFromPortfolio()" title="Permanently remove this company and all its year data from your portfolio">🗑</button>
   <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="comparePortfolio()">📊 Compare</button>
-  <button class="pb-btn" onclick="scorecardPortfolio()">🏆 Scorecard</button>
+  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of selected companies in your portfolio">📊 Compare</button>
+  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank and score selected companies across key REPA metrics">🏆 Scorecard</button>
   <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="downloadPortfolio()">⬇ Backup</button>
-  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()">⬆ Restore</button>
+  <button class="pb-btn" onclick="downloadPortfolio()" title="Download your entire portfolio as a single JSON backup file">⬇ Backup</button>
+  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Import a shared company or restore a full backup — merges with your existing portfolio (overwrites matching tickers)">⬆ Restore</button>
   <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
   <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="openGlossary()">📖 Glossary</button>
+  <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics and terminology">📖 Glossary</button>
 </div>
 
-<button class="secondary" onclick="openImport()">📋 Import Data from Gemini (10-K / 10-Q)</button>
-<button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()">🔍 View Loaded JSON <span class="ji-count" id="jiCount"></span></button>
+<button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
+<button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()" title="View the raw JSON data loaded for each year of the current company">🔍 View Loaded JSON <span class="ji-count" id="jiCount"></span></button>
 
 <div id="yearPills" class="year-pills" style="display:none"></div>
 <div id="yearSelector" class="year-selector" style="display:none">
@@ -481,7 +481,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 </div>
 
 <button class="calc" onclick="calculate()">⚡ Analyze Real Economic Profit</button>
-<button class="secondary" id="exportBtn" onclick="exportBrief()" style="display:none">📤 Export Analysis Brief (Google Docs / NotebookLM)</button>
+<button class="secondary" id="exportBtn" onclick="exportBrief()" style="display:none" title="Copy a formatted analysis summary to clipboard for pasting into Google Docs or NotebookLM">📤 Export Analysis Brief (Google Docs / NotebookLM)</button>
 
 <div id="results">
   <div id="verdict" class="verdict"></div>
@@ -958,17 +958,29 @@ function restorePortfolio(evt){
       if(keys.length===0){alert('Portfolio file contains no companies.');return;}
       var p=getPortfolio();
       var validCount=0;
+      var overwriteList=[];
       for(var t in imported){
         if(!imported.hasOwnProperty(t))continue;
         var entry=imported[t];
         if(entry&&typeof entry==='object'&&entry.years){
-          p[t]=entry;
+          if(p[t])overwriteList.push(t);
           validCount++;
         }
       }
       if(validCount===0){
         alert('File has '+keys.length+' keys but none look like portfolio entries. Keys: '+keys.slice(0,5).join(', '));
         return;
+      }
+      if(overwriteList.length>0){
+        var msg='This will overwrite your existing data for: '+overwriteList.join(', ')+'.\n\nAll other companies in your portfolio will be kept.\n\nProceed?';
+        if(!confirm(msg))return;
+      }
+      for(var t in imported){
+        if(!imported.hasOwnProperty(t))continue;
+        var entry=imported[t];
+        if(entry&&typeof entry==='object'&&entry.years){
+          p[t]=entry;
+        }
       }
       putPortfolio(p);
       refreshPortfolioSelect();
