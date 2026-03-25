@@ -2299,7 +2299,7 @@ function computeMetrics(entry){
   var impliedGrowth=reinvestRate*realROIC;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:entry.extra.revenue||entry.extra.total_revenue||entry.extra.net_revenue||null,net_income:entry.extra.net_income||null,rd_expense:entry.extra.rd_expense||null};
+  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:(entry.extra||{}).rd_expense||null};
 }
 
 // Shared helper: build enriched years array from yearStore keys
@@ -2951,6 +2951,11 @@ function renderRoiicAnalysis(){
   var allKeys=getSortedYearKeys();
   if(allKeys.length<2){card.style.display='none';return;}
   card.style.display='block';
+
+  // Clear previous render immediately
+  document.getElementById('roiicStats').innerHTML='';
+  document.getElementById('roiicChartArea').innerHTML='';
+  document.getElementById('roiicTable').innerHTML='';
 
   // Set R&D preset from ticker on first load
   var preset=getRdSectorPreset();
