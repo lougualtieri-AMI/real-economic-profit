@@ -2863,6 +2863,8 @@ function renderTrend(){
         // === RESULT ===
         html+='<tr><td colspan="4" style="font-weight:700;color:var(--accent);padding-top:16px;border-bottom:none">RESULT: ROIC = Profit / Capital</td></tr>';
 
+        var stdColor=stdROIC>0.15?'var(--green)':stdROIC>0.08?'var(--blue)':stdROIC>0?'var(--orange)':'var(--red)';
+        var adjColor=adjROIC>0.15?'var(--green)':adjROIC>0.08?'var(--blue)':adjROIC>0?'var(--orange)':'var(--red)';
         html+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Real ROIC</td>';
         html+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+stdColor+'">'+pct(stdROIC)+'</td>';
         html+='<td style="text-align:right;font-weight:700;font-size:1rem;color:'+adjColor+'">'+pct(adjROIC)+'</td>';
