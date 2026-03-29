@@ -614,6 +614,58 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     </div>
     <div id="targetCalcContent"></div>
   </div>
+  <div class="card" id="cashDeployCard" style="display:none">
+    <h2>💰 Cash Deployment Scenario</h2>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">What happens if liquid assets (Cash + T-Bills) get deployed into higher-returning assets? The incremental return is above whatever they currently earn (already in CFO). EV rises because deployed cash is no longer subtracted from enterprise value.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">% of Cash+STI Deployed</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="cdPctSlider" min="0" max="100" value="50" step="5" style="flex:1;accent-color:var(--blue);cursor:pointer" oninput="renderCashDeploy()">
+          <span id="cdPctLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--blue);min-width:40px;text-align:right">50%</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Incremental Return Above Current (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="cdReturnSlider" min="0" max="20" value="6" step="0.5" style="flex:1;accent-color:var(--green);cursor:pointer" oninput="renderCashDeploy()">
+          <span id="cdReturnLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green);min-width:40px;text-align:right">+6%</span>
+        </div>
+      </div>
+    </div>
+    <div id="cdResults"></div>
+  </div>
+  <div class="card" id="growthCompCard" style="display:none">
+    <h2>🔄 Growth Compounder</h2>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">How does ongoing reinvestment compound REP over time? Set the reinvestment rate, the return it earns, and how long before returns kick in. Shows year-by-year REP trajectory and yield evolution.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Reinvestment Rate (% of REP)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="gcReinvestSlider" min="0" max="100" value="25" step="5" style="flex:1;accent-color:var(--blue);cursor:pointer" oninput="renderGrowthCompounder()">
+          <span id="gcReinvestLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--blue);min-width:36px;text-align:right">25%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text3);margin-top:2px"><span>Cash cow</span><span>Heavy reinvestor</span></div>
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">ROIIC — Return on Reinvestment (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="gcRoiicSlider" min="0" max="40" value="12" step="1" style="flex:1;accent-color:var(--green);cursor:pointer" oninput="renderGrowthCompounder()">
+          <span id="gcRoiicLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green);min-width:36px;text-align:right">12%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text3);margin-top:2px"><span>Low return</span><span>Exceptional</span></div>
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Payback Lag (years to full return)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="gcLagSlider" min="0" max="7" value="2" step="1" style="flex:1;accent-color:var(--orange);cursor:pointer" oninput="renderGrowthCompounder()">
+          <span id="gcLagLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--orange);min-width:36px;text-align:right">2 yr</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text3);margin-top:2px"><span>Immediate</span><span>Long cycle</span></div>
+      </div>
+    </div>
+    <div id="gcResults"></div>
+  </div>
   <div class="card" id="trendCard" style="display:none">
     <h2>📈 Historical Trend</h2>
     <div id="trendContent"></div>
@@ -833,6 +885,19 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">From Growth CapEx</strong> — Cumulative new profit generated by all prior years' growth investments earning the ROIIC rate.</p>
       <p><strong style="color:var(--accent2)">Organic Gain</strong> — Cumulative profit growth from the existing base becoming more productive, net of deceleration.</p>
 
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Cash Deployment Scenario</h4>
+
+      <p><strong style="color:var(--accent2)">% of Cash+STI Deployed</strong> — What fraction of the company's liquid assets (cash + short-term investments) gets converted into productive operating assets or acquisitions.</p>
+      <p><strong style="color:var(--accent2)">Incremental Return Above Current</strong> — The additional return deployed capital earns above what it currently generates. Set to 0% to see the pure EV impact of reclassifying cash as operating capital (the "cash as operating entity" view).</p>
+      <p><strong style="color:var(--accent2)">Key dynamic</strong> — Deploying cash increases REP (more income) but also increases EV (cash no longer subtracted). The yield only improves when incremental returns are high enough to outpace the EV denominator growth.</p>
+
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Growth Compounder</h4>
+
+      <p><strong style="color:var(--accent2)">Reinvestment Rate (% of REP)</strong> — How much Real Economic Profit gets reinvested in growth. Auto-populated from actual Growth CapEx / REP. The remainder is available for dividends, buybacks, or cash accumulation.</p>
+      <p><strong style="color:var(--accent2)">ROIIC — Return on Reinvestment</strong> — The return each dollar of reinvestment earns at full productivity. 6–8% = average, 12–15% = excellent, 20%+ = exceptional (requires justification).</p>
+      <p><strong style="color:var(--accent2)">Payback Lag</strong> — Years before reinvested capital reaches full return. Returns ramp linearly from 0 to full ROIIC over the lag period. Software = 0–1 years, consumer = 1–2, industrial = 2–4, infrastructure/utility = 4–7.</p>
+      <p><strong style="color:var(--accent2)">Implied REP Growth</strong> — Reinvestment Rate × ROIIC. The steady-state annual growth rate of Real Economic Profit, before considering the payback lag. With lag, actual early-year growth is slower but accelerates as investments mature.</p>
+
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Data Pipeline</h4>
 
       <p><strong style="color:var(--accent2)">10-K</strong> — SEC annual report. Primary source for all cash flow items and full-year financials.</p>
@@ -899,6 +964,7 @@ function loadFromPortfolio(){
   currentYearKey=null;
   selectedYears=[];
   var _rs=document.getElementById('roiicRdGrowth');if(_rs)_rs.dataset.initialized='';
+  var _gcrs=document.getElementById('gcReinvestSlider');if(_gcrs)_gcrs.dataset.initialized='';
   var ys=entry.years;
   for(var k in ys){yearStore[k]=ys[k];}
   currentYearKey=entry.currentYearKey||Object.keys(yearStore)[0]||null;
@@ -924,6 +990,7 @@ function clearForNewCompany(){
   currentYearKey=null;
   selectedYears=[];
   var _rs=document.getElementById('roiicRdGrowth');if(_rs)_rs.dataset.initialized='';
+  var _gcrs=document.getElementById('gcReinvestSlider');if(_gcrs)_gcrs.dataset.initialized='';
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
@@ -1805,7 +1872,288 @@ function toggleYearSelection(k){
   }
 }
 
-// Feature 5: Target Price Calculator
+// ============ Cash Deployment Scenario ============
+function renderCashDeploy(){
+  var el=document.getElementById('cdResults');
+  var pctSlider=document.getElementById('cdPctSlider');
+  var retSlider=document.getElementById('cdReturnSlider');
+  if(!el||!pctSlider||!retSlider)return;
+  var deployPct=parseFloat(pctSlider.value)/100;
+  var deployReturn=parseFloat(retSlider.value)/100;
+  document.getElementById('cdPctLabel').textContent=Math.round(deployPct*100)+'%';
+  document.getElementById('cdReturnLabel').textContent='+'+retSlider.value+'%';
+
+  var activeKeys=getActiveYearKeys();
+  if(activeKeys.length===0){el.innerHTML='';return;}
+  var latestKey=activeKeys[activeKeys.length-1];
+  var yr=yearStore[latestKey];
+  if(!yr){el.innerHTML='';return;}
+  var d=yr.formData;
+  var price=d.price||0,shares=d.shares||0;
+  var cash=d.cash||0,sti=d.sti||0;
+  var debt=d.debt||0,equity=d.equity||0;
+  var cfo=d.cfo||0;
+  var sbcExp=d.sbc_expense||0,sbcGrant=d.sbc_grant||0;
+  var realSBC=Math.max(sbcExp,sbcGrant);
+  var da=d.da||0,capex=d.capex||0;
+  var deprOnly=d.depr_only||0;
+  var restructuring=d.restructuring||0;
+  var ltInv=d.lt_investments||0,invRate=(d.inv_return_rate||4)/100;
+  var mc=calcMaintCapex(capex,da,d.maint_capex>0?d.maint_capex:null);
+  var maintCapex=mc.value;
+  var investmentIncome=ltInv*invRate;
+  var currentREP=cfo-realSBC-maintCapex-restructuring+investmentIncome;
+
+  var liquidPool=cash+sti;
+  var marketCap=price*shares;
+  var currentEV=marketCap+debt-liquidPool;
+  if(currentEV<=0){el.innerHTML='<p style="font-size:.82rem;color:var(--text3)">EV ≤ 0 — scenario not applicable.</p>';return;}
+  var currentYield=currentREP/currentEV;
+
+  // Deployed amount
+  var deployed=liquidPool*deployPct;
+  // Incremental income = deployed × incremental return above current (whatever current earns is already in CFO)
+  var incrementalIncome=deployed*deployReturn;
+  // Estimate incremental maintenance CapEx on newly acquired assets (5% of deployed as proxy for D&A, then ×1.05)
+  var incrementalMaint=deployReturn>0?deployed*0.05*1.05:0;
+  // New REP
+  var newREP=currentREP+incrementalIncome-incrementalMaint;
+  // New EV: deployed cash is no longer subtracted
+  var remainingLiquid=liquidPool-deployed;
+  var newEV=marketCap+debt-remainingLiquid;
+  var newYield=newEV>0?newREP/newEV:0;
+
+  // Ex-Amortization view
+  var hasLight=deprOnly>0&&da>0&&deprOnly<da*0.95;
+  var currentREPLight=null,newREPLight=null,currentYieldLight=null,newYieldLight=null;
+  if(hasLight){
+    var maintLight=deprOnly*1.05;
+    currentREPLight=cfo-realSBC-maintLight-restructuring+investmentIncome;
+    currentYieldLight=currentEV>0?currentREPLight/currentEV:0;
+    newREPLight=currentREPLight+incrementalIncome-incrementalMaint;
+    newYieldLight=newEV>0?newREPLight/newEV:0;
+  }
+
+  var yr1=yieldRating(currentYield);
+  var yr2=yieldRating(newYield);
+
+  var h='';
+  // Stats row
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Liquid Pool</div>';
+  h+='<div style="font-size:1rem;font-weight:700;color:var(--text)">'+fmtM(liquidPool)+'</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Amount Deployed</div>';
+  h+='<div style="font-size:1rem;font-weight:700;color:var(--blue)">'+fmtM(deployed)+'</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Incremental Income</div>';
+  h+='<div style="font-size:1rem;font-weight:700;color:'+(incrementalIncome>=0?'var(--green)':'var(--red)')+'">'+fmtM(incrementalIncome)+'</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Incr. Maint CapEx</div>';
+  h+='<div style="font-size:1rem;font-weight:700;color:var(--orange)">'+fmtM(incrementalMaint)+'</div></div>';
+  h+='</div>';
+
+  // Comparison table
+  h+='<table class="trend-table" style="font-size:.82rem">';
+  h+='<thead><tr><th style="text-align:left">Metric</th><th style="text-align:right">Current</th><th style="text-align:right">After Deployment</th><th style="text-align:right">Δ</th></tr></thead>';
+  h+='<tbody>';
+  h+='<tr><td>REP (Full Cost)</td><td style="text-align:right">'+fmtM(currentREP)+'</td><td style="text-align:right">'+fmtM(newREP)+'</td><td style="text-align:right;color:'+(newREP>=currentREP?'var(--green)':'var(--red)')+'">'+fmtM(newREP-currentREP)+'</td></tr>';
+  if(hasLight){
+    h+='<tr><td>REP (Ex-Amort)</td><td style="text-align:right">'+fmtM(currentREPLight)+'</td><td style="text-align:right">'+fmtM(newREPLight)+'</td><td style="text-align:right;color:'+(newREPLight>=currentREPLight?'var(--green)':'var(--red)')+'">'+fmtM(newREPLight-currentREPLight)+'</td></tr>';
+  }
+  h+='<tr><td>Enterprise Value</td><td style="text-align:right">'+fmtM(currentEV)+'</td><td style="text-align:right">'+fmtM(newEV)+'</td><td style="text-align:right;color:var(--orange)">'+fmtM(newEV-currentEV)+'</td></tr>';
+  h+='<tr style="font-weight:700"><td>Yield on EV (Full Cost)</td><td style="text-align:right;color:'+yr1.color+'">'+pct(currentYield)+'</td><td style="text-align:right;color:'+yr2.color+'">'+pct(newYield)+'</td><td style="text-align:right;color:'+(newYield>=currentYield?'var(--green)':'var(--red)')+'">'+(newYield>=currentYield?'+':'')+((newYield-currentYield)*100).toFixed(2)+'%</td></tr>';
+  if(hasLight){
+    var yr1L=yieldRating(currentYieldLight);
+    var yr2L=yieldRating(newYieldLight);
+    h+='<tr style="font-weight:700"><td>Yield on EV (Ex-Amort)</td><td style="text-align:right;color:'+yr1L.color+'">'+pct(currentYieldLight)+'</td><td style="text-align:right;color:'+yr2L.color+'">'+pct(newYieldLight)+'</td><td style="text-align:right;color:'+(newYieldLight>=currentYieldLight?'var(--green)':'var(--red)')+'">'+(newYieldLight>=currentYieldLight?'+':'')+((newYieldLight-currentYieldLight)*100).toFixed(2)+'%</td></tr>';
+  }
+  var currentIC=equity>0?(equity+debt-cash-sti):0;
+  var newIC=equity>0?(equity+debt-remainingLiquid):0;
+  var currentROIC=currentIC>0?currentREP/currentIC:0;
+  var newROIC=newIC>0?newREP/newIC:0;
+  h+='<tr><td>Invested Capital</td><td style="text-align:right">'+fmtM(currentIC)+'</td><td style="text-align:right">'+fmtM(newIC)+'</td><td style="text-align:right;color:var(--orange)">'+fmtM(newIC-currentIC)+'</td></tr>';
+  h+='<tr><td>Real ROIC</td><td style="text-align:right">'+pct(currentROIC)+'</td><td style="text-align:right">'+pct(newROIC)+'</td><td style="text-align:right;color:'+(newROIC>=currentROIC?'var(--green)':'var(--red)')+'">'+(newROIC>=currentROIC?'+':'')+((newROIC-currentROIC)*100).toFixed(2)+'%</td></tr>';
+  h+='</tbody></table>';
+
+  // Insight note
+  h+='<div style="margin-top:14px;font-size:.78rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">';
+  if(deployReturn<=0){
+    h+='<strong>Note:</strong> At +0% incremental return, REP doesn\'t change but EV rises because deployed cash is no longer subtracted — yield drops. This shows the pure EV impact of reclassifying liquid assets as operating capital.';
+  } else {
+    var breakeven=((newYield-currentYield)*10000);
+    if(breakeven<0){
+      h+='<strong>Key insight:</strong> Even at +'+retSlider.value+'% incremental return, the yield <em>drops</em> because the EV increase ('+fmtM(newEV-currentEV)+') outpaces the REP increase ('+fmtM(newREP-currentREP)+'). The denominator swells faster than the numerator. Higher incremental returns are needed to move the yield needle.';
+    } else {
+      h+='<strong>Key insight:</strong> At +'+retSlider.value+'% incremental return on '+fmtM(deployed)+' deployed, yield improves by '+breakeven.toFixed(0)+' bps. The EV denominator grew by '+fmtM(newEV-currentEV)+' but the incremental income more than offset it.';
+    }
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ============ Growth Compounder ============
+function renderGrowthCompounder(){
+  var el=document.getElementById('gcResults');
+  var reinvestSlider=document.getElementById('gcReinvestSlider');
+  var roiicSlider=document.getElementById('gcRoiicSlider');
+  var lagSlider=document.getElementById('gcLagSlider');
+  if(!el||!reinvestSlider||!roiicSlider||!lagSlider)return;
+
+  // Auto-populate reinvestment rate from actual data on first render
+  if(!reinvestSlider.dataset.initialized){
+    var _aKeys=getActiveYearKeys();
+    if(_aKeys.length>0){
+      var _yr=yearStore[_aKeys[_aKeys.length-1]];
+      if(_yr){
+        var _d=_yr.formData;
+        var _capex=_d.capex||0,_da=_d.da||0;
+        var _mc=calcMaintCapex(_capex,_da,_d.maint_capex>0?_d.maint_capex:null).value;
+        var _gc=Math.max(_capex-_mc,0);
+        var _cfo=_d.cfo||0,_sbc=Math.max(_d.sbc_expense||0,_d.sbc_grant||0);
+        var _rest=_d.restructuring||0;
+        var _ltInv=_d.lt_investments||0,_invR=(_d.inv_return_rate||4)/100;
+        var _rep=_cfo-_sbc-_mc-_rest+_ltInv*_invR;
+        if(_rep>0){
+          var _actRate=Math.round(_gc/_rep*100/5)*5; // round to nearest 5%
+          _actRate=Math.max(0,Math.min(100,_actRate));
+          reinvestSlider.value=_actRate;
+        }
+      }
+    }
+    reinvestSlider.dataset.initialized='1';
+  }
+
+  var reinvestPct=parseFloat(reinvestSlider.value)/100;
+  var roiicRate=parseFloat(roiicSlider.value)/100;
+  var lagYears=parseInt(lagSlider.value);
+  document.getElementById('gcReinvestLabel').textContent=reinvestSlider.value+'%';
+  document.getElementById('gcRoiicLabel').textContent=roiicSlider.value+'%';
+  document.getElementById('gcLagLabel').textContent=lagYears+(lagYears===1?' yr':' yrs');
+
+  var activeKeys=getActiveYearKeys();
+  if(activeKeys.length===0){el.innerHTML='';return;}
+  var latestKey=activeKeys[activeKeys.length-1];
+  var yr=yearStore[latestKey];
+  if(!yr){el.innerHTML='';return;}
+  var d=yr.formData;
+  var price=d.price||0,shares=d.shares||0;
+  var cash=d.cash||0,sti=d.sti||0;
+  var debt=d.debt||0,equity=d.equity||0;
+  var cfo=d.cfo||0;
+  var sbcExp=d.sbc_expense||0,sbcGrant=d.sbc_grant||0;
+  var realSBC=Math.max(sbcExp,sbcGrant);
+  var da=d.da||0,capex=d.capex||0;
+  var restructuring=d.restructuring||0;
+  var ltInv=d.lt_investments||0,invRate=(d.inv_return_rate||4)/100;
+  var mc=calcMaintCapex(capex,da,d.maint_capex>0?d.maint_capex:null);
+  var maintCapex=mc.value;
+  var investmentIncome=ltInv*invRate;
+  var baseREP=cfo-realSBC-maintCapex-restructuring+investmentIncome;
+
+  var marketCap=price*shares;
+  var ev=marketCap+debt-(cash+sti);
+  if(ev<=0||baseREP<=0){el.innerHTML='<p style="font-size:.82rem;color:var(--text3)">EV ≤ 0 or REP ≤ 0 — scenario not applicable.</p>';return;}
+  var baseYield=baseREP/ev;
+
+  var impliedGrowth=reinvestPct*roiicRate;
+  var horizon=10;
+
+  // Year-by-year projection with lag
+  // Each year's reinvestment starts earning returns after lagYears
+  // During the lag, returns ramp linearly from 0 to full ROIIC
+  var rows=[];
+  var reinvestments=[]; // track each year's reinvestment amount
+  var cumulativeREP=baseREP;
+
+  for(var y=0;y<=horizon;y++){
+    if(y===0){
+      rows.push({year:'Now',rep:baseREP,yieldEV:baseYield,newProfit:0,annualReinvest:baseREP*reinvestPct});
+      reinvestments.push(baseREP*reinvestPct);
+      continue;
+    }
+
+    // Calculate new profit from all prior years' reinvestments, accounting for lag
+    var newProfitThisYear=0;
+    for(var r=0;r<reinvestments.length;r++){
+      var age=y-r; // how many years since this reinvestment was made
+      if(age<=0)continue;
+      var effectivePct;
+      if(lagYears===0){
+        effectivePct=1; // immediate
+      } else if(age>=lagYears){
+        effectivePct=1; // fully ramped
+      } else {
+        effectivePct=age/lagYears; // linear ramp
+      }
+      newProfitThisYear+=reinvestments[r]*roiicRate*effectivePct;
+    }
+
+    cumulativeREP=baseREP+newProfitThisYear;
+    var thisYearReinvest=cumulativeREP*reinvestPct;
+    reinvestments.push(thisYearReinvest);
+
+    var yieldEV=ev>0?cumulativeREP/ev:0;
+    rows.push({year:'Yr '+y,rep:cumulativeREP,yieldEV:yieldEV,newProfit:newProfitThisYear,annualReinvest:thisYearReinvest});
+  }
+
+  var yr5=rows[5]||rows[rows.length-1];
+  var yr10=rows[10]||rows[rows.length-1];
+  var repCAGR5=yr5.rep>0?Math.pow(yr5.rep/baseREP,1/5)-1:0;
+  var repCAGR10=yr10.rep>0?Math.pow(yr10.rep/baseREP,1/10)-1:0;
+
+  var h='';
+
+  // Stat cards
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">';
+
+  function gcStat(label,value,color){
+    return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">'+
+      '<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">'+label+'</div>'+
+      '<div style="font-size:1rem;font-weight:700;color:'+color+'">'+value+'</div></div>';
+  }
+
+  h+=gcStat('Implied REP Growth',pct(impliedGrowth,1),'var(--blue)');
+  h+=gcStat('Annual Reinvestment',fmtM(baseREP*reinvestPct),'var(--orange)');
+  h+=gcStat('REP Year 5',fmtM(yr5.rep),'var(--green)');
+  h+=gcStat('REP Year 10',fmtM(yr10.rep),'var(--accent2)');
+  h+='</div>';
+
+  // Year-by-year table
+  h+='<table class="trend-table" style="font-size:.82rem">';
+  h+='<thead><tr><th style="text-align:left">Year</th><th style="text-align:right">REP</th><th style="text-align:right">Yield on EV</th><th style="text-align:right">New Profit from Reinvestment</th><th style="text-align:right">REP Growth</th></tr></thead>';
+  h+='<tbody>';
+  rows.forEach(function(r,i){
+    var growth=i>0?((r.rep/baseREP-1)):-0;
+    var yRating=yieldRating(r.yieldEV);
+    var highlight='';
+    if(r.yieldEV>=0.10)highlight=' style="background:rgba(46,204,113,.08)"';
+    else if(r.yieldEV>=0.07)highlight=' style="background:rgba(46,204,113,.04)"';
+    h+='<tr'+highlight+'><td style="font-weight:600">'+r.year+'</td>';
+    h+='<td style="text-align:right">'+fmtM(r.rep)+'</td>';
+    h+='<td style="text-align:right;color:'+yRating.color+'">'+pct(r.yieldEV)+'</td>';
+    h+='<td style="text-align:right;color:var(--green)">'+fmtM(r.newProfit)+'</td>';
+    h+='<td style="text-align:right;color:'+(growth>=0?'var(--green)':'var(--red)')+'">'+( i>0?pct(growth,1):'—')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+
+  // Insight
+  h+='<div style="margin-top:14px;font-size:.78rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">';
+  h+='<strong>Math:</strong> Reinvestment Rate ('+reinvestSlider.value+'%) × ROIIC ('+roiicSlider.value+'%) = '+pct(impliedGrowth,1)+' implied annual REP growth.';
+  if(lagYears>0){
+    h+=' With a '+lagYears+'-year payback lag, returns ramp linearly — year 1 investments earn '+(lagYears>1?pct(1/lagYears*roiicRate,1):'full')+' in their first active year, reaching full '+roiicSlider.value+'% by year '+lagYears+'.';
+    h+=' <strong>The lag matters:</strong> REP CAGR over 5 years is '+pct(repCAGR5,1)+' vs. '+pct(repCAGR10,1)+' over 10 years — the compounding accelerates as early investments reach full productivity.';
+  } else {
+    h+=' No payback lag — returns are immediate. REP CAGR: '+pct(repCAGR5,1)+' (5yr), '+pct(repCAGR10,1)+' (10yr).';
+  }
+  h+='</div>';
+
+  el.innerHTML=h;
+}
+
+// ============ Target Price Calculator ============
 function renderTargetCalc(){
   var content=document.getElementById('targetCalcContent');
   var activeKeys=getActiveYearKeys();
@@ -5506,6 +5854,16 @@ function calculate(){
   document.getElementById('exportBtn').style.display='block';
   document.getElementById('projCard').style.display='block';
   document.getElementById('targetCalcCard').style.display='block';
+
+  // Cash Deployment Scenario — show only if Cash+STI > 0
+  var _cdCash=(v('cash')||0)+(v('sti')||0);
+  var _cdCard=document.getElementById('cashDeployCard');
+  if(_cdCash>0){_cdCard.style.display='block';renderCashDeploy();}
+  else{_cdCard.style.display='none';}
+
+  // Growth Compounder — always show
+  document.getElementById('growthCompCard').style.display='block';
+  renderGrowthCompounder();
 
   // Render trend
   renderTrend();
