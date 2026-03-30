@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.4.1';
+  var buildId='v4.5.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -396,17 +396,12 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <option value="">— New Company —</option>
   </select>
   <button class="pb-btn save" onclick="saveToPortfolio()" title="Save the current company and all its year data to your local portfolio">💾 Save</button>
-  <button class="pb-btn" onclick="shareCompany()" title="Download this company's data as a JSON file you can send to someone else">📤 Share</button>
-  <button class="pb-btn danger" onclick="deleteFromPortfolio()" title="Permanently remove this company and all its year data from your portfolio">🗑</button>
+  <button class="pb-btn" onclick="shareCompany()" title="Download this company's data as a JSON file">📤 Share</button>
+  <button class="pb-btn danger" onclick="deleteFromPortfolio()" title="Remove this company from portfolio">🗑</button>
   <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of selected companies in your portfolio">📊 Compare</button>
-  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank and score selected companies across key REPA metrics">🏆 Scorecard</button>
-  <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="downloadPortfolio()" title="Download your entire portfolio as a single JSON backup file">⬇ Backup</button>
-  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Import a shared company or restore a full backup — merges with your existing portfolio (overwrites matching tickers)">⬆ Restore</button>
+  <button class="pb-btn" onclick="downloadPortfolio()" title="Download entire portfolio as JSON backup">⬇ Backup</button>
+  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Import shared company or restore backup">⬆ Restore</button>
   <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
-  <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics and terminology">📖 Glossary</button>
 </div>
 
 <button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
@@ -432,6 +427,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
 <!-- Input form wrapper (collapsible) -->
 <div id="inputFormWrap">
+<div id="formCollapseBtn" style="display:none;text-align:right;margin-bottom:8px"><button onclick="document.getElementById('inputFormWrap').style.display='none';document.getElementById('formSummaryBar').style.display='block';" style="padding:6px 14px;font-size:.78rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text3);cursor:pointer">Collapse Data ▲</button></div>
 <div class="tip-box">
   <strong>💡 Data sourcing:</strong> Use <strong>annual 10-K</strong> for all cash flow items. Use the <strong>latest 10-Q</strong> for balance sheet items. Feed both PDFs to Gemini and paste the JSON here. For <strong>multi-year trends</strong>, import each year's 10-K in separate Gemini chats — the fiscal year is auto-detected.
 </div>
@@ -773,6 +769,13 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('breakdownWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📋 Detailed Breakdown <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▶</span></h2>
     <div id="breakdownWrap" style="display:none"><table id="breakdown" class="breakdown"></table></div>
   </div>
+</div>
+
+<!-- Bottom toolbar — Glossary, Compare, Scorecard -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0">
+  <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics">📖 Glossary & Definitions</button>
+  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of portfolio companies">📊 Compare Companies</button>
+  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank companies across REPA metrics">🏆 Scorecard</button>
 </div>
 
 <div class="modal-overlay" id="importModal">
@@ -5761,6 +5764,7 @@ function calculate(){
   document.getElementById('formSummaryText').innerHTML=_sumText;
   document.getElementById('formSummaryBar').style.display='block';
   document.getElementById('inputFormWrap').style.display='none';
+  document.getElementById('formCollapseBtn').style.display='block';
 
   var maintCapex,maintMethod;
   if(maintCapexInput!==null&&maintCapexInput>0){maintCapex=maintCapexInput;maintMethod='Disclosed';}
