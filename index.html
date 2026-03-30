@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.3.1';
+  var buildId='v4.3.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -513,9 +513,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
   <div id="adjustmentFlow" style="display:none">
     <div class="deep-dive" id="ddAdjFlow">
-      <div class="dd-header open" onclick="toggleDD('ddAdjFlow')"><h3>🎯 Profit Adjustment Flow <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— customize the Best Guess</span></h3><span class="dd-arrow" style="transform:rotate(90deg)">▶</span></div>
+      <div class="dd-header open" onclick="toggleDD('ddAdjFlow')"><h3>🎯 Profit Adjustment Flow <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— customize the Best Guess</span></h3><span class="dd-arrow">▶</span></div>
       <div class="dd-summary">Adjust amortization and R&D assumptions. Changes update the yield ladder above in real time.</div>
-      <div class="dd-body open" style="display:block;padding-top:14px">
+      <div class="dd-body open">
         <p style="font-size:.8rem;color:var(--text2);margin-bottom:14px;line-height:1.5">Start with Full Cost REP, then progressively add back costs that may not be real economic expenses. Each segment shows how much profit and yield you recover.</p>
     <div id="adjBar" style="display:flex;height:44px;border-radius:8px;overflow:hidden;margin-bottom:4px"></div>
     <div id="adjYieldRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px"></div>
@@ -593,6 +593,12 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       </div>
     </div>
   </div>
+  <!-- Forward-Looking Divider -->
+  <div id="forwardDivider" style="display:none;margin:24px 0 16px;padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(212,160,37,.06),rgba(155,89,182,.06));border:1px solid rgba(212,160,37,.2)">
+    <div style="font-size:.92rem;font-weight:700;color:var(--accent2)">📐 What Happens From Here?</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-top:4px;line-height:1.5">Everything above is based on actual reported financials — what the business already earned. Everything below involves assumptions about future growth, deployment, and returns. These are scenario tools, not predictions.</div>
+  </div>
+
   <div class="card" id="projCard" style="display:none">
     <h2>🎯 When Does This Investment Work?</h2>
     <button class="proj-toggle" id="projToggle" onclick="toggleProjections()">Model growth scenarios ▼</button>
@@ -6347,6 +6353,7 @@ function calculate(){
   document.getElementById('flags').innerHTML=flags.map(function(f){return '<div class="flag '+f.type+'">'+f.text+'</div>'}).join('');
   document.getElementById('results').style.display='block';
   document.getElementById('exportBtn').style.display='block';
+  document.getElementById('forwardDivider').style.display='block';
   document.getElementById('projCard').style.display='block';
   document.getElementById('targetCalcCard').style.display='block';
 
