@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.5.0';
+  var buildId='v4.5.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -402,6 +402,11 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <button class="pb-btn" onclick="downloadPortfolio()" title="Download entire portfolio as JSON backup">⬇ Backup</button>
   <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Import shared company or restore backup">⬆ Restore</button>
   <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 12px;padding:0 14px">
+  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of portfolio companies">📊 Compare</button>
+  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank companies across REPA metrics">🏆 Scorecard</button>
+  <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics">📖 Glossary</button>
 </div>
 
 <button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
@@ -771,12 +776,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
 </div>
 
-<!-- Bottom toolbar — Glossary, Compare, Scorecard -->
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0">
-  <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics">📖 Glossary & Definitions</button>
-  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of portfolio companies">📊 Compare Companies</button>
-  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank companies across REPA metrics">🏆 Scorecard</button>
-</div>
+<!-- Modals -->
 
 <div class="modal-overlay" id="importModal">
   <div class="modal">
@@ -1178,6 +1178,8 @@ var _pickerMode='compare';
 function comparePortfolio(){showPicker('compare')}
 function scorecardPortfolio(){showPicker('scorecard')}
 
+var _lastPickerSelections=[];
+
 function showPicker(mode){
   _pickerMode=mode;
   var p=getPortfolio();
@@ -1187,9 +1189,22 @@ function showPicker(mode){
   document.getElementById('pickerGoBtn').textContent=mode==='compare'?'Compare':'Scorecard';
   var grid=document.getElementById('pickerGrid');
   grid.innerHTML=tickers.map(function(t){
-    return '<label class="picker-chip" onclick="togglePickerChip(this)"><span class="picker-check">✓</span><input type="checkbox" value="'+t+'">'+t+'</label>';
+    var wasSelected=_lastPickerSelections.indexOf(t)>=0;
+    return '<label class="picker-chip'+(wasSelected?' selected':'')+'" onclick="togglePickerChip(this)"><span class="picker-check">✓</span><input type="checkbox" value="'+t+'"'+(wasSelected?' checked':'')+'>'+t+'</label>';
   }).join('');
+  // Add Select All / Deselect All / Reset buttons
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:6px;margin-top:10px';
+  btnRow.innerHTML='<button class="pb-btn" onclick="pickerSelectAll(true)" style="font-size:.75rem;padding:4px 10px">Select All</button><button class="pb-btn" onclick="pickerSelectAll(false)" style="font-size:.75rem;padding:4px 10px">Deselect All</button>';
+  grid.appendChild(btnRow);
   document.getElementById('pickerModal').classList.add('active');
+}
+
+function pickerSelectAll(state){
+  document.querySelectorAll('#pickerGrid .picker-chip').forEach(function(el){
+    var cb=el.querySelector('input');
+    if(cb){cb.checked=state;el.classList.toggle('selected',state);}
+  });
 }
 
 function togglePickerChip(el){
@@ -1205,6 +1220,7 @@ function pickerGo(){
   var selected=[];
   checks.forEach(function(cb){selected.push(cb.value)});
   if(selected.length<2){alert('Select at least 2 companies.');return;}
+  _lastPickerSelections=selected; // remember for next time
   closePicker();
   if(_pickerMode==='compare')runCompare(selected);
   else runScorecard(selected);
