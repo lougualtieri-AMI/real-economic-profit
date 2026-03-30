@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.5.1';
+  var buildId='v4.6.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -441,7 +441,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <h2>📊 Phase 1 — Cash Flow <span class="source-badge annual">from 10-K annual</span></h2>
   <div class="row" style="margin-bottom:12px">
     <div class="field"><label>Company / Ticker</label><input type="text" id="ticker" placeholder="e.g. AAPL"></div>
-    <div class="field"><label>Current Share Price ($)</label><div style="display:flex;gap:6px"><input type="number" id="price" step="0.01" placeholder="Look up live price" style="flex:1"><button onclick="applyPriceAllYears()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Write this price to all stored year entries">All years</button></div></div>
+    <div class="field"><label>Current Share Price ($)</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="price" step="0.01" placeholder="Look up live price" style="flex:1"><button id="livePriceBtn" onclick="fetchLivePrice()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--blue);border:1px solid var(--blue);border-radius:6px;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .2s" title="Fetch real-time price from Finnhub">📡 Live</button><button onclick="applyPriceAllYears()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Write this price to all stored year entries">All years</button></div><div id="livePriceInfo" style="font-size:.7rem;color:var(--text3);margin-top:4px;display:none"></div></div>
   </div>
   <h3>Operating Cash Flow</h3>
   <div class="field"><label>Cash From Operations ($M)</label><input type="number" id="cfo" step="1"></div>
@@ -486,6 +486,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div class="row">
     <div class="field"><label>Short-Term Investments ($M)</label><input type="number" id="sti" step="1" value="0"></div>
     <div class="field"><label>Diluted Shares Outstanding (M)</label><input type="number" id="shares" step="1"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Share Repurchases ($M)</label><input type="number" id="share_repurchases" step="1" value="0"><div class="hint">Total buyback spend this fiscal year (from cash flow stmt)</div></div>
+    <div class="field"><label>Dividends Paid ($M)</label><input type="number" id="dividends_paid" step="1" value="0"><div class="hint">Total dividends paid this fiscal year (from cash flow stmt)</div></div>
   </div>
   <h3>📐 ROIC Inputs</h3>
   <div class="row">
@@ -657,6 +661,13 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div id="pcbaContent"></div>
   </div>
 
+  <!-- Buyback Return Tracker -->
+  <div class="card" id="buybackCard" style="display:none">
+    <h2>🔄 Buyback Return Tracker</h2>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">Tracks cumulative share repurchases across years. Compares average buyback cost basis to current price, and measures whether buybacks offset SBC dilution (net shares retired vs. net shares issued).</p>
+    <div id="buybackContent"></div>
+  </div>
+
   <!-- Historical Trend -->
   <div class="card" id="trendCard" style="display:none">
     <h2>📈 Historical Trend</h2>
@@ -763,16 +774,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       </div>
     </div>
     <div id="gcResults"></div>
-  </div>
-  <div class="card" id="trendCard" style="display:none">
-    <h2>📈 Historical Trend</h2>
-    <div id="trendContent"></div>
-  </div>
-
-  <div class="card"><h2>🚩 Red Flags & Signals</h2><div id="flags" class="flags"></div></div>
-  <div class="card">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('breakdownWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📋 Detailed Breakdown <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▶</span></h2>
-    <div id="breakdownWrap" style="display:none"><table id="breakdown" class="breakdown"></table></div>
   </div>
 </div>
 
@@ -1049,7 +1050,7 @@ function clearForNewCompany(){
   selectedYears=[];
   var _rs=document.getElementById('roiicRdGrowth');if(_rs)_rs.dataset.initialized='';
   var _gcrs=document.getElementById('gcReinvestSlider');if(_gcrs)_gcrs.dataset.initialized='';
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
@@ -2250,6 +2251,173 @@ function renderGrowthCompounder(){
   el.innerHTML=h;
 }
 
+// ============ Buyback Return Tracker ============
+function renderBuybackTracker(){
+  var card=document.getElementById('buybackCard');
+  var content=document.getElementById('buybackContent');
+  if(!card||!content)return;
+  var keys=getSortedYearKeys();
+  if(keys.length<1){card.style.display='none';return;}
+
+  // Gather per-year data
+  var rows=[];
+  var hasBuybackData=false;
+  for(var i=0;i<keys.length;i++){
+    var yr=yearStore[keys[i]];
+    if(!yr||!yr.formData)continue;
+    var fd=yr.formData;
+    var repurch=fd.share_repurchases||0;
+    var divs=fd.dividends_paid||0;
+    var shares=fd.shares||0;
+    var sbcExp=fd.sbc_expense||0;
+    var sbcGrant=fd.sbc_grant||0;
+    var realSBC=Math.max(sbcExp,sbcGrant);
+    var avgBuyPrice=fd.avg_buyback_price||0;
+    var label=yr.fiscal_year_label||keys[i];
+    if(repurch>0||divs>0)hasBuybackData=true;
+    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice});
+  }
+
+  if(!hasBuybackData){card.style.display='none';return;}
+  card.style.display='block';
+
+  var price=v('price')||0;
+  var h='';
+
+  // ---- Summary metrics ----
+  var cumRepurch=0,cumDivs=0,cumRealSBC=0;
+  var weightedPriceSum=0,weightedSharesBought=0;
+  for(var i=0;i<rows.length;i++){
+    cumRepurch+=rows[i].repurch;
+    cumDivs+=rows[i].divs;
+    cumRealSBC+=rows[i].realSBC;
+    if(rows[i].avgBuyPrice>0&&rows[i].repurch>0){
+      var sharesBought=rows[i].repurch/rows[i].avgBuyPrice;
+      weightedPriceSum+=rows[i].repurch;
+      weightedSharesBought+=sharesBought;
+    }
+  }
+  var avgCostBasis=weightedSharesBought>0?weightedPriceSum/weightedSharesBought:0;
+  var buybackReturn=(avgCostBasis>0&&price>0)?((price-avgCostBasis)/avgCostBasis):null;
+  var cumCapReturn=cumRepurch+cumDivs;
+
+  // Net share change (first vs last year)
+  var firstShares=rows[0].shares;
+  var lastShares=rows[rows.length-1].shares;
+  var netShareChange=(firstShares>0&&lastShares>0)?(lastShares-firstShares):null;
+  var netShareChangePct=(firstShares>0&&netShareChange!==null)?(netShareChange/firstShares):null;
+
+  // Buyback vs SBC offset ratio
+  var buybackOffsetRatio=(cumRealSBC>0)?(cumRepurch/cumRealSBC):null;
+
+  // --- Summary pills ---
+  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
+  h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
+  h+='</div>';
+  if(cumDivs>0){
+    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Dividends</div>';
+    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+fmtM(cumDivs)+'</div>';
+    h+='</div>';
+  }
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Total Capital Returned</div>';
+  h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+fmtM(cumCapReturn)+'</div>';
+  h+='</div>';
+  if(avgCostBasis>0){
+    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Avg Buyback Cost Basis</div>';
+    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">$'+avgCostBasis.toFixed(0)+'</div>';
+    h+='</div>';
+    if(buybackReturn!==null){
+      var brClr=buybackReturn>=0?'var(--green)':'var(--red)';
+      h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+      h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buyback Return vs Current</div>';
+      h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+brClr+'">'+(buybackReturn>=0?'+':'')+pct(buybackReturn,1)+'</div>';
+      h+='<div style="font-size:.68rem;color:var(--text3)">$'+avgCostBasis.toFixed(0)+' avg → $'+price.toFixed(0)+' now</div>';
+      h+='</div>';
+    }
+  }
+  h+='</div>';
+
+  // --- Net Share Impact ---
+  if(netShareChange!==null){
+    var shrClr=netShareChange<=0?'var(--green)':'var(--red)';
+    var shrArrow=netShareChange<=0?'▼':'▲';
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.82rem">';
+    h+='<strong>Net Share Count Change:</strong> <span style="color:'+shrClr+';font-weight:700">'+shrArrow+' '+Math.abs(netShareChange).toFixed(0)+'M shares ('+pct(Math.abs(netShareChangePct),1)+')</span>';
+    h+=' · from '+firstShares.toFixed(0)+'M ('+rows[0].label+') to '+lastShares.toFixed(0)+'M ('+rows[rows.length-1].label+')';
+    if(netShareChange<0){
+      h+=' — <span style="color:var(--green)">net shrinkage ✓</span> (buybacks exceed dilution)';
+    } else {
+      h+=' — <span style="color:var(--red)">net dilution ✗</span> (SBC/issuance exceeds buybacks)';
+    }
+    h+='</div>';
+  }
+
+  // --- Buyback vs SBC Offset ---
+  if(buybackOffsetRatio!==null){
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.82rem">';
+    h+='<strong>Buyback vs SBC Offset:</strong> Cumulative buybacks ('+fmtM(cumRepurch)+') = <strong>'+buybackOffsetRatio.toFixed(1)+'×</strong> cumulative Real SBC ('+fmtM(cumRealSBC)+'). ';
+    if(buybackOffsetRatio>=2){
+      h+='<span style="color:var(--green)">Strong offset — management is buying back well beyond SBC dilution.</span>';
+    } else if(buybackOffsetRatio>=1){
+      h+='<span style="color:var(--green)">Covers SBC dilution. Net positive for existing shareholders.</span>';
+    } else if(buybackOffsetRatio>=0.5){
+      h+='<span style="color:var(--orange)">Partial offset — buybacks cover some but not all SBC dilution.</span>';
+    } else {
+      h+='<span style="color:var(--red)">Minimal offset — SBC dilution substantially exceeds buyback activity.</span>';
+    }
+    h+='</div>';
+  }
+
+  // --- Year-by-Year Table ---
+  h+='<div style="overflow-x:auto">';
+  h+='<table class="breakdown" style="font-size:.78rem;width:100%">';
+  h+='<tr><th>Year</th><th style="text-align:right">Buybacks</th><th style="text-align:right">Dividends</th><th style="text-align:right">Total Return</th><th style="text-align:right">Real SBC</th><th style="text-align:right">Buyback / SBC</th><th style="text-align:right">Shares (M)</th><th style="text-align:right">Δ Shares</th>';
+  if(rows.some(function(r){return r.avgBuyPrice>0;}))h+='<th style="text-align:right">Avg Buy Price</th>';
+  h+='</tr>';
+  var hasAvgPrice=rows.some(function(r){return r.avgBuyPrice>0;});
+  var runningCum=0;
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    runningCum+=r.repurch;
+    var ratio=r.realSBC>0?(r.repurch/r.realSBC):null;
+    var deltaShares=(i>0&&rows[i-1].shares>0&&r.shares>0)?(r.shares-rows[i-1].shares):null;
+    var dsClr=(deltaShares!==null&&deltaShares<=0)?'var(--green)':'var(--red)';
+    h+='<tr>';
+    h+='<td style="font-weight:600">'+r.label+'</td>';
+    h+='<td style="text-align:right;color:var(--blue)">'+fmtM(r.repurch)+'</td>';
+    h+='<td style="text-align:right;color:var(--green)">'+(r.divs>0?fmtM(r.divs):'—')+'</td>';
+    h+='<td style="text-align:right;font-weight:600">'+fmtM(r.repurch+r.divs)+'</td>';
+    h+='<td style="text-align:right;color:var(--orange)">'+fmtM(r.realSBC)+'</td>';
+    h+='<td style="text-align:right;font-weight:600">'+(ratio!==null?ratio.toFixed(1)+'×':'—')+'</td>';
+    h+='<td style="text-align:right">'+r.shares.toFixed(0)+'</td>';
+    h+='<td style="text-align:right;color:'+(deltaShares!==null?dsClr:'var(--text3)')+'">'+
+      (deltaShares!==null?(deltaShares<=0?'':'+')+(deltaShares).toFixed(0)+'M':(i===0?'—':'N/A'))+'</td>';
+    if(hasAvgPrice)h+='<td style="text-align:right">'+(r.avgBuyPrice>0?'$'+r.avgBuyPrice.toFixed(0):'—')+'</td>';
+    h+='</tr>';
+  }
+  h+='</table></div>';
+
+  // --- Insight ---
+  if(rows.length>=2){
+    h+='<div style="margin-top:12px;font-size:.78rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">';
+    h+='<strong>Reading this card:</strong> Buyback / SBC ratio >1× means the company is buying back more shares than it dilutes via SBC. ';
+    h+='The Δ Shares column shows actual share count changes (includes all issuance, buybacks, conversions). ';
+    if(avgCostBasis>0){
+      h+='Avg Buyback Cost Basis is the weighted average price the company paid — compare to current price to judge whether management timed buybacks well.';
+    } else {
+      h+='To calculate buyback return, include "average_buyback_price" in your JSON (weighted avg price per share repurchased in each year\'s filing).';
+    }
+    h+='</div>';
+  }
+
+  content.innerHTML=h;
+}
+
 // ============ Target Price Calculator ============
 function renderTargetCalc(){
   var content=document.getElementById('targetCalcContent');
@@ -2545,7 +2713,7 @@ function doImport(){
     };
     var fyKeys={'fiscal_year_end':1,'fiscal year end':1,'fiscal_year_end_date':1,'fiscal year end date':1,'period_end_date':1,'period end date':1};
     var fyLabelKeys={'fiscal_year_label':1,'fiscal year label':1,'fiscal_year':1,'fy_label':1};
-    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1,'r&d expense':1,'r_and_d_expense':1,'r_and_d_expenses':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research and development expenses':1,'research_and_development_expenses':1,'research, development and engineering':1,'research development and engineering':1,'non-current marketable securities':1,'non current marketable securities':1,'non_current_marketable_securities':1,'marketable_securities_non_current':1};
+    var extraKeys={'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'revenues':1,'net income':1,'net_income':1,'operating income':1,'operating_income':1,'risk flags':1,'risk_flags':1,'management highlights':1,'management_highlights':1,'r&d expense':1,'r_and_d_expense':1,'r_and_d_expenses':1,'r&d_expense':1,'rd_expense':1,'research and development':1,'research_and_development':1,'research and development expenses':1,'research_and_development_expenses':1,'research, development and engineering':1,'research development and engineering':1,'non-current marketable securities':1,'non current marketable securities':1,'non_current_marketable_securities':1,'marketable_securities_non_current':1,'share repurchases':1,'share_repurchases':1,'stock repurchases':1,'buybacks':1,'share buybacks':1,'repurchase of common stock':1,'common stock repurchased':1,'treasury stock acquired':1,'average buyback price':1,'avg_buyback_price':1,'average repurchase price':1,'avg buyback price':1,'dividends paid':1,'dividends_paid':1,'cash dividends paid':1};
     // Skip these metadata fields during field mapping
     var skipKeys={'filing_type':1,'filingtype':1,'filing type':1,'quarter':1,'quarter_end_date':1,'quarter end date':1,'quarterenddate':1,'period_reported':1,'period reported':1,'periodreported':1,'diluted_eps':1,'diluted eps':1,'dilutedeps':1,
       'report_type':1,'reporttype':1,'report type':1,'period':1,'period_type':1,'periodtype':1,'period type':1,'months_elapsed':1,'monthselapsed':1,'months elapsed':1,
@@ -2578,6 +2746,9 @@ function doImport(){
         if(eKey==='total_revenue'||eKey==='net_revenue')eKey='revenue';
         if(eKey==='r&d_expense'||eKey==='r_and_d_expense'||eKey==='r_and_d_expenses'||eKey==='rd_expense'||eKey==='research_and_development'||eKey==='research_and_development_expenses'||eKey==='research,_development_and_engineering'||eKey==='research_development_and_engineering')eKey='rd_expense';
         if(eKey==='non-current_marketable_securities'||eKey==='non_current_marketable_securities'||eKey==='marketable_securities_non_current')eKey='non_current_marketable_securities';
+        if(eKey==='share_repurchases'||eKey==='stock_repurchases'||eKey==='buybacks'||eKey==='share_buybacks'||eKey==='repurchase_of_common_stock'||eKey==='common_stock_repurchased'||eKey==='treasury_stock_acquired')eKey='share_repurchases';
+        if(eKey==='average_buyback_price'||eKey==='avg_buyback_price'||eKey==='average_repurchase_price')eKey='avg_buyback_price';
+        if(eKey==='dividends_paid'||eKey==='cash_dividends_paid')eKey='dividends_paid';
         // Annualize revenue and net income if interim
         if(isInterim&&annualize!==1&&annualizeFields[lk]&&val!==null&&typeof val==='number'){
           extra[eKey]=Math.round(val*annualize);
@@ -2697,11 +2868,17 @@ function doImport(){
 
 // ============ Year Management ============
 function captureForm(){
-  return {cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
+  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
+  // Preserve JSON-only fields from current yearStore entry
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
+    var prev=yearStore[currentYearKey].formData;
+    ['avg_buyback_price','revenue','net_income','operating_income','r_and_d_expense'].forEach(function(k){if(prev[k]!==undefined)fd[k]=prev[k];});
+  }
+  return fd;
 }
 
 function restoreForm(d){
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   // Price persists independently — only set from year data if the price field is currently empty
@@ -2720,6 +2897,61 @@ function applyPriceAllYears(){
     if(yearStore[k].formData){yearStore[k].formData.price=p;count++;}
   });
   alert('Price $'+p.toFixed(2)+' applied to '+count+' year'+(count!==1?'s':'')+'.');
+}
+
+// ============ Live Price Fetch (Finnhub) ============
+function getFinnhubKey(){
+  var k=localStorage.getItem('finnhub_api_key');
+  if(k)return k;
+  k=prompt('Enter your free Finnhub API key.\nGet one at finnhub.io/register (free, 60 calls/min).');
+  if(k&&k.trim()){localStorage.setItem('finnhub_api_key',k.trim());return k.trim();}
+  return null;
+}
+function fetchLivePrice(){
+  var ticker=document.getElementById('ticker').value.trim().toUpperCase();
+  if(!ticker){alert('Enter a ticker first.');return;}
+  var key=getFinnhubKey();
+  if(!key)return;
+  var btn=document.getElementById('livePriceBtn');
+  var info=document.getElementById('livePriceInfo');
+  btn.textContent='⏳';btn.disabled=true;
+  fetch('https://finnhub.io/api/v1/quote?symbol='+encodeURIComponent(ticker)+'&token='+encodeURIComponent(key))
+    .then(function(r){
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(function(d){
+      if(!d||d.c===undefined||d.c===0){
+        info.style.display='block';info.style.color='var(--red)';
+        info.textContent='No quote found for '+ticker+'. Check ticker or API key.';
+        return;
+      }
+      document.getElementById('price').value=d.c;
+      // Trigger input event so any listeners update
+      document.getElementById('price').dispatchEvent(new Event('input'));
+      var chg=d.d!==null?d.d:0;
+      var chgPct=d.dp!==null?d.dp:0;
+      var arrow=chg>=0?'▲':'▼';
+      var clr=chg>=0?'var(--green)':'var(--red)';
+      var now=new Date();
+      var ts=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      info.style.display='block';
+      info.innerHTML='<span style="color:'+clr+';font-weight:600">'+arrow+' $'+Math.abs(chg).toFixed(2)+' ('+chgPct.toFixed(2)+'%)</span> · <span style="color:var(--text3)">fetched '+ts+'</span>';
+    })
+    .catch(function(e){
+      info.style.display='block';info.style.color='var(--red)';
+      if(e.message&&e.message.indexOf('401')!==-1){
+        localStorage.removeItem('finnhub_api_key');
+        info.textContent='Invalid API key — cleared. Click Live again to re-enter.';
+      } else if(e.message&&e.message.indexOf('429')!==-1){
+        info.textContent='Rate limited — wait a moment and try again.';
+      } else {
+        info.textContent='Fetch failed: '+e.message+'. Check network / API key.';
+      }
+    })
+    .finally(function(){
+      btn.textContent='📡 Live';btn.disabled=false;
+    });
 }
 
 function saveCurrentYear(yearKey,fyEnd,fyLabel,extra){
@@ -6416,6 +6648,9 @@ function calculate(){
   // Growth Compounder — always show
   document.getElementById('growthCompCard').style.display='block';
   renderGrowthCompounder();
+
+  // Buyback Return Tracker
+  renderBuybackTracker();
 
   // Render trend
   renderTrend();
