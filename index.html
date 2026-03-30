@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.2.2';
+  var buildId='v4.3.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -497,15 +497,15 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div id="verdict" class="verdict"></div>
   <div id="dashboardHeader"></div>
   <div id="metricsGrid" class="metrics"></div>
-  <div class="card"><h2>📉 Profit Waterfall</h2><div id="waterfall" class="waterfall"></div></div>
+  <div class="card"><h2>📉 Profit Waterfall</h2><p style="font-size:.78rem;color:var(--text3);margin-bottom:8px">Each subtraction is analyzed in detail below. Click any deep-dive section to expand.</p><div id="waterfall" class="waterfall"></div></div>
   <div id="sbcDeepDive" style="display:none"></div>
   <div id="capexDeepDive" style="display:none"></div>
+  <div id="amortDeepDive" style="display:none"></div>
   <div class="card" id="rdCard" style="display:none">
-    <h2>🔬 R&D Investment Analysis</h2>
+    <h2>🔬 R&D Investment Analysis <span style="font-size:.78rem;color:var(--green);font-weight:500">— drives the Best Guess yield</span></h2>
     <div id="rdContent"></div>
     <div id="rdDeepDive" style="display:none"></div>
   </div>
-  <div id="amortDeepDive" style="display:none"></div>
   <div id="adjustmentFlow" class="card" style="display:none">
     <h2>🎯 Profit Adjustment Flow</h2>
     <p style="font-size:.8rem;color:var(--text2);margin-top:-10px;margin-bottom:14px;line-height:1.5">Start with the most defensible number (Full Cost REP), then progressively add back costs that may not be real economic expenses. Each colored segment shows how much profit and yield you recover.</p>
@@ -4717,7 +4717,7 @@ function renderSBCDeepDive(cfo,sbcExp,sbcGrant,realSBC,revenue,shares,price){
   var dilutionRate=marketCap>0?realSBC/marketCap:null;
 
   var html='<div class="deep-dive" id="ddSBC">';
-  html+='<div class="dd-header" onclick="toggleDD(\'ddSBC\')"><h3>💰 SBC Analysis — Stock-Based Compensation Deep Dive</h3><span class="dd-arrow">▶</span></div>';
+  html+='<div class="dd-header" onclick="toggleDD(\'ddSBC\')"><h3>💰 SBC Analysis <span style="font-size:.82rem;color:var(--red);font-weight:500">— '+fmtM(realSBC)+' subtracted in waterfall</span></h3><span class="dd-arrow">▶</span></div>';
   html+='<div class="dd-summary">Real SBC: '+fmtM(realSBC)+' · '+(sbcPctCFO*100).toFixed(1)+'% of CFO'+(sbcGap!==null?' · Gap: '+sbcGap.toFixed(2)+'x':'')+'</div>';
   html+='<div class="dd-body">';
 
@@ -4820,7 +4820,7 @@ function renderCapExDeepDive(capex,da,maintCapex,growthCapex,deprOnly,maintMetho
   var amort=(deprOnly>0&&da>0)?da-deprOnly:null;
 
   var html='<div class="deep-dive" id="ddCapEx">';
-  html+='<div class="dd-header" onclick="toggleDD(\'ddCapEx\')"><h3>🏭 CapEx Analysis — Maintenance vs. Growth</h3><span class="dd-arrow">▶</span></div>';
+  html+='<div class="dd-header" onclick="toggleDD(\'ddCapEx\')"><h3>🏭 CapEx Analysis <span style="font-size:.82rem;color:var(--red);font-weight:500">— '+fmtM(maintCapex)+' subtracted in waterfall</span></h3><span class="dd-arrow">▶</span></div>';
   html+='<div class="dd-summary">Total: '+fmtM(capex)+' · Maintenance: '+fmtM(maintCapex)+' ('+pct(maintPct,0)+') · Growth: '+fmtM(growthCapex)+' ('+pct(growthPct,0)+')</div>';
   html+='<div class="dd-body">';
 
@@ -4895,7 +4895,7 @@ function renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,r
   var isSerialAcquirer=totalAcqAssets>amort*5;
 
   var html='<div class="deep-dive" id="ddAmort">';
-  html+='<div class="dd-header" onclick="toggleDD(\'ddAmort\')"><h3>📋 Amortization Analysis — Real Cost vs. Accounting Artifact</h3><span class="dd-arrow">▶</span></div>';
+  html+='<div class="dd-header" onclick="toggleDD(\'ddAmort\')"><h3>📋 Amortization Analysis <span style="font-size:.82rem;color:var(--purple);font-weight:500">— drives the Add-Back Amort yield</span></h3><span class="dd-arrow">▶</span></div>';
   html+='<div class="dd-summary">Amortization: '+fmtM(amort)+' ('+pct(amortPctDA,0)+' of D&A) · Profit impact: '+fmtM(profitImpact)+' · Yield impact: '+pct(yieldImpact)+'</div>';
   html+='<div class="dd-body">';
 
