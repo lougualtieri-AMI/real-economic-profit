@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.3.0';
+  var buildId='v4.3.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -501,14 +501,22 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div id="sbcDeepDive" style="display:none"></div>
   <div id="capexDeepDive" style="display:none"></div>
   <div id="amortDeepDive" style="display:none"></div>
-  <div class="card" id="rdCard" style="display:none">
-    <h2>🔬 R&D Investment Analysis <span style="font-size:.78rem;color:var(--green);font-weight:500">— drives the Best Guess yield</span></h2>
-    <div id="rdContent"></div>
-    <div id="rdDeepDive" style="display:none"></div>
+  <div id="rdCard" style="display:none">
+    <div class="deep-dive" id="ddRDIntensity">
+      <div class="dd-header" onclick="toggleDD('ddRDIntensity')"><h3>🔬 R&D Investment Analysis <span style="font-size:.82rem;color:var(--green);font-weight:500">— drives the Best Guess yield</span></h3><span class="dd-arrow">▶</span></div>
+      <div class="dd-summary" id="rdSummaryLine"></div>
+      <div class="dd-body">
+        <div id="rdContent"></div>
+        <div id="rdDeepDive" style="display:none"></div>
+      </div>
+    </div>
   </div>
-  <div id="adjustmentFlow" class="card" style="display:none">
-    <h2>🎯 Profit Adjustment Flow</h2>
-    <p style="font-size:.8rem;color:var(--text2);margin-top:-10px;margin-bottom:14px;line-height:1.5">Start with the most defensible number (Full Cost REP), then progressively add back costs that may not be real economic expenses. Each colored segment shows how much profit and yield you recover.</p>
+  <div id="adjustmentFlow" style="display:none">
+    <div class="deep-dive" id="ddAdjFlow">
+      <div class="dd-header open" onclick="toggleDD('ddAdjFlow')"><h3>🎯 Profit Adjustment Flow <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— customize the Best Guess</span></h3><span class="dd-arrow" style="transform:rotate(90deg)">▶</span></div>
+      <div class="dd-summary">Adjust amortization and R&D assumptions. Changes update the yield ladder above in real time.</div>
+      <div class="dd-body open" style="display:block;padding-top:14px">
+        <p style="font-size:.8rem;color:var(--text2);margin-bottom:14px;line-height:1.5">Start with Full Cost REP, then progressively add back costs that may not be real economic expenses. Each segment shows how much profit and yield you recover.</p>
     <div id="adjBar" style="display:flex;height:44px;border-radius:8px;overflow:hidden;margin-bottom:4px"></div>
     <div id="adjYieldRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px"></div>
     <div style="display:flex;gap:12px;font-size:.68rem;color:var(--text3);margin-bottom:14px;flex-wrap:wrap">
@@ -556,6 +564,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <tbody></tbody>
     </table>
     <div id="adjSummaryNote" style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5;font-style:italic"></div>
+      </div>
+    </div>
   </div>
   <div class="card" id="roicCard" style="display:none">
     <h2>🔄 ROIC & Growth CapEx Analysis</h2>
@@ -6100,6 +6110,9 @@ function calculate(){
     }
     rdHTML+='<p class="section-note" style="margin-top:8px">R&D is already deducted from CFO (expensed under GAAP). Shown here to reveal the full reinvestment picture — CapEx alone understates how much this company invests in future growth.</p>';
     document.getElementById('rdContent').innerHTML=rdHTML;
+    // Set summary line for collapsed view
+    var rdSumEl=document.getElementById('rdSummaryLine');
+    if(rdSumEl)rdSumEl.textContent='R&D: '+fmtM(rdExpense)+(rdRevPct!==null?' · '+pct(rdRevPct)+' of revenue':'')+(rdCapexRatio!==null?' · '+rdCapexRatio.toFixed(1)+'x CapEx':'');
     // Render deep-dive decomposition
     // #36: R&D Decomposition deep-dive dropped — practical analysis lives in Profit Adjustment Flow
     // renderRDDeepDive(rdExpense,cfo,capex,ddRevenue||rdRevenue,realProfit,realSBC,maintCapex,ev,shares,price);
