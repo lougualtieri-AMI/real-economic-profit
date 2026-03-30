@@ -470,6 +470,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div class="row">
     <div class="field"><label>Inventory Change ($M)</label><input type="number" id="inv_change" step="1"><div class="hint">+ = cash freed · − = cash trapped</div></div>
     <div class="field"><label>Receivables Change ($M)</label><input type="number" id="recv_change" step="1"><div class="hint">+ = collected · − = not collected</div></div>
+    <div class="field"><label>AP Change ($M)</label><input type="number" id="ap_change" step="1" value="0"><div class="hint">+ = payables grew (cash benefit) · − = payables shrank</div></div>
   </div>
   <div class="row">
     <div class="field"><label>Interest Paid ($M)</label><input type="number" id="interest" step="1"><div class="hint">Supplemental disclosure</div></div>
@@ -480,7 +481,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <div class="card">
   <h2>🏦 Phase 2 — Balance Sheet <span class="source-badge balance">from latest 10-Q</span></h2>
   <div class="row">
-    <div class="field"><label>Total Debt ($M)</label><input type="number" id="debt" step="1"><div class="hint">CP + current term + non-current term debt</div></div>
+    <div class="field"><label>Total Debt ($M)</label><input type="number" id="debt" step="1"><div class="hint">CP + current & non-current term debt + operating lease liabilities</div></div>
     <div class="field"><label>Cash & Equivalents ($M)</label><input type="number" id="cash" step="1"></div>
   </div>
   <div class="row">
@@ -676,6 +677,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
   <!-- Red Flags -->
   <div class="card"><h2>🚩 Red Flags & Signals</h2><div id="flags" class="flags"></div></div>
+  <div class="card">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('breakdownWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📋 Detailed Breakdown <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▶</span></h2>
+    <div id="breakdownWrap" style="display:none"><table id="breakdown" class="breakdown"></table></div>
+  </div>
 
   <!-- Forward-Looking Divider -->
   <div id="forwardDivider" style="display:none;margin:24px 0 16px;padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(212,160,37,.06),rgba(155,89,182,.06));border:1px solid rgba(212,160,37,.2)">
@@ -1050,7 +1055,7 @@ function clearForNewCompany(){
   selectedYears=[];
   var _rs=document.getElementById('roiicRdGrowth');if(_rs)_rs.dataset.initialized='';
   var _gcrs=document.getElementById('gcReinvestSlider');if(_gcrs)_gcrs.dataset.initialized='';
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
@@ -2615,7 +2620,7 @@ function doImport(){
       yearStore[currentYearKey].formData=captureForm();
     }
     // Clear cash flow fields before filling to prevent cross-year contamination
-    var cashFlowFields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','interest','tax_paid'];
+    var cashFlowFields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','ap_change','interest','tax_paid'];
     cashFlowFields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
     document.getElementById('amort_only').value='';
     var cleaned=stripJsonComments(raw);
@@ -2680,6 +2685,7 @@ function doImport(){
       'restructuring charges':1,'restructuring':1,'restructuring_cash_payments':1,'restructuring_payments':1,'restructuring_charges':1,
       'inventory change':1,'inventory_change':1,
       'receivables change':1,'accounts receivable change':1,'trade receivables change':1,'receivables_change':1,
+      'ap change':1,'accounts payable change':1,'payables change':1,'ap_change':1,'accounts_payable_change':1,'trade payables change':1,
       'interest paid':1,'cash_interest_paid':1,'cash interest paid':1,'interest_paid':1,'interest_expense':1,'interest expense':1,
       'income tax paid':1,'income taxes paid':1,'cash_taxes_paid':1,'cash taxes paid':1,'income_tax_paid':1,'income_tax_expense':1,'income tax expense':1,
       'revenue':1,'total revenue':1,'net revenue':1,'total_revenue':1,'net_revenue':1,'revenues':1,
@@ -2698,6 +2704,7 @@ function doImport(){
       'restructuring charges':'restructuring','restructuring':'restructuring','restructuring_cash_payments':'restructuring','restructuring_payments':'restructuring','restructuring_charges':'restructuring',
       'inventory change':'inv_change','inventory_change':'inv_change',
       'receivables change':'recv_change','accounts receivable change':'recv_change','trade receivables change':'recv_change','receivables_change':'recv_change',
+      'ap change':'ap_change','accounts payable change':'ap_change','payables change':'ap_change','ap_change':'ap_change','accounts_payable_change':'ap_change','trade payables change':'ap_change',
       'interest paid':'interest','cash_interest_paid':'interest','cash interest paid':'interest','interest_paid':'interest',
       'income tax paid':'tax_paid','income taxes paid':'tax_paid','cash_taxes_paid':'tax_paid','cash taxes paid':'tax_paid','income_tax_paid':'tax_paid',
       'total debt':'debt','total_debt_principal':'debt','total debt principal':'debt','total_debt':'debt',
@@ -2868,7 +2875,7 @@ function doImport(){
 
 // ============ Year Management ============
 function captureForm(){
-  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
+  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),ap_change:v('ap_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
   // Preserve JSON-only fields from current yearStore entry
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
     var prev=yearStore[currentYearKey].formData;
@@ -2878,7 +2885,7 @@ function captureForm(){
 }
 
 function restoreForm(d){
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   // Price persists independently — only set from year data if the price field is currently empty
@@ -5980,6 +5987,7 @@ function calculate(){
   var restructuring=v('restructuring')||0;
   var invChange=v('inv_change')||0;
   var recvChange=v('recv_change')||0;
+  var apChange=v('ap_change')||0;
   var interest=v('interest')||0;
   var taxPaid=v('tax_paid')||0;
   var debt=v('debt')||0;
@@ -6006,7 +6014,7 @@ function calculate(){
 
   // Collapse input form and show summary bar
   var _fieldCount=0;
-  ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'].forEach(function(f){var el=document.getElementById(f);if(el&&el.value&&el.value!=='0'&&el.value!=='')_fieldCount++;});
+  ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'].forEach(function(f){var el=document.getElementById(f);if(el&&el.value&&el.value!=='0'&&el.value!=='')_fieldCount++;});
   var _yearCount=getSortedYearKeys().length;
   var _sumText='<strong style="color:var(--accent2)">'+ticker+'</strong> · $'+price.toFixed(0)+' · CFO '+fmtM(cfo)+' · '+_fieldCount+' fields'+(_yearCount>1?' · '+_yearCount+' years':'');
   document.getElementById('formSummaryText').innerHTML=_sumText;
@@ -6025,7 +6033,7 @@ function calculate(){
 
   var realSBC=Math.max(sbcExp,sbcGrant);
   var sbcSource=sbcGrant>sbcExp?'Grant Value (higher)':'Expense';
-  var wcDrag=invChange+recvChange;
+  var wcDrag=invChange+recvChange+apChange;
   var investmentIncome=ltInvestments*invReturnRate;
   var onetimeAdj=v('onetime_adj')||0;
   var realProfit=cfo-realSBC-maintCapex-restructuring-onetimeAdj+investmentIncome;
@@ -6516,9 +6524,10 @@ function calculate(){
         if(!y.revenue||y.revenue<=0)return;
         var inv=y.formData.inv_change||0;
         var recv=y.formData.recv_change||0;
-        var wcAbsorb=Math.abs(inv)+Math.abs(recv);
+        var ap=y.formData.ap_change||0;
+        var wcAbsorb=Math.abs(inv)+Math.abs(recv)+Math.abs(ap);
         var wcPctRev=wcAbsorb/y.revenue;
-        wcTrendParts.push({label:y.label,pct:wcPctRev,drag:(inv<0||recv<0)});
+        wcTrendParts.push({label:y.label,pct:wcPctRev,drag:(inv<0||recv<0||ap<0)});
       });
       if(wcTrendParts.length>=2){
         var wcFirst=wcTrendParts[0],wcLast=wcTrendParts[wcTrendParts.length-1];
@@ -6534,8 +6543,8 @@ function calculate(){
       }
     }
   }
-  if(wcDrag<-1000){flags.push({type:'caution',text:'<strong>⚡ Working Capital Drag:</strong> '+fmt(Math.abs(wcDrag),0)+'M consumed — cash trapped in inventory/receivables.'});}
-  else if(wcDrag>1000){flags.push({type:'ok',text:'<strong>✓ Working Capital:</strong> Released '+fmt(wcDrag,0)+'M — positive cash conversion.'});}
+  if(wcDrag<-1000){flags.push({type:'caution',text:'<strong>⚡ Working Capital Drag:</strong> '+fmt(Math.abs(wcDrag),0)+'M consumed — cash trapped in inventory/receivables/payables.'});}
+  else if(wcDrag>1000){flags.push({type:'ok',text:'<strong>✓ Working Capital:</strong> Released '+fmt(wcDrag,0)+'M — positive cash conversion (includes payables benefit).'});}
   if(debt>0&&realProfit>0){
     var debtRatio=debt/realProfit;
     if(debtRatio>8)flags.push({type:'warn',text:'<strong>⚠ High Leverage:</strong> Debt is '+debtRatio.toFixed(1)+'x real profit — significant leverage risk.'});
@@ -6650,7 +6659,7 @@ function calculate(){
   renderGrowthCompounder();
 
   // Buyback Return Tracker
-  renderBuybackTracker();
+  try{renderBuybackTracker();}catch(e){console.warn('Buyback tracker error:',e);}
 
   // Render trend
   renderTrend();
