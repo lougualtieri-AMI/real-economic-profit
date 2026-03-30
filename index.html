@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.2.0';
+  var buildId='v4.2.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -5905,27 +5905,43 @@ function calculate(){
 
   verdictHTML+='</div>'; // end yield ladder
 
-  // --- SBC Value Gap warning ---
-  var latestSBCGap=sbcGrant>0&&sbcExp>0?sbcGrant/sbcExp:null;
-  if(latestSBCGap!==null&&latestSBCGap>1.5){
-    verdictHTML+='<div style="padding:10px 14px;border-radius:8px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);font-size:.82rem;color:#e8b4b0;margin-bottom:12px">⚠ <strong>SBC GAP:</strong> Grant value is '+latestSBCGap.toFixed(1)+'x reported expense — REP uses the higher grant value ('+fmtM(sbcGrant)+' vs. '+fmtM(sbcExp)+' expensed).</div>';
-  }
-
-  // --- Wall Street Reference (separate, below panels) ---
+  // --- Wall Street Reference (separate card, clear labels) ---
   if(netIncome!==null&&ev>0){
-    var wsYield=netIncome/ev;
+    var wsYieldOnEV=netIncome/ev;
+    var wsYieldOnMC=netIncome/marketCap;
     var wsEvMult=netIncome>0?ev/netIncome:null;
     var wsPE=netIncome>0?marketCap/netIncome:null;
-    var wsColor=wsYield>=0.07?'var(--green)':wsYield>=0.04?'var(--blue)':wsYield>=0.02?'var(--orange)':'var(--red)';
-    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:4px">';
-    verdictHTML+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">';
-    verdictHTML+='<div style="font-size:.8rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px">Wall Street View</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">Net Income <strong>'+fmtM(netIncome)+'</strong></div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">P/E <strong>'+(wsPE?wsPE.toFixed(1)+'x':'N/A')+'</strong></div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">EV/NI <strong>'+(wsEvMult?wsEvMult.toFixed(1)+'x':'N/A')+'</strong></div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.05rem;font-weight:700;color:'+wsColor+'">'+pct(wsYield)+'</div>';
+    var wsEps=shares>0?netIncome/shares:null;
+    var wsColorEV=wsYieldOnEV>=0.07?'var(--green)':wsYieldOnEV>=0.04?'var(--blue)':wsYieldOnEV>=0.02?'var(--orange)':'var(--red)';
+    verdictHTML+='<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px">';
+    verdictHTML+='<div style="font-size:.82rem;color:var(--text2);font-weight:600;margin-bottom:10px">Wall Street View — Before REPA Adjustments</div>';
+    verdictHTML+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">';
+    // Reported Net Income
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:3px">Reported Net Income</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1rem;font-weight:700;color:var(--text)">'+fmtM(netIncome)+'</div>';
+    if(wsEps!==null)verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-top:2px">EPS $'+wsEps.toFixed(2)+'</div>';
     verdictHTML+='</div>';
-    verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:4px">Reported net income (GAAP) ÷ Enterprise Value. Before SBC, CapEx, and amortization adjustments.</div>';
+    // P/E
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:3px">P/E (Mkt Cap ÷ Net Income)</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1rem;font-weight:700;color:var(--text)">'+(wsPE?wsPE.toFixed(1)+'x':'N/A')+'</div>';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-top:2px">'+fmtM(marketCap)+' ÷ '+fmtM(netIncome)+'</div>';
+    verdictHTML+='</div>';
+    // EV / Net Income
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:3px">EV ÷ Net Income</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1rem;font-weight:700;color:var(--text)">'+(wsEvMult?wsEvMult.toFixed(1)+'x':'N/A')+'</div>';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-top:2px">'+fmtM(ev)+' ÷ '+fmtM(netIncome)+'</div>';
+    verdictHTML+='</div>';
+    // Yield on EV
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:3px">Earnings Yield (on EV)</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1rem;font-weight:700;color:'+wsColorEV+'">'+pct(wsYieldOnEV)+'</div>';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-top:2px">Net Income ÷ EV</div>';
+    verdictHTML+='</div>';
+    verdictHTML+='</div>'; // end grid
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">GAAP reported net income from the income statement. No adjustments for real SBC dilution, maintenance CapEx, or acquisition amortization. The REPA panels above show what changes when those are corrected.</div>';
     verdictHTML+='</div>';
   }
 
