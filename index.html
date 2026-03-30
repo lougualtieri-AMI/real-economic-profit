@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.1.0';
+  var buildId='v4.2.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -5771,44 +5771,31 @@ function calculate(){
   var ownershipYield=realYield;
   var netDebt=debt-cash-sti;
 
-  // ===== NEW VERDICT ZONE: Four-tier yield ladder =====
-  // Filing reference
-  var filingLabel='';
+  // ===== VERDICT ZONE =====
+  var filingLabel='',filingEnd='';
   if(currentYearKey&&yearStore[currentYearKey]){
     var fy=yearStore[currentYearKey];
+    filingEnd=fy.fiscal_year_end||'';
     var fyLabel=fy.fiscal_year_label||'';
-    var fyEnd=fy.fiscal_year_end||'';
     var fyType=fy.isInterim?(fy.interimLabel||'Interim'):'10-K Annual';
-    filingLabel='TTM through '+fyEnd+' ('+fyLabel+' '+fyType+')';
+    filingLabel=fyLabel+' '+fyType+' · TTM through '+filingEnd;
   }
 
   var verdictHTML='';
-  // Source line
-  verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-bottom:12px;text-align:center">'+filingLabel+' at <strong style="color:var(--text)">$'+price.toFixed(0)+'</strong>/share</div>';
 
-  // EV components
-  verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-bottom:16px;font-family:JetBrains Mono,monospace;text-align:center">EV: '+fmtM(marketCap)+' mkt cap + '+fmtM(debt)+' debt − '+fmtM(cash+sti)+' cash+STI = <strong style="color:var(--text)">'+fmtM(ev)+'</strong></div>';
+  // --- Filing reference line (clear, readable, standalone) ---
+  verdictHTML+='<div style="font-size:.85rem;color:var(--text2);margin-bottom:6px;padding-bottom:8px;border-bottom:1px solid var(--border)">';
+  verdictHTML+='<strong style="color:var(--accent2)">'+ticker+'</strong> · '+filingLabel+' · <strong style="color:var(--text)">$'+price.toFixed(0)+'</strong>/share';
+  verdictHTML+='</div>';
 
-  // ---- Wall Street Reference Bar ----
-  if(netIncome!==null&&marketCap>0){
-    var wsYield=ev>0?netIncome/ev:0;
-    var wsEvMultiple=netIncome>0?ev/netIncome:null;
-    var wsPE=netIncome>0?marketCap/netIncome:null;
-    var wsColor=wsYield>=0.07?'var(--green)':wsYield>=0.04?'var(--blue)':wsYield>=0.02?'var(--orange)':'var(--red)';
-    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px">';
-    verdictHTML+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">';
-    verdictHTML+='<div><span style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">Wall Street</span></div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.85rem;color:var(--text2)">Net Income '+fmtM(netIncome)+'</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.85rem;color:var(--text2)">P/E '+(wsPE?wsPE.toFixed(1)+'x':'N/A')+'</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.85rem;color:var(--text2)">EV/NI '+(wsEvMultiple?wsEvMultiple.toFixed(1)+'x':'N/A')+'</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1rem;font-weight:700;color:'+wsColor+'">'+pct(wsYield)+' yield</div>';
-    verdictHTML+='</div>';
-    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-top:4px">Reported net income ÷ Enterprise Value. What most investors see before any adjustments.</div>';
-    verdictHTML+='</div>';
-  }
+  // --- EV line (compact, readable) ---
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:16px;font-family:JetBrains Mono,monospace">';
+  verdictHTML+='EV = '+fmtM(marketCap)+' <span style="color:var(--text3)">mkt cap</span> + '+fmtM(debt)+' <span style="color:var(--text3)">debt</span> − '+fmtM(cash+sti)+' <span style="color:var(--text3)">cash</span> = <strong style="color:var(--text)">'+fmtM(ev)+'</strong></div>';
 
-  // ---- Three REP Panels ----
+  // ===== THREE REP PANELS (the hero) =====
   function yColor(y){return y>=0.07?'var(--green)':y>=0.04?'var(--blue)':y>=0.02?'var(--orange)':'var(--red)';}
+
+  var amort=(deprOnly>0&&da>0)?da-deprOnly:0;
 
   // Panel 1: Full D&A
   var p1REP=realProfit;
@@ -5816,24 +5803,24 @@ function calculate(){
   var p1Mult=p1REP>0?ev/p1REP:null;
   var p1Rating=yieldRating(p1Yield);
 
-  // Panel 2: Add-Back Amortization (uses amort slider default)
-  var amort=(deprOnly>0&&da>0)?da-deprOnly:0;
-  var p2AmortPct=adjAmortPct; // reads from slider (default from preset)
+  // Panel 2: Add-Back Amortization
+  var p2AmortPct=adjAmortPct;
   var p2AmortAdd=amort*p2AmortPct/100;
   var p2REP=p1REP+p2AmortAdd;
   var p2Yield=ev>0?p2REP/ev:0;
   var p2Mult=p2REP>0?ev/p2REP:null;
   var p2Rating=yieldRating(p2Yield);
   var p2Delta=p2REP-p1REP;
+  var amortIsCustom=(adjAmortPresetId==='custom');
 
-  // Panel 3: Best Guess (amort + R&D addback)
+  // Panel 3: Best Guess
   var rdExpVZ=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra)
     rdExpVZ=yearStore[currentYearKey].extra.rd_expense||null;
   var hasRdVZ=rdExpVZ&&rdExpVZ>0;
   var rdGrowthPctVZ=hasRdVZ?(100-rdMaintPct):0;
   var rdGrowthDollarVZ=hasRdVZ?rdExpVZ*rdGrowthPctVZ/100:0;
-  var rdAddbackVZ=rdGrowthDollarVZ*0.79; // after-tax
+  var rdAddbackVZ=rdGrowthDollarVZ*0.79;
   var p3REP=p2REP+rdAddbackVZ;
   var p3Yield=ev>0?p3REP/ev:0;
   var p3Mult=p3REP>0?ev/p3REP:null;
@@ -5841,87 +5828,105 @@ function calculate(){
   var p3DeltaFromP2=p3REP-p2REP;
   var rdPresetLabel=getRdSectorPreset().label;
   var rdIsCustom=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
-  var amortIsCustom=(adjAmortPresetId==='custom');
 
-  // Build the three panels
-  verdictHTML+='<div id="yieldLadder" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">';
+  verdictHTML+='<div id="yieldLadder" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">';
 
   // --- Panel 1: Full D&A ---
-  verdictHTML+='<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">';
-  verdictHTML+='<div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Full D&A (Conservative)</div>';
-  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+yColor(p1Yield)+'">'+pct(p1Yield)+'</div>';
-  verdictHTML+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p1Rating.bg+';color:'+p1Rating.cssColor+'">'+p1Rating.text+'</div>';
-  verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p1Mult?p1Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
-  // REP box
-  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:.78rem">';
-  verdictHTML+='<div style="color:var(--text2);margin-bottom:4px;font-weight:600">REP: '+fmtM(p1REP)+'</div>';
-  verdictHTML+='<div style="color:var(--text3);font-family:JetBrains Mono,monospace;font-size:.72rem;line-height:1.7">';
+  verdictHTML+='<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">';
+  verdictHTML+='<div style="font-size:.78rem;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Full D&A</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p1Yield)+';line-height:1">'+pct(p1Yield)+'</div>';
+  verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p1Rating.bg+';color:'+p1Rating.cssColor+'">'+p1Rating.text+'</div>';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p1Mult?p1Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // REP detail box
+  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text);font-weight:700;margin-bottom:6px">REP: '+fmtM(p1REP)+'</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.8">';
   verdictHTML+='CFO '+fmtM(cfo)+'<br>';
-  verdictHTML+='<span style="color:var(--red)">− SBC '+fmtM(realSBC)+'</span><br>';
-  verdictHTML+='<span style="color:var(--red)">− Maint '+fmtM(maintCapex)+'</span><br>';
-  if(restructuring>0)verdictHTML+='<span style="color:var(--red)">− Restruct '+fmtM(restructuring)+'</span><br>';
-  if(onetimeAdj>0)verdictHTML+='<span style="color:var(--red)">− One-time '+fmtM(onetimeAdj)+'</span><br>';
-  if(investmentIncome>0)verdictHTML+='<span style="color:var(--green)">+ Invest '+fmtM(investmentIncome)+'</span><br>';
+  verdictHTML+='<span style="color:#e08080">− SBC '+fmtM(realSBC)+'</span><br>';
+  verdictHTML+='<span style="color:#e08080">− Maint '+fmtM(maintCapex)+'</span>';
+  if(restructuring>0)verdictHTML+='<br><span style="color:#e08080">− Restruct '+fmtM(restructuring)+'</span>';
+  if(onetimeAdj>0)verdictHTML+='<br><span style="color:#e08080">− One-time '+fmtM(onetimeAdj)+'</span>';
+  if(investmentIncome>0)verdictHTML+='<br><span style="color:#80d0a0">+ Invest '+fmtM(investmentIncome)+'</span>';
   verdictHTML+='</div>';
-  verdictHTML+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Maint CapEx = D&A '+fmtM(da)+' × '+((document.getElementById('maintMultiplier')?document.getElementById('maintMultiplier').value:'1.05'))+'</div>';
+  var multLabel=(document.getElementById('maintMultiplier')?document.getElementById('maintMultiplier').value:'1.05');
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:6px">Maint = D&A '+fmtM(da)+' × '+multLabel+'</div>';
   verdictHTML+='</div>';
-  verdictHTML+='</div>'; // end panel 1
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Most conservative. All D&A treated as real maintenance cost.</div>';
+  verdictHTML+='</div>';
 
   // --- Panel 2: Add-Back Amortization ---
-  verdictHTML+='<div style="background:var(--card);border:1px solid '+(amort>0?'rgba(155,89,182,.3)':'var(--border)')+';border-radius:10px;padding:16px">';
-  verdictHTML+='<div style="font-size:.72rem;color:var(--purple);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Add-Back Amort'+(amortIsCustom?' <span style="color:var(--orange);font-size:.65rem">customized</span>':'')+'</div>';
-  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+yColor(p2Yield)+'">'+pct(p2Yield)+'</div>';
-  verdictHTML+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p2Rating.bg+';color:'+p2Rating.cssColor+'">'+p2Rating.text+'</div>';
-  verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p2Mult?p2Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
-  // What changed
+  verdictHTML+='<div style="background:var(--card);border:1px solid '+(amort>0?'rgba(155,89,182,.35)':'var(--border)')+';border-radius:12px;padding:18px">';
+  verdictHTML+='<div style="font-size:.78rem;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Add-Back Amort'+(amortIsCustom?' <span style="color:var(--orange);font-size:.7rem;text-transform:none">· customized</span>':'')+'</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p2Yield)+';line-height:1">'+pct(p2Yield)+'</div>';
+  verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p2Rating.bg+';color:'+p2Rating.cssColor+'">'+p2Rating.text+'</div>';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p2Mult?p2Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // Delta
   if(p2Delta>0.5){
-    verdictHTML+='<div style="font-size:.78rem;color:var(--purple);margin-top:6px">+'+fmtM(p2Delta)+' from amort add-back ('+p2AmortPct+'% of '+fmtM(amort)+')</div>';
+    verdictHTML+='<div style="font-size:.82rem;color:var(--purple);margin-top:8px;font-weight:600">+'+fmtM(p2Delta)+' added back</div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text3)">'+p2AmortPct+'% of '+fmtM(amort)+' amortization</div>';
   }else{
-    verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:6px">Amort only '+fmtM(amort)+' — negligible impact</div>';
+    verdictHTML+='<div style="font-size:.82rem;color:var(--text3);margin-top:8px">Amort '+fmtM(amort)+' — negligible impact</div>';
   }
-  // REP box
-  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:.78rem">';
-  verdictHTML+='<div style="color:var(--text2);margin-bottom:4px;font-weight:600">REP: '+fmtM(p2REP)+'</div>';
-  verdictHTML+='<div style="color:var(--text3);font-size:.72rem;line-height:1.6">';
+  // REP detail box
+  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text);font-weight:700;margin-bottom:6px">REP: '+fmtM(p2REP)+'</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.6">';
   verdictHTML+='Full D&A REP '+fmtM(p1REP)+'<br>';
-  verdictHTML+='<span style="color:var(--purple)">+ '+p2AmortPct+'% of amort: +'+fmtM(p2AmortAdd)+'</span>';
+  verdictHTML+='<span style="color:var(--purple)">+ amort add-back: +'+fmtM(p2AmortAdd)+'</span>';
+  verdictHTML+='</div></div>';
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Acquisition amortization may not be a real cash cost — assets often retain value even as they amortize to zero on the books.</div>';
   verdictHTML+='</div>';
-  verdictHTML+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Acquisition amortization ('+fmtM(amort)+') may not be a real cash cost — assets often retain value. '+p2AmortPct+'% treated as non-real.</div>';
-  verdictHTML+='</div>';
-  verdictHTML+='</div>'; // end panel 2
 
   // --- Panel 3: Best Guess ---
-  verdictHTML+='<div style="background:var(--card);border:1px solid rgba(212,160,37,.3);border-radius:10px;padding:16px">';
-  verdictHTML+='<div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Best Guess ★'+(rdIsCustom||amortIsCustom?' <span style="color:var(--orange);font-size:.65rem">customized</span>':'')+'</div>';
-  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+yColor(p3Yield)+'">'+pct(p3Yield)+'</div>';
-  verdictHTML+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p3Rating.bg+';color:'+p3Rating.cssColor+'">'+p3Rating.text+'</div>';
-  verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p3Mult?p3Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
-  // What changed
+  verdictHTML+='<div style="background:var(--card);border:1px solid rgba(212,160,37,.35);border-radius:12px;padding:18px">';
+  verdictHTML+='<div style="font-size:.78rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Best Guess ★'+(rdIsCustom||amortIsCustom?' <span style="color:var(--orange);font-size:.7rem;text-transform:none">· customized</span>':'')+'</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p3Yield)+';line-height:1">'+pct(p3Yield)+'</div>';
+  verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p3Rating.bg+';color:'+p3Rating.cssColor+'">'+p3Rating.text+'</div>';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p3Mult?p3Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // Delta
   if(hasRdVZ&&p3DeltaFromP2>0.5){
-    verdictHTML+='<div style="font-size:.78rem;color:var(--green);margin-top:6px">+'+fmtM(p3DeltaFromP2)+' from R&D add-back ('+rdGrowthPctVZ+'% of '+fmtM(rdExpVZ)+' × 79% tax adj)</div>';
+    verdictHTML+='<div style="font-size:.82rem;color:var(--green);margin-top:8px;font-weight:600">+'+fmtM(p3DeltaFromP2)+' R&D add-back</div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text3)">'+rdGrowthPctVZ+'% of R&D '+fmtM(rdExpVZ)+' × 79% tax adj</div>';
   }else if(!hasRdVZ){
-    verdictHTML+='<div style="font-size:.78rem;color:var(--text3);margin-top:6px">No R&D data — same as Add-Back Amort</div>';
+    verdictHTML+='<div style="font-size:.82rem;color:var(--text3);margin-top:8px">No R&D data — same as Add-Back Amort</div>';
   }
-  // REP box
-  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:.78rem">';
-  verdictHTML+='<div style="color:var(--accent2);margin-bottom:4px;font-weight:600">REP: '+fmtM(p3REP)+'</div>';
-  verdictHTML+='<div style="color:var(--text3);font-size:.72rem;line-height:1.6">';
-  verdictHTML+='Add-Back REP '+fmtM(p2REP)+'<br>';
+  // REP detail box
+  verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
+  verdictHTML+='<div style="font-size:.82rem;color:var(--accent2);font-weight:700;margin-bottom:6px">REP: '+fmtM(p3REP)+'</div>';
+  verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.6">';
+  verdictHTML+='Add-Back REP '+fmtM(p2REP);
   if(hasRdVZ){
-    verdictHTML+='<span style="color:var(--green)">+ R&D growth ('+rdGrowthPctVZ+'%): +'+fmtM(rdAddbackVZ)+'</span><br>';
-    verdictHTML+='<span style="font-size:.68rem;color:var(--text3)">'+rdPresetLabel+' default · R&D '+fmtM(rdExpVZ)+' × '+rdGrowthPctVZ+'% growth × 79%</span>';
+    verdictHTML+='<br><span style="color:var(--green)">+ R&D growth ('+rdGrowthPctVZ+'%): +'+fmtM(rdAddbackVZ)+'</span>';
+    verdictHTML+='<br><span style="font-size:.75rem;color:var(--text3)">'+rdPresetLabel+' preset</span>';
   }
+  verdictHTML+='</div></div>';
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Growth R&D creates future value. Adding it back treats R&D like growth CapEx. Adjust in Profit Adjustment Flow below.</div>';
   verdictHTML+='</div>';
-  verdictHTML+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Growth R&D creates future value — adding it back treats R&D like CapEx. Adjust in Profit Adjustment Flow below.</div>';
-  verdictHTML+='</div>';
-  verdictHTML+='</div>'; // end panel 3
 
-  verdictHTML+='</div>'; // end yield ladder grid
+  verdictHTML+='</div>'; // end yield ladder
 
-  // SBC Value Gap warning
+  // --- SBC Value Gap warning ---
   var latestSBCGap=sbcGrant>0&&sbcExp>0?sbcGrant/sbcExp:null;
   if(latestSBCGap!==null&&latestSBCGap>1.5){
-    verdictHTML+='<div style="padding:10px 14px;border-radius:8px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);font-size:.82rem;color:#e8b4b0;margin-bottom:12px">⚠ <strong>SBC GAP:</strong> Grant value is '+latestSBCGap.toFixed(1)+'x reported expense — income statement understates true compensation cost. REP uses the higher grant value.</div>';
+    verdictHTML+='<div style="padding:10px 14px;border-radius:8px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);font-size:.82rem;color:#e8b4b0;margin-bottom:12px">⚠ <strong>SBC GAP:</strong> Grant value is '+latestSBCGap.toFixed(1)+'x reported expense — REP uses the higher grant value ('+fmtM(sbcGrant)+' vs. '+fmtM(sbcExp)+' expensed).</div>';
+  }
+
+  // --- Wall Street Reference (separate, below panels) ---
+  if(netIncome!==null&&ev>0){
+    var wsYield=netIncome/ev;
+    var wsEvMult=netIncome>0?ev/netIncome:null;
+    var wsPE=netIncome>0?marketCap/netIncome:null;
+    var wsColor=wsYield>=0.07?'var(--green)':wsYield>=0.04?'var(--blue)':wsYield>=0.02?'var(--orange)':'var(--red)';
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:4px">';
+    verdictHTML+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">';
+    verdictHTML+='<div style="font-size:.8rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px">Wall Street View</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">Net Income <strong>'+fmtM(netIncome)+'</strong></div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">P/E <strong>'+(wsPE?wsPE.toFixed(1)+'x':'N/A')+'</strong></div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.88rem;color:var(--text2)">EV/NI <strong>'+(wsEvMult?wsEvMult.toFixed(1)+'x':'N/A')+'</strong></div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.05rem;font-weight:700;color:'+wsColor+'">'+pct(wsYield)+'</div>';
+    verdictHTML+='</div>';
+    verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:4px">Reported net income (GAAP) ÷ Enterprise Value. Before SBC, CapEx, and amortization adjustments.</div>';
+    verdictHTML+='</div>';
   }
 
   document.getElementById('verdict').innerHTML=verdictHTML;
