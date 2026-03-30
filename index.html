@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-03-30';
-  var buildId='v4.3.2';
+  var buildId='v4.4.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -419,6 +419,19 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <span id="yearSelectorCount" class="ys-count"></span>
 </div>
 
+<button class="calc" onclick="calculate()" id="calcBtn">⚡ Analyze Real Economic Profit</button>
+<button class="secondary" id="exportBtn" onclick="exportBrief()" style="display:none" title="Copy a formatted analysis summary to clipboard for pasting into Google Docs or NotebookLM">📤 Export Analysis Brief (Google Docs / NotebookLM)</button>
+
+<!-- Collapsed summary bar (hidden until Calculate is hit) -->
+<div id="formSummaryBar" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;margin-bottom:12px;cursor:pointer" onclick="document.getElementById('inputFormWrap').style.display='block';this.style.display='none';">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div id="formSummaryText" style="font-size:.85rem;color:var(--text2)"></div>
+    <span style="font-size:.78rem;color:var(--accent);font-weight:600">Edit Data ▼</span>
+  </div>
+</div>
+
+<!-- Input form wrapper (collapsible) -->
+<div id="inputFormWrap">
 <div class="tip-box">
   <strong>💡 Data sourcing:</strong> Use <strong>annual 10-K</strong> for all cash flow items. Use the <strong>latest 10-Q</strong> for balance sheet items. Feed both PDFs to Gemini and paste the JSON here. For <strong>multi-year trends</strong>, import each year's 10-K in separate Gemini chats — the fiscal year is auto-detected.
 </div>
@@ -489,9 +502,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
   <p class="section-note">Investment income is added to Real Economic Profit as a credit.</p>
 </div>
-
-<button class="calc" onclick="calculate()">⚡ Analyze Real Economic Profit</button>
-<button class="secondary" id="exportBtn" onclick="exportBrief()" style="display:none" title="Copy a formatted analysis summary to clipboard for pasting into Google Docs or NotebookLM">📤 Export Analysis Brief (Google Docs / NotebookLM)</button>
+</div><!-- end inputFormWrap -->
 
 <div id="results">
   <div id="verdict" class="verdict"></div>
@@ -593,6 +604,67 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       </div>
     </div>
   </div>
+
+  <!-- ROIIC Analysis — follows ROIC naturally -->
+  <div class="card" id="roiicCard" style="display:none">
+    <h2>📊 ROIIC Analysis</h2>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:14px">Return on Incremental Invested Capital — measures how efficiently new capital generates Real Economic Profit growth.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <label style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          R&amp;D Growth %
+          <span id="roiicRdGrowthLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green)">50%</span>
+          <span id="roiicRdStatus" style="font-size:.7rem;margin-left:4px"></span>
+        </label>
+        <input type="range" id="roiicRdGrowth" min="0" max="100" value="50" style="width:100%;accent-color:var(--green)" oninput="renderRoiicAnalysis()">
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3)"><span>0% growth</span><span>100% growth</span></div>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          Competitive Necessity %
+          <span id="roiicNecessityLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--orange)">0%</span>
+        </label>
+        <input type="range" id="roiicNecessity" min="0" max="100" value="0" style="width:100%;accent-color:var(--orange)" oninput="renderRoiicAnalysis()">
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3)"><span>0% necessity</span><span>100% necessity</span></div>
+      </div>
+    </div>
+
+    <div id="roiicNecessityNote" style="display:none;font-size:.75rem;color:var(--orange);background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:8px;padding:8px 12px;margin-bottom:14px">
+      <span id="roiicNecessityDesc"></span>
+    </div>
+
+    <div id="roiicStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
+
+    <div id="roiicTabs" style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0">
+      <button class="roiic-tab active" data-tab="dual" onclick="switchRoiicTab('dual')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">REP vs IC</button>
+      <button class="roiic-tab" data-tab="roiic" onclick="switchRoiicTab('roiic')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Rolling ROIIC</button>
+      <button class="roiic-tab" data-tab="buckets" onclick="switchRoiicTab('buckets')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Capital Buckets</button>
+    </div>
+
+    <div id="roiicChartArea" style="min-height:120px;padding:10px 0"></div>
+
+    <h3 style="margin-top:8px">Per-Year ROIIC Detail</h3>
+    <div style="overflow-x:auto">
+      <table id="roiicTable" class="trend-table" style="font-size:.78rem"></table>
+    </div>
+  </div>
+
+  <!-- Profit-Capital Base Analysis -->
+  <div class="card" id="pcbaCard" style="display:none">
+    <h2>📐 Profit-Capital Base Analysis</h2>
+    <div id="pcbaContent"></div>
+  </div>
+
+  <!-- Historical Trend -->
+  <div class="card" id="trendCard" style="display:none">
+    <h2>📈 Historical Trend</h2>
+    <div id="trendContent"></div>
+  </div>
+
+  <!-- Red Flags -->
+  <div class="card"><h2>🚩 Red Flags & Signals</h2><div id="flags" class="flags"></div></div>
+
   <!-- Forward-Looking Divider -->
   <div id="forwardDivider" style="display:none;margin:24px 0 16px;padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(212,160,37,.06),rgba(155,89,182,.06));border:1px solid rgba(212,160,37,.2)">
     <div style="font-size:.92rem;font-weight:700;color:var(--accent2)">📐 What Happens From Here?</div>
@@ -694,57 +766,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div class="card" id="trendCard" style="display:none">
     <h2>📈 Historical Trend</h2>
     <div id="trendContent"></div>
-  </div>
-
-  <!-- Profit-Capital Base Analysis (separated from Trend) -->
-  <div class="card" id="pcbaCard" style="display:none">
-    <h2>📐 Profit-Capital Base Analysis</h2>
-    <div id="pcbaContent"></div>
-  </div>
-
-  <!-- ROIIC Analysis Card -->
-  <div class="card" id="roiicCard" style="display:none">
-    <h2>📊 ROIIC Analysis</h2>
-    <p style="font-size:.8rem;color:var(--text3);margin-bottom:14px">Return on Incremental Invested Capital — measures how efficiently new capital generates Real Economic Profit growth.</p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div>
-        <label style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          R&amp;D Growth %
-          <span id="roiicRdGrowthLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green)">50%</span>
-          <span id="roiicRdStatus" style="font-size:.7rem;margin-left:4px"></span>
-        </label>
-        <input type="range" id="roiicRdGrowth" min="0" max="100" value="50" style="width:100%;accent-color:var(--green)" oninput="renderRoiicAnalysis()">
-        <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3)"><span>0% growth</span><span>100% growth</span></div>
-      </div>
-      <div>
-        <label style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          Competitive Necessity %
-          <span id="roiicNecessityLabel" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--orange)">0%</span>
-        </label>
-        <input type="range" id="roiicNecessity" min="0" max="100" value="0" style="width:100%;accent-color:var(--orange)" oninput="renderRoiicAnalysis()">
-        <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3)"><span>0% necessity</span><span>100% necessity</span></div>
-      </div>
-    </div>
-
-    <div id="roiicNecessityNote" style="display:none;font-size:.75rem;color:var(--orange);background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:8px;padding:8px 12px;margin-bottom:14px">
-      <span id="roiicNecessityDesc"></span>
-    </div>
-
-    <div id="roiicStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
-
-    <div id="roiicTabs" style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0">
-      <button class="roiic-tab active" data-tab="dual" onclick="switchRoiicTab('dual')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">REP vs IC</button>
-      <button class="roiic-tab" data-tab="roiic" onclick="switchRoiicTab('roiic')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Rolling ROIIC</button>
-      <button class="roiic-tab" data-tab="buckets" onclick="switchRoiicTab('buckets')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Capital Buckets</button>
-    </div>
-
-    <div id="roiicChartArea" style="min-height:120px;padding:10px 0"></div>
-
-    <h3 style="margin-top:8px">Per-Year ROIIC Detail</h3>
-    <div style="overflow-x:auto">
-      <table id="roiicTable" class="trend-table" style="font-size:.78rem"></table>
-    </div>
   </div>
 
   <div class="card"><h2>🚩 Red Flags & Signals</h2><div id="flags" class="flags"></div></div>
@@ -5731,6 +5752,15 @@ function calculate(){
   }
 
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
+
+  // Collapse input form and show summary bar
+  var _fieldCount=0;
+  ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'].forEach(function(f){var el=document.getElementById(f);if(el&&el.value&&el.value!=='0'&&el.value!=='')_fieldCount++;});
+  var _yearCount=getSortedYearKeys().length;
+  var _sumText='<strong style="color:var(--accent2)">'+ticker+'</strong> · $'+price.toFixed(0)+' · CFO '+fmtM(cfo)+' · '+_fieldCount+' fields'+(_yearCount>1?' · '+_yearCount+' years':'');
+  document.getElementById('formSummaryText').innerHTML=_sumText;
+  document.getElementById('formSummaryBar').style.display='block';
+  document.getElementById('inputFormWrap').style.display='none';
 
   var maintCapex,maintMethod;
   if(maintCapexInput!==null&&maintCapexInput>0){maintCapex=maintCapexInput;maintMethod='Disclosed';}
