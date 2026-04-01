@@ -2716,7 +2716,7 @@ function doImport(){
       'total assets':'total_assets','total_assets':'total_assets',
       'goodwill':'goodwill','goodwill_net':'goodwill',
       'intangible assets':'intangibles','intangible_assets':'intangibles','intangibles':'intangibles','net intangible assets':'intangibles','net_intangible_assets':'intangibles','intangible assets net':'intangibles','other intangible assets':'intangibles','other_intangible_assets':'intangibles',
-      'ticker':'ticker','company':'ticker','share price':'price','current share price':'price'
+      'ticker':'ticker','company':'ticker','share price':'price','current share price':'price','share_price':'price','end_of_year_price':'price','end_of_year_share_price':'price','eoy_price':'price','eoy_share_price':'price'
     };
     var fyKeys={'fiscal_year_end':1,'fiscal year end':1,'fiscal_year_end_date':1,'fiscal year end date':1,'period_end_date':1,'period end date':1};
     var fyLabelKeys={'fiscal_year_label':1,'fiscal year label':1,'fiscal_year':1,'fy_label':1};
@@ -2854,6 +2854,9 @@ function doImport(){
     if(warnings.length>0)msg+=' ⚠ Null: '+warnings.join(', ')+'.';
     if(!fyEnd&&!fyLabel)msg+=' ⚠ No fiscal year detected — add fiscal_year_end & fiscal_year_label to prompt.';
     msg+=' Enter ticker & share price, then analyze!';
+    // If price was loaded from JSON, note it
+    var priceLoaded=document.getElementById('price').value&&parseFloat(document.getElementById('price').value)>0;
+    if(priceLoaded)msg=msg.replace('Enter ticker & share price, then analyze!','Enter ticker, then analyze! (price loaded from JSON)');
     statusEl.className='import-status success';
     statusEl.textContent=msg;
 
@@ -2888,9 +2891,9 @@ function restoreForm(d){
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
-  // Price persists independently — only set from year data if the price field is currently empty
+  // Price: always restore from year data so each year carries its own price (critical for historical backfills)
   var priceEl=document.getElementById('price');
-  if(d.price&&(!priceEl.value||priceEl.value===''))priceEl.value=d.price;
+  if(d.price){priceEl.value=d.price;}else{priceEl.value='';}
   calcAmort();
 }
 
@@ -2899,6 +2902,14 @@ function applyPriceAllYears(){
   if(!p||p<=0){alert('Enter a share price first.');return;}
   // Save current year's form first
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
+  // Check if any years have distinct prices
+  var distinctPrices=[];
+  Object.keys(yearStore).forEach(function(k){
+    if(yearStore[k].formData&&yearStore[k].formData.price&&yearStore[k].formData.price!==p)distinctPrices.push(k);
+  });
+  if(distinctPrices.length>0){
+    if(!confirm(distinctPrices.length+' year(s) have different prices stored. Overwrite all with $'+p.toFixed(2)+'?'))return;
+  }
   var count=0;
   Object.keys(yearStore).forEach(function(k){
     if(yearStore[k].formData){yearStore[k].formData.price=p;count++;}
