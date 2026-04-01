@@ -382,8 +382,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-03-30';
-  var buildId='v4.6.0';
+  var buildDate='2026-04-01';
+  var buildId='v4.7.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -673,6 +673,12 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div class="card" id="trendCard" style="display:none">
     <h2>📈 Historical Trend</h2>
     <div id="trendContent"></div>
+  </div>
+
+  <!-- Long-Run History -->
+  <div class="card" id="longRunCard" style="display:none">
+    <h2>🔭 Long-Run History <span style="font-size:.72rem;color:var(--text3);font-weight:400;margin-left:8px">(all stored years)</span></h2>
+    <div id="longRunContent"></div>
   </div>
 
   <!-- Red Flags -->
@@ -1948,6 +1954,7 @@ function toggleYearSelection(k){
   // Re-render if results are visible
   if(document.getElementById('results').style.display==='block'){
     renderTrend();
+    try{renderLongRun();}catch(e){}
     renderRoiicAnalysis();
   }
 }
@@ -3102,7 +3109,7 @@ function removeYear(k){
   delete yearStore[k];
   if(currentYearKey===k)currentYearKey=null;
   renderPills();
-  if(document.getElementById('results').style.display==='block'){renderTrend();renderRoiicAnalysis();}
+  if(document.getElementById('results').style.display==='block'){renderTrend();try{renderLongRun();}catch(e){}renderRoiicAnalysis();}
 }
 
 // ============ Trend Rendering ============
@@ -3722,6 +3729,245 @@ function switchRoiicTab(tab){
     if(isActive)btn.classList.add('active');else btn.classList.remove('active');
   });
   renderRoiicAnalysis();
+}
+
+// ============ Long-Run History (All Stored Years) ============
+function renderLongRun(){
+  var card=document.getElementById('longRunCard');
+  if(!card)return;
+  var allKeys=getSortedYearKeys();
+  if(allKeys.length<3){card.style.display='none';return;}
+  card.style.display='block';
+
+  var years=enrichYears(allKeys,{extra:true});
+
+  // Compute all three REP yield variants per year
+  var mult=1.05;
+  var multEl=document.getElementById('maintMultiplier');
+  if(multEl)mult=parseFloat(multEl.value)||1.05;
+  var rdSector=getRdSectorPreset();
+  var rdMaintPct=rdSector.maintPct;
+  // Check if R&D slider has been customized
+  var rdSlider=document.getElementById('roiicRdGrowth');
+  if(rdSlider){
+    var rdGrowthSlider=parseInt(rdSlider.value);
+    if(!isNaN(rdGrowthSlider)&&rdGrowthSlider!==50) rdMaintPct=100-rdGrowthSlider;
+  }
+
+  years.forEach(function(y){
+    // We need EV for each year — use current EV since historical price isn't stored per-year
+    var ev=0;
+    var yk=allKeys[years.indexOf(y)];
+    var yr=yearStore[yk];
+    var fd=yr.formData||{};
+    var price=fd.price||0,shares=fd.shares||0;
+    var marketCap=price*shares;
+    var debt=fd.debt||0,cash=fd.cash||0,sti=fd.sti||0;
+    ev=marketCap+debt-cash-sti;
+    if(ev<=0) ev=marketCap>0?marketCap:1;
+    y.ev=ev;
+    y.price=price;
+    y.shares=shares;
+
+    // Full D&A yield (conservative)
+    y.yieldFullDA=ev>0?y.realProfit/ev:0;
+
+    // Add-Back Amort yield
+    if(y.realProfitLight!==null){
+      y.yieldAddBack=ev>0?y.realProfitLight/ev:0;
+    } else {
+      y.yieldAddBack=y.yieldFullDA; // no amort split → same
+    }
+
+    // Best Guess yield (add-back amort + R&D growth addback)
+    var rdExp=y.rd_expense||0;
+    var rdGrowthPct=100-rdMaintPct;
+    var rdGrowth=rdExp>0?(rdExp*(rdGrowthPct/100)*0.79):0; // after-tax
+    var baseForBG=(y.realProfitLight!==null)?y.realProfitLight:y.realProfit;
+    y.repBestGuess=baseForBG+rdGrowth;
+    y.yieldBestGuess=ev>0?y.repBestGuess/ev:0;
+    y.rdGrowthAddback=rdGrowth;
+    y.rdExp=rdExp;
+  });
+
+  // Determine which yield variant is the "headline" for this company
+  // Logic: if R&D is significant → Best Guess; if amort spread is big → Add-Back; else Full D&A
+  var latest=years[years.length-1];
+  var hasRd=latest.rdExp>0;
+  var rdSignificant=hasRd&&latest.revenue>0&&(latest.rdExp/latest.revenue)>0.03;
+  var amortSignificant=latest.realProfitLight!==null&&Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.realProfit)*0.08);
+
+  var headlineKey,headlineLabel,headlineColor;
+  if(rdSignificant){
+    headlineKey='yieldBestGuess';headlineLabel='Best Guess Yield';headlineColor='#d4a025';
+  } else if(amortSignificant){
+    headlineKey='yieldAddBack';headlineLabel='Add-Back Amort Yield';headlineColor='#9b59b6';
+  } else {
+    headlineKey='yieldFullDA';headlineLabel='Full D&A Yield';headlineColor='#3498db';
+  }
+
+  // Build the chart
+  var n=years.length;
+  var cW=740,cH=280,pL=62,pR=62,pT=32,pB=42;
+  var plotW=cW-pL-pR,plotH=cH-pT-pB;
+
+  function xP(i){return pL+(n>1?i/(n-1)*plotW:plotW/2);}
+
+  // Left axis: yield % (headline + ROIC)
+  var yieldVals=years.map(function(y){return y[headlineKey];});
+  var roicVals=years.map(function(y){return y.realROIC;});
+  var allPctVals=yieldVals.concat(roicVals);
+  var pctMin=Math.min.apply(null,allPctVals);
+  var pctMax=Math.max.apply(null,allPctVals);
+  // Add padding
+  var pctPad=(pctMax-pctMin)*0.15||0.02;
+  pctMin=Math.max(pctMin-pctPad,-0.1);
+  pctMax=pctMax+pctPad;
+  var pctRange=pctMax-pctMin;if(pctRange<0.01)pctRange=0.1;
+
+  function yPct(val){return pT+plotH-((val-pctMin)/pctRange*plotH);}
+
+  // Right axis: revenue or real profit ($M)
+  var hasRev=years.some(function(y){return y.revenue&&y.revenue>0;});
+  var barVals=hasRev?years.map(function(y){return y.revenue||0;}):years.map(function(y){return y.realProfit;});
+  var barMax=Math.max.apply(null,barVals)*1.15;if(barMax<1)barMax=1;
+  var barLabel=hasRev?'Revenue ($M)':'Real Profit ($M)';
+  var barColor=hasRev?'rgba(46,204,113,.18)':'rgba(52,152,219,.18)';
+  var barStroke=hasRev?'#2ecc71':'#3498db';
+
+  function yBar(val){return pT+plotH-(val/barMax*plotH);}
+
+  var html='';
+
+  // Summary pills at top
+  var firstY=years[0],lastY=years[years.length-1];
+  var yieldFirst=firstY[headlineKey],yieldLast=lastY[headlineKey];
+  var roicFirst=firstY.realROIC,roicLast=lastY.realROIC;
+  html+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center">';
+  html+='<div style="font-size:.78rem;color:var(--text3)">'+n+' years: '+firstY.label+' → '+lastY.label+'</div>';
+  html+='<div style="flex:1"></div>';
+  html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:rgba(212,160,37,.12);color:var(--accent)">ROIC: '+pct(roicFirst,1)+' → '+pct(roicLast,1)+'</div>';
+  html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:'+(headlineColor==='#d4a025'?'rgba(212,160,37,.12)':headlineColor==='#9b59b6'?'rgba(155,89,182,.12)':'rgba(52,152,219,.12)')+';color:'+headlineColor+'">'+headlineLabel+': '+pct(yieldFirst,1)+' → '+pct(yieldLast,1)+'</div>';
+  html+='</div>';
+
+  // SVG
+  html+='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
+
+  // Grid lines
+  for(var g=0;g<=4;g++){
+    var gy=pT+(plotH/4)*g;
+    html+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
+    var pv=pctMax-((pctMax-pctMin)/4)*g;
+    html+='<text x="'+(pL-8)+'" y="'+(gy+4)+'" fill="#bbb" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+(pv*100).toFixed(1)+'%</text>';
+    var bv=barMax-((barMax)/4)*g;
+    html+='<text x="'+(cW-pR+8)+'" y="'+(gy+4)+'" fill="#bbb" font-size="9" text-anchor="start" font-family="JetBrains Mono">'+fmtM(bv)+'</text>';
+  }
+
+  // X labels
+  years.forEach(function(y,i){
+    html+='<text x="'+xP(i)+'" y="'+(cH-8)+'" fill="#bbb" font-size="10" text-anchor="middle" font-family="DM Sans">'+y.label+'</text>';
+  });
+
+  // Axis titles
+  html+='<text x="12" y="'+(pT+plotH/2)+'" fill="'+headlineColor+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(-90,12,'+(pT+plotH/2)+')">Yield / ROIC (%)</text>';
+  html+='<text x="'+(cW-8)+'" y="'+(pT+plotH/2)+'" fill="'+barStroke+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(90,'+(cW-8)+','+(pT+plotH/2)+')">'+barLabel+'</text>';
+
+  // Revenue/Profit bars (background)
+  var barW=Math.min(32,plotW/n*0.4);
+  years.forEach(function(y,i){
+    var val=hasRev?(y.revenue||0):y.realProfit;
+    if(val<=0)return;
+    var bh=(val/barMax)*plotH;
+    html+='<rect x="'+(xP(i)-barW/2)+'" y="'+(pT+plotH-bh)+'" width="'+barW+'" height="'+bh+'" fill="'+barColor+'" stroke="'+barStroke+'" stroke-width="0.8" rx="2"/>';
+  });
+
+  // Secondary yield lines (faded, dashed) — show the ones that aren't the headline
+  var secondaryLines=[];
+  if(headlineKey!=='yieldFullDA') secondaryLines.push({key:'yieldFullDA',color:'#3498db',label:'Full D&A'});
+  if(headlineKey!=='yieldAddBack'&&years.some(function(y){return y.realProfitLight!==null;})) secondaryLines.push({key:'yieldAddBack',color:'#9b59b6',label:'Add-Back'});
+  if(headlineKey!=='yieldBestGuess'&&hasRd) secondaryLines.push({key:'yieldBestGuess',color:'#d4a025',label:'Best Guess'});
+
+  secondaryLines.forEach(function(sl){
+    if(n>1){
+      var sp=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y[sl.key]).toFixed(1);}).join(' ');
+      html+='<path d="'+sp+'" fill="none" stroke="'+sl.color+'" stroke-width="1.2" stroke-dasharray="4,3" opacity=".45"/>';
+    }
+    years.forEach(function(y,i){
+      html+='<circle cx="'+xP(i)+'" cy="'+yPct(y[sl.key])+'" r="2.5" fill="'+sl.color+'" opacity=".4"/>';
+    });
+  });
+
+  // ROIC line (gold, always shown)
+  var roicColor='#d4a025';
+  if(headlineKey==='yieldBestGuess') roicColor='#e67e22'; // shift gold to orange to differentiate from Best Guess gold
+  if(n>1){
+    var roicPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y.realROIC).toFixed(1);}).join(' ');
+    html+='<path d="'+roicPath+'" fill="none" stroke="'+roicColor+'" stroke-width="2" stroke-linecap="round"/>';
+  }
+  years.forEach(function(y,i){
+    html+='<circle cx="'+xP(i)+'" cy="'+yPct(y.realROIC)+'" r="3.5" fill="'+roicColor+'" stroke="#0f0f0f" stroke-width="1.5"/>';
+  });
+
+  // Headline yield line (bold, on top)
+  if(n>1){
+    var hArea='M'+xP(0)+','+yPct(years[0][headlineKey]);
+    years.forEach(function(y,i){if(i>0)hArea+=' L'+xP(i)+','+yPct(y[headlineKey]);});
+    hArea+=' L'+xP(n-1)+','+(pT+plotH)+' L'+xP(0)+','+(pT+plotH)+' Z';
+    html+='<path d="'+hArea+'" fill="'+headlineColor+'" opacity=".06"/>';
+    var hPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y[headlineKey]).toFixed(1);}).join(' ');
+    html+='<path d="'+hPath+'" fill="none" stroke="'+headlineColor+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  years.forEach(function(y,i){
+    html+='<circle cx="'+xP(i)+'" cy="'+yPct(y[headlineKey])+'" r="4.5" fill="'+headlineColor+'" stroke="#0f0f0f" stroke-width="2"/>';
+    html+='<text x="'+xP(i)+'" y="'+(yPct(y[headlineKey])-11)+'" fill="'+headlineColor+'" font-size="9.5" text-anchor="middle" font-family="JetBrains Mono" font-weight="700">'+pct(y[headlineKey],1)+'</text>';
+  });
+
+  html+='</svg>';
+
+  // Legend
+  html+='<div class="chart-legend" style="flex-wrap:wrap;gap:8px 16px">';
+  html+='<span><span class="dot" style="background:'+headlineColor+'"></span> '+headlineLabel+'</span>';
+  html+='<span><span class="dot" style="background:'+roicColor+'"></span> Real ROIC</span>';
+  html+='<span><span class="dot" style="background:'+barStroke+'"></span> '+barLabel+'</span>';
+  secondaryLines.forEach(function(sl){
+    html+='<span style="opacity:.55"><span class="dot" style="background:'+sl.color+'"></span> '+sl.label+' (ref)</span>';
+  });
+  html+='</div>';
+
+  // Explain which yield variant was chosen and why
+  html+='<div style="font-size:.72rem;color:var(--text3);margin-top:10px;padding:8px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">';
+  if(headlineKey==='yieldBestGuess'){
+    html+='<strong style="color:var(--accent)">Best Guess</strong> shown as headline — R&D is '+(latest.revenue>0?pct(latest.rdExp/latest.revenue,0):'significant')+' of revenue ('+rdSector.label+' preset: '+rdMaintPct+'% maintenance, '+(100-rdMaintPct)+'% growth, after-tax addback). ';
+    html+='Dashed lines show Full D&A and Add-Back Amort reference yields.';
+  } else if(headlineKey==='yieldAddBack'){
+    html+='<strong style="color:#9b59b6">Add-Back Amort</strong> shown as headline — amortization spread is material ('+fmtM(Math.abs(latest.realProfitLight-latest.realProfit))+' impact on REP). ';
+    html+='Dashed line shows Full D&A reference yield.';
+  } else {
+    html+='<strong style="color:#3498db">Full D&A</strong> shown as headline — amortization and R&D impacts are minimal for this company. All three yield variants converge.';
+  }
+  html+='</div>';
+
+  // Compact data table
+  html+='<div style="overflow-x:auto;margin-top:14px"><table class="trend-table" style="font-size:.74rem"><tr><th style="text-align:left">Year</th>';
+  if(hasRev) html+='<th>Revenue</th>';
+  html+='<th>REP (Full)</th><th>REP (Add-Back)</th>';
+  if(hasRd) html+='<th>REP (Best Guess)</th>';
+  html+='<th>ROIC</th><th>'+headlineLabel+'</th>';
+  html+='</tr>';
+  years.forEach(function(y){
+    html+='<tr>';
+    html+='<td style="text-align:left;font-weight:600">'+y.label+'</td>';
+    if(hasRev) html+='<td>'+fmtM(y.revenue||0)+'</td>';
+    html+='<td>'+fmtM(y.realProfit)+'</td>';
+    html+='<td>'+(y.realProfitLight!==null?fmtM(y.realProfitLight):'—')+'</td>';
+    if(hasRd) html+='<td>'+fmtM(y.repBestGuess)+'</td>';
+    html+='<td>'+pct(y.realROIC,1)+'</td>';
+    html+='<td style="font-weight:700;color:'+headlineColor+'">'+pct(y[headlineKey],1)+'</td>';
+    html+='</tr>';
+  });
+  html+='</table></div>';
+
+  document.getElementById('longRunContent').innerHTML=html;
 }
 
 function renderRoiicAnalysis(){
@@ -6674,6 +6920,8 @@ function calculate(){
 
   // Render trend
   renderTrend();
+  // Long-Run History (all years)
+  try{renderLongRun();}catch(e){console.warn('Long-run history error:',e);}
   // ROIIC Analysis
   renderRoiicAnalysis();
   // Feature 5: Render target price calculator
