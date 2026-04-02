@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-01';
-  var buildId='v4.7.0';
+  var buildId='v4.8.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -417,6 +417,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <span class="ys-label">Analyze years:</span>
   <div id="yearSelectorChips"></div>
   <span id="yearSelectorCount" class="ys-count"></span>
+  <button onclick="selectAllYears()" style="padding:3px 8px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:5px;color:var(--text3);cursor:pointer" title="Select all stored years">All</button>
+  <button onclick="selectLast3Years()" style="padding:3px 8px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:5px;color:var(--text3);cursor:pointer" title="Select 3 most recent years">Last 3</button>
 </div>
 
 <button class="calc" onclick="calculate()" id="calcBtn">⚡ Analyze Real Economic Profit</button>
@@ -658,26 +660,28 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
   <!-- Profit-Capital Base Analysis -->
   <div class="card" id="pcbaCard" style="display:none">
-    <h2>📐 Profit-Capital Base Analysis</h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('pcbaContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Profit-Capital Base Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="pcbaContent"></div>
   </div>
 
   <!-- Buyback Return Tracker -->
   <div class="card" id="buybackCard" style="display:none">
-    <h2>🔄 Buyback Return Tracker</h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Buyback Return Tracker <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="buybackWrap">
     <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">Tracks cumulative share repurchases across years. Compares average buyback cost basis to current price, and measures whether buybacks offset SBC dilution (net shares retired vs. net shares issued).</p>
     <div id="buybackContent"></div>
+    </div>
   </div>
 
   <!-- Historical Trend -->
   <div class="card" id="trendCard" style="display:none">
-    <h2>📈 Historical Trend</h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('trendContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📈 Historical Trend <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="trendContent"></div>
   </div>
 
   <!-- Long-Run History -->
   <div class="card" id="longRunCard" style="display:none">
-    <h2>🔭 Long-Run History <span style="font-size:.72rem;color:var(--text3);font-weight:400;margin-left:8px">(all stored years)</span></h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('longRunContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔭 Long-Run History <span style="font-size:.72rem;color:var(--text3);font-weight:400;margin-left:8px">(all stored years)</span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="longRunContent"></div>
   </div>
 
@@ -1952,6 +1956,27 @@ function toggleYearSelection(k){
   selectedYears.sort(function(a,b){return allKeys.indexOf(a)-allKeys.indexOf(b);});
   renderYearSelector();
   // Re-render if results are visible
+  if(document.getElementById('results').style.display==='block'){
+    renderTrend();
+    try{renderLongRun();}catch(e){}
+    renderRoiicAnalysis();
+  }
+}
+
+function selectAllYears(){
+  selectedYears=getSortedYearKeys().slice();
+  renderYearSelector();
+  if(document.getElementById('results').style.display==='block'){
+    renderTrend();
+    try{renderLongRun();}catch(e){}
+    renderRoiicAnalysis();
+  }
+}
+
+function selectLast3Years(){
+  var allKeys=getSortedYearKeys();
+  selectedYears=allKeys.slice(-3);
+  renderYearSelector();
   if(document.getElementById('results').style.display==='block'){
     renderTrend();
     try{renderLongRun();}catch(e){}
@@ -3539,8 +3564,13 @@ function renderPCBA(years){
     html+='</div>';
   }
 
-  // Period decomposition
+  // Period decomposition — collapsible when many transitions
+  var decompId='pcbaDecomp'+Math.random().toString(36).substr(2,5);
+  var journeyId='pcbaJourney'+Math.random().toString(36).substr(2,5);
+  var manyPeriods=pcbaTransitions.length>4;
   html+='<div style="margin-top:14px">';
+  html+='<div style="cursor:pointer;user-select:none;font-size:.82rem;font-weight:600;color:var(--text2);padding:6px 0" onclick="var el=document.getElementById(\''+decompId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'block\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">Period Decomposition ('+pcbaTransitions.length+' periods) <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">'+(manyPeriods?'▶':'▼')+'</span></div>';
+  html+='<div id="'+decompId+'" style="display:'+(manyPeriods?'none':'block')+'">';
   pcbaTransitions.forEach(function(t){
     var reinvestContrib=0;
     var tidx=pcbaTransitions.indexOf(t);
@@ -3549,21 +3579,22 @@ function renderPCBA(years){
       reinvestContrib=prevY.growthCapex*prevY.realROIC;
     }
     var baseChg=t.profitDelta-reinvestContrib;
-    html+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:6px">';
-    html+='<strong>'+t.from+' → '+t.to+':</strong> Profit changed <strong style="color:'+(t.profitDelta>=0?'var(--green)':'var(--red)')+'">'+fmtM(t.profitDelta)+'</strong>';
+    var pillCol=t.patternColor==='green'?'var(--green)':t.patternColor==='blue'?'var(--blue)':t.patternColor==='amber'?'var(--orange)':'var(--red)';
+    html+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:3px;padding:4px 8px;border-left:3px solid '+pillCol+';border-radius:0 4px 4px 0">';
+    html+='<strong>'+t.from+' → '+t.to+'</strong> <span style="font-size:.72rem;color:'+pillCol+'">'+t.pattern+'</span> — Profit: <strong style="color:'+(t.profitDelta>=0?'var(--green)':'var(--red)')+'">'+fmtM(t.profitDelta)+'</strong>';
     if(Math.abs(reinvestContrib)>0.5||Math.abs(baseChg)>0.5){
-      html+='<br><span style="margin-left:12px">Return on new investment: <strong>'+fmtM(reinvestContrib)+'</strong></span>';
-      html+='<br><span style="margin-left:12px">Change in base profitability: <strong style="color:'+(baseChg>=0?'var(--green)':'var(--orange)')+'">'+fmtM(baseChg)+'</strong></span>';
+      html+=' <span style="font-size:.72rem;color:var(--text3)">(reinvest: '+fmtM(reinvestContrib)+', base: '+fmtM(baseChg)+')</span>';
     }
     html+='</div>';
   });
   html+='</div>';
+  html+='</div>';
 
-  // Multi-period pattern journey
+  // Multi-period pattern journey — collapsible when many
   if(pcbaTransitions.length>=2){
     html+='<div class="pcba-transition" style="margin-top:16px">';
-    html+='<div style="font-size:.78rem;color:var(--text3);margin-bottom:8px;font-weight:600">Pattern journey:</div>';
-    html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+    html+='<div style="cursor:pointer;user-select:none;font-size:.78rem;color:var(--text3);margin-bottom:8px;font-weight:600" onclick="var el=document.getElementById(\''+journeyId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'flex\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">Pattern journey ('+pcbaTransitions.length+' transitions) <span class="ca" style="font-size:.72rem;margin-left:4px">'+(manyPeriods?'▶':'▼')+'</span></div>';
+    html+='<div id="'+journeyId+'" style="display:'+(manyPeriods?'none':'flex')+';align-items:center;gap:6px;flex-wrap:wrap">';
     pcbaTransitions.forEach(function(t,idx){
       var pillColor=t.patternColor==='green'?'green':t.patternColor==='blue'?'blue':t.patternColor==='amber'?'amber':'red';
       html+='<span class="pcba-transition-pill '+pillColor+'">'+t.from+' → '+t.to+': '+t.pattern+'</span>';
@@ -3609,7 +3640,10 @@ function renderPCBA(years){
       var adjROIC=adjIC>0?adjProfit/adjIC:0;
       var roicDrop=stdROIC-adjROIC;
 
-      html+='<h3 style="color:var(--accent);margin:24px 0 8px;padding-top:16px;border-top:1px solid #333;font-size:.95rem">🧪 R&D Capital Efficiency</h3>';
+      var rdEffId='pcbaRdEff'+Math.random().toString(36).substr(2,5);
+      html+='<div style="margin:24px 0 0;padding-top:16px;border-top:1px solid #333">';
+      html+='<h3 style="color:var(--accent);font-size:.95rem;cursor:pointer;user-select:none;margin:0 0 8px" onclick="var el=document.getElementById(\''+rdEffId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'block\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">🧪 R&D Capital Efficiency <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">▶</span></h3>';
+      html+='<div id="'+rdEffId+'" style="display:none">';
       html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">Standard ROIC treats R&D as an expense. For R&D-intensive companies, this understates the capital base and inflates returns. Here\'s the full breakdown:</p>';
 
       var rdInvIncome=0;
@@ -3708,6 +3742,7 @@ function renderPCBA(years){
       }
 
       html+='<p class="section-note" style="margin-top:8px">'+rdSectorLabel+' preset: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth. Asset life: '+rdAssetLife+' years. Addback at 79% (1 - 21% tax).</p>';
+      html+='</div></div>'; // close rdEff collapsible + outer wrapper
     }
   }
 
@@ -3947,8 +3982,12 @@ function renderLongRun(){
   }
   html+='</div>';
 
-  // Compact data table
-  html+='<div style="overflow-x:auto;margin-top:14px"><table class="trend-table" style="font-size:.74rem"><tr><th style="text-align:left">Year</th>';
+  // Compact data table — collapsible when many years
+  var lrTableId='lrTable'+Math.random().toString(36).substr(2,5);
+  var manyYrs=n>6;
+  html+='<div style="margin-top:14px">';
+  html+='<div style="cursor:pointer;user-select:none;font-size:.78rem;font-weight:600;color:var(--text2);padding:4px 0" onclick="var el=document.getElementById(\''+lrTableId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'block\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">Data Table ('+n+' years) <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">'+(manyYrs?'▶':'▼')+'</span></div>';
+  html+='<div id="'+lrTableId+'" style="display:'+(manyYrs?'none':'block')+';overflow-x:auto"><table class="trend-table" style="font-size:.74rem"><tr><th style="text-align:left">Year</th>';
   if(hasRev) html+='<th>Revenue</th>';
   html+='<th>REP (Full)</th><th>REP (Add-Back)</th>';
   if(hasRd) html+='<th>REP (Best Guess)</th>';
@@ -3965,7 +4004,7 @@ function renderLongRun(){
     html+='<td style="font-weight:700;color:'+headlineColor+'">'+pct(y[headlineKey],1)+'</td>';
     html+='</tr>';
   });
-  html+='</table></div>';
+  html+='</table></div></div>';
 
   document.getElementById('longRunContent').innerHTML=html;
 }
@@ -4539,28 +4578,62 @@ function exportBrief(){
   h+='<h1>Real Economic Profit Analysis: '+ticker+'</h1>';
   h+='<div class="meta">Generated: '+now+' &nbsp;|&nbsp; Share Price: $'+price+' &nbsp;|&nbsp; Analysis Period: '+years[0].label+(years.length>1?' – '+latest.label:'')+'</div>';
 
-  // Verdict
-  h+='<div class="verdict-box"><div class="yield" style="color:'+ratingColor+'">'+pct(realYield)+'</div>';
-  h+='<div class="label">Real Cash Yield on Enterprise Value — '+ticker+' (Full Cost)</div>';
-  h+='<div class="rating" style="background:'+ratingColor+'">'+rating+'</div>';
-  if(latest.realProfitLight!==null){
-    var realYieldLight=latest.realProfitLight/ev;
-    var ratingLightBrief,ratingColorLightBrief;
-    if(realYieldLight>=0.07){ratingLightBrief='Strong Value';ratingColorLightBrief='#2ecc71';}
-    else if(realYieldLight>=0.04){ratingLightBrief='Fair Value';ratingColorLightBrief='#3498db';}
-    else if(realYieldLight>=0.02){ratingLightBrief='Growth Priced In';ratingColorLightBrief='#e67e22';}
-    else{ratingLightBrief='Expensive';ratingColorLightBrief='#e74c3c';}
-    var briefViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
-    if(briefViewsDiverge){
-      h+='<div style="margin-top:12px;padding:12px 16px;border-radius:6px;background:#fef3e6;border:1px solid #e67e22"><div style="font-size:.8rem;font-weight:600;color:#e67e22;margin-bottom:8px">⚠ VIEWS DIVERGE — Excluding acquisition amortization tells a materially different story</div>';
-    }else{
-      h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd">';
-    }
-    h+='<div class="yield" style="color:'+ratingColorLightBrief+';font-size:'+(briefViewsDiverge?'1.8rem':'1.5rem')+'">'+pct(realYieldLight)+'</div>';
-    h+='<div class="label">Add-Back Amortization Yield on EV — excludes acquisition amortization (may not be a real cash cost)</div>';
-    h+='<div class="rating" style="background:'+ratingColorLightBrief+'">'+ratingLightBrief+'</div></div>';
-  }
+  // ===== Four-Panel Yield Ladder =====
+  var deprOnly=latest.deprOnly||0;
+  var hasLightView=latest.realProfitLight!==null;
+  var amort=hasLightView?(latest.da-deprOnly):0;
+  var yieldFull=ev>0?latest.realProfit/ev:0;
+  var yieldLight=hasLightView&&ev>0?latest.realProfitLight/ev:0;
+  var rdSectorBrief=getRdSectorPreset();
+  var rdMaintPctBrief=rdSectorBrief.maintPct;
+  var rdExpBrief=latest.rd_expense||0;
+  var hasRdBrief=rdExpBrief>0;
+  var rdGrowthBrief=hasRdBrief?(rdExpBrief*(100-rdMaintPctBrief)/100*0.79):0;
+  var repAmortBrief=hasLightView?latest.realProfitLight:latest.realProfit;
+  var repBestGuess=repAmortBrief+rdGrowthBrief;
+  var yieldBestGuess=ev>0?repBestGuess/ev:0;
+  // Wall Street
+  var wsNetIncome=latest.net_income||null;
+  var wsEPS=wsNetIncome!==null&&shares>0?wsNetIncome/shares:null;
+  var wsYield=wsNetIncome!==null&&marketCap>0?wsNetIncome/marketCap:null;
+  var wsPE=wsEPS!==null&&wsEPS>0?price/wsEPS:null;
+
+  function briefYCol(y){return y>=0.07?'#27ae60':y>=0.04?'#3498db':y>=0.02?'#e67e22':'#c0392b';}
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:0 0 24px;page-break-inside:avoid">';
+  // Panel 1: Full D&A
+  h+='<div style="background:#f8f9fa;border:2px solid #ddd;border-radius:8px;padding:16px;text-align:center">';
+  h+='<div style="font-size:.72rem;color:#3498db;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;font-weight:600">Full D&amp;A (Defensible)</div>';
+  h+='<div style="font-size:1.8rem;font-weight:700;color:'+briefYCol(yieldFull)+'">'+pct(yieldFull)+'</div>';
+  h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+yieldRating(yieldFull).bg+';color:'+briefYCol(yieldFull)+'">'+yieldRating(yieldFull).text+'</div>';
+  h+='<div style="font-size:.78rem;color:#888;margin-top:6px">REP: '+fmtM(latest.realProfit)+'</div>';
   h+='</div>';
+  // Panel 2: Add-Back Amort
+  if(hasLightView&&amort>0.5){
+    h+='<div style="background:#f8f9fa;border:2px solid rgba(155,89,182,.3);border-radius:8px;padding:16px;text-align:center">';
+    h+='<div style="font-size:.72rem;color:#9b59b6;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;font-weight:600">Add-Back Amort (Likely)</div>';
+    h+='<div style="font-size:1.8rem;font-weight:700;color:'+briefYCol(yieldLight)+'">'+pct(yieldLight)+'</div>';
+    h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+yieldRating(yieldLight).bg+';color:'+briefYCol(yieldLight)+'">'+yieldRating(yieldLight).text+'</div>';
+    h+='<div style="font-size:.78rem;color:#9b59b6;margin-top:6px">+'+fmtM(amort)+' amort add-back</div>';
+    h+='</div>';
+  }
+  // Panel 3: Best Guess
+  if(hasRdBrief&&rdGrowthBrief>0.5){
+    h+='<div style="background:#f8f9fa;border:2px solid rgba(212,160,37,.3);border-radius:8px;padding:16px;text-align:center">';
+    h+='<div style="font-size:.72rem;color:#d4a025;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;font-weight:600">Best Guess ★ (Subjective)</div>';
+    h+='<div style="font-size:1.8rem;font-weight:700;color:'+briefYCol(yieldBestGuess)+'">'+pct(yieldBestGuess)+'</div>';
+    h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+yieldRating(yieldBestGuess).bg+';color:'+briefYCol(yieldBestGuess)+'">'+yieldRating(yieldBestGuess).text+'</div>';
+    h+='<div style="font-size:.78rem;color:#27ae60;margin-top:6px">+'+fmtM(rdGrowthBrief)+' R&amp;D growth ('+(100-rdMaintPctBrief)+'%)</div>';
+    h+='</div>';
+  }
+  // Panel 4: Wall Street
+  if(wsYield!==null){
+    h+='<div style="background:#f8f9fa;border:2px solid #eee;border-radius:8px;padding:16px;text-align:center">';
+    h+='<div style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;font-weight:600">Wall Street (Reference)</div>';
+    h+='<div style="font-size:1.8rem;font-weight:700;color:#888">'+pct(wsYield)+'</div>';
+    h+='<div style="font-size:.78rem;color:#888;margin-top:6px">P/E: '+(wsPE?wsPE.toFixed(1)+'x':'N/A')+' · NI: '+fmtM(wsNetIncome)+'</div>';
+    h+='</div>';
+  }
+  h+='</div>'; // end grid
 
   // ===== Dashboard At-a-Glance Panel in Brief =====
   var briefHasLight=latest.realProfitLight!==null;
@@ -4898,54 +4971,73 @@ function exportBrief(){
     h+='<p class="section-note">Assumes constant EV (no price change) and cumulative returns on annual growth CapEx.</p>';
   }
 
-  // Yield-on-Cost Trajectory (include if user has run it)
-  var yocEl=document.getElementById('yocResults');
-  if(yocEl&&yocEl.innerHTML.trim()!==''){
-    h+='<h2>Yield-on-Cost Trajectory</h2>';
-    // Re-run the calculation for export using stored inputs
-    var yocPrice=parseFloat(document.getElementById('yoc_price').value)||0;
-    var yocROIIC=(parseFloat(document.getElementById('yoc_roiic').value)||0)/100;
-    var yocOrganic=(parseFloat(document.getElementById('yoc_organic').value)||0)/100;
-    var yocTerminal=(parseFloat(document.getElementById('yoc_terminal').value)||0)/100;
-    var yocCapexGr=(parseFloat(document.getElementById('yoc_capex_growth').value)||0)/100;
-    var yocSBCGr=(parseFloat(document.getElementById('yoc_sbc_growth').value)||0)/100;
-    var yocHorizon=parseInt(document.getElementById('yoc_horizon').value)||10;
-    var yocDecay=parseFloat(document.getElementById('yoc_decay').value)||0.5;
-    if(yocPrice>0&&shares>0){
-      var ypEV=yocPrice*shares+debt-(cash+sti);
-      var yCFO=latest.cfo||0;
-      var ySBC=latest.realSBC||0;
-      var yMaint=latest.maintCapex||0;
-      var yGC=latest.growthCapex||0;
-      var yRP=latest.realProfit||0;
-      var yOB=yRP,yCNP=0,yAGC=yGC,yASBC=ySBC;
-      var yH10=null,yH15=null;
-      h+='<table><tr><th style="text-align:left">Year</th><th>Real Profit</th><th>Yield-on-Cost</th><th>From Growth CapEx</th><th>Organic Gain</th></tr>';
-      for(var yi=0;yi<=yocHorizon;yi++){
-        var yTP,yYOC;
-        if(yi===0){
-          yTP=yRP;yYOC=ypEV>0?yRP/ypEV:0;
-          h+='<tr><td>Now</td><td>'+fmtM(yTP)+'</td><td>'+pct(yYOC)+'</td><td>'+fmtM(0)+'</td><td>'+fmtM(0)+'</td></tr>';
-          continue;
-        }
-        var yOR=yocTerminal+(yocOrganic-yocTerminal)*Math.pow(1-yocDecay,yi-1);
-        var yOG=yOB*yOR;
-        yOB=yOB+yOG;
-        yCNP+=yAGC*yocROIIC;
-        yASBC=yASBC*(1+yocSBCGr);
-        var ySD=yASBC-ySBC;
-        yTP=yOB+yCNP-ySD;
-        yYOC=ypEV>0?yTP/ypEV:0;
-        yAGC=yAGC*(1+yocCapexGr);
-        if(!yH10&&yYOC>=0.10)yH10=yi;
-        if(!yH15&&yYOC>=0.15)yH15=yi;
-        var ySt=yYOC>=0.15?' style="font-weight:700;background:#f0f0f0"':(yYOC>=0.10?' style="background:#f8f8f8"':'');
-        h+='<tr'+ySt+'><td>Yr '+yi+'</td><td>'+fmtM(yTP)+'</td><td>'+pct(yYOC)+'</td><td>'+fmtM(yCNP)+'</td><td>'+fmtM(yOB-yRP)+'</td></tr>';
-      }
+  // ===== ROIIC Analysis in Export =====
+  if(years.length>=2){
+    var roiicYears=enrichYears(keys);
+    var hasRoiic=false;
+    var roiicRows=[];
+    for(var ri=1;ri<roiicYears.length;ri++){
+      var rPrev=roiicYears[ri-1],rCurr=roiicYears[ri];
+      var deltaIC=rCurr.investedCapital-rPrev.investedCapital;
+      var deltaREP=rCurr.realProfit-rPrev.realProfit;
+      var roiic1=Math.abs(deltaIC)>0?deltaREP/deltaIC:null;
+      if(roiic1!==null)hasRoiic=true;
+      roiicRows.push({from:rPrev.label,to:rCurr.label,deltaIC:deltaIC,deltaREP:deltaREP,roiic:roiic1});
+    }
+    if(hasRoiic){
+      h+='<h2>ROIIC — Return on Incremental Invested Capital</h2>';
+      h+='<p class="section-note">Measures how productively each new dollar of capital is being deployed. ROIIC = &Delta;REP / &Delta;Invested Capital.</p>';
+      h+='<table><tr><th style="text-align:left">Period</th><th>&Delta; Invested Capital</th><th>&Delta; Real Profit</th><th>ROIIC</th></tr>';
+      roiicRows.forEach(function(r){
+        var roiicColor=r.roiic===null?'#888':r.roiic>0.15?'#27ae60':r.roiic>0.06?'#3498db':r.roiic>0?'#e67e22':'#c0392b';
+        h+='<tr><td style="text-align:left">'+r.from+' → '+r.to+'</td>';
+        h+='<td>'+fmtM(r.deltaIC)+'</td>';
+        h+='<td>'+fmtM(r.deltaREP)+'</td>';
+        h+='<td style="font-weight:700;color:'+roiicColor+'">'+(r.roiic!==null?pct(r.roiic,1):'N/A')+'</td></tr>';
+      });
       h+='</table>';
-      h+='<p class="section-note">Purchase price: $'+yocPrice+' (EV: '+fmtM(ypEV)+'). ';
-      h+='10% yield-on-cost: '+(yH10?'Year '+yH10:'beyond horizon')+'. 15%: '+(yH15?'Year '+yH15:'beyond horizon')+'. ';
-      h+='ROIIC '+pct(yocROIIC,1)+', organic growth '+pct(yocOrganic,1)+' → '+pct(yocTerminal,1)+' (decay '+yocDecay+').</p>';
+      if(roiicRows.length>=3){
+        var roiicVals=roiicRows.filter(function(r){return r.roiic!==null&&isFinite(r.roiic);}).map(function(r){return r.roiic;});
+        if(roiicVals.length>0){
+          var avgRoiic=roiicVals.reduce(function(a,b){return a+b;},0)/roiicVals.length;
+          h+='<div class="narrative"><strong>Average ROIIC:</strong> '+pct(avgRoiic,1)+' across '+roiicVals.length+' periods. ';
+          if(avgRoiic>0.15)h+='Strong incremental returns — new capital is being deployed productively.';
+          else if(avgRoiic>0.06)h+='Adequate incremental returns above cost of capital.';
+          else h+='Weak incremental returns — new capital deployment is not generating proportional profit growth.';
+          h+='</div>';
+        }
+      }
+    }
+  }
+
+  // ===== Buyback Return Tracker in Export =====
+  if(years.length>=2){
+    var bbYears=enrichYears(keys,{formData:true});
+    var hasBuybackData=bbYears.some(function(y){return y.formData&&(y.formData.share_repurchases>0||y.formData.dividends_paid>0);});
+    if(hasBuybackData){
+      h+='<h2>Buyback Return Tracker</h2>';
+      var cumBuyback=0,cumDiv=0,cumReturn=0;
+      var bbTableRows=[];
+      bbYears.forEach(function(y){
+        var rep=y.formData.share_repurchases||0;
+        var div=y.formData.dividends_paid||0;
+        cumBuyback+=rep;cumDiv+=div;cumReturn+=rep+div;
+        bbTableRows.push({label:y.label,repurch:rep,div:div,total:rep+div,cumTotal:cumReturn});
+      });
+      h+='<table><tr><th style="text-align:left">Year</th><th>Buybacks</th><th>Dividends</th><th>Total Returned</th><th>Cumulative</th></tr>';
+      bbTableRows.forEach(function(r){
+        h+='<tr><td style="text-align:left">'+r.label+'</td><td>'+fmtM(r.repurch)+'</td><td>'+fmtM(r.div)+'</td><td>'+fmtM(r.total)+'</td><td>'+fmtM(r.cumTotal)+'</td></tr>';
+      });
+      h+='</table>';
+      h+='<div class="narrative"><strong>Total Capital Returned:</strong> '+fmtM(cumReturn)+' (Buybacks: '+fmtM(cumBuyback)+', Dividends: '+fmtM(cumDiv)+')</div>';
+      // Net share change
+      var firstShares=bbYears[0].formData.shares||0;
+      var lastShares=bbYears[bbYears.length-1].formData.shares||0;
+      if(firstShares>0&&lastShares>0){
+        var netChange=lastShares-firstShares;
+        var netPct=netChange/firstShares;
+        h+='<div class="narrative"><strong>Net Share Count:</strong> '+(netChange<=0?'Reduced':'Increased')+' by '+Math.abs(netChange).toFixed(1)+'M shares ('+pct(Math.abs(netPct),1)+(netChange<=0?' reduction — buybacks exceed dilution':' increase — SBC dilution exceeds buybacks')+')</div>';
+      }
     }
   }
 
