@@ -2476,41 +2476,44 @@ function renderBuybackRoi(){
   var keys=getSortedYearKeys();
   if(keys.length<1){card.style.display='none';return;}
 
+  // ---- Gather data from yearStore ----
   var rows=[];
   var hasData=false;
+  var repByLabel={};
   for(var i=0;i<keys.length;i++){
     var yr=yearStore[keys[i]];
     if(!yr||!yr.formData)continue;
     var fd=yr.formData;
-    var costM=fd.buyback_cost_m||fd.share_repurchases||0;
+    var costM=fd.buyback_cost_m||0;
+    if(!costM)costM=fd.share_repurchases||0;
     var sharesRetired=fd.buyback_shares||0;
     var dilShares=fd.shares||0;
-    // Compute REP directly from formData — no Calculate needed
     var repThenM=0;
     try{var m=computeMetrics(yr);repThenM=m.realProfit||0;}catch(e){}
     var label=yr.fiscal_year_label||keys[i];
-    if(costM>0)hasData=true;
-    rows.push({key:keys[i],label:label,costM:costM,sharesRetired:sharesRetired,dilShares:dilShares,repThenM:repThenM});
+    var shortLabel=label.replace(/^FY/,'');
+    if(costM>0&&sharesRetired>0)hasData=true;
+    rows.push({key:keys[i],label:label,shortLabel:shortLabel,costM:costM,sharesRetired:sharesRetired,dilShares:dilShares,repThenM:repThenM});
+    repByLabel[shortLabel]=repThenM;
   }
 
   if(!hasData){card.style.display='none';return;}
   card.style.display='block';
 
-  // Current REP from most recent year
+  // Current REP = most recent year
   var repNowM=0;
+  var repNowLabel='';
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
     if(yr&&yr.formData){
-      try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;break;}}catch(e){}
+      try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;repNowLabel=rows[i]?rows[i].shortLabel:'';break;}}catch(e){}
     }
   }
 
-  function calcOwn(r){
-    var sharesR=r.sharesRetired>0?r.sharesRetired:(0);
-    return(sharesR>0&&r.dilShares>0)?sharesR/r.dilShares:0;
-  }
+  // ---- Helpers ----
+  function calcOwn(r){return(r.sharesRetired>0&&r.dilShares>0)?r.sharesRetired/r.dilShares:0;}
   function pillColor(y){
-    if(y===null||y===0)return 'color:var(--text3)';
+    if(y===null||y===0||isNaN(y))return 'color:var(--text3)';
     if(y>=0.07)return 'background:rgba(46,204,113,.15);color:var(--green)';
     if(y>=0.04)return 'background:rgba(230,126,34,.15);color:var(--orange)';
     return 'background:rgba(231,76,60,.15);color:var(--red)';
@@ -2520,65 +2523,82 @@ function renderBuybackRoi(){
     var sz=lg?'.8rem':'.75rem';var pd=lg?'4px 11px':'2px 8px';
     return '<span style="display:inline-block;padding:'+pd+';border-radius:20px;font-size:'+sz+';font-weight:'+(lg?700:600)+';'+pillColor(y)+'">'+pct(y,1)+'</span>';
   }
+  function isDepressed(r,allRows){
+    // Flag years where REP dropped >15% from prior year
+    for(var k=0;k<allRows.length;k++){
+      if(allRows[k].label===r.label&&k>0&&allRows[k-1].repThenM>0){
+        return r.repThenM<allRows[k-1].repThenM*0.85;
+      }
+    }
+    return false;
+  }
 
+  // ---- Compute vintage data ----
   var active=[];
   var totalCost=0,totalOwn=0,wtdYNow=0,wtdYThen=0,totalRepNow=0;
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
-    if(r.costM<=0||r.dilShares<=0)continue;
     var own=calcOwn(r);
     var repCapThen=own*r.repThenM;
     var repCapNow=own*repNowM;
-    var yThen=(repCapThen>0&&r.costM>0)?repCapThen/r.costM:null;
-    var yNow=(repCapNow>0&&r.costM>0)?repCapNow/r.costM:null;
-    active.push({label:r.label,costM:r.costM,own:own,repThenM:r.repThenM,repCapThen:repCapThen,repCapNow:repCapNow,yThen:yThen,yNow:yNow});
-    totalCost+=r.costM;
-    totalOwn+=own;
-    totalRepNow+=repCapNow;
-    if(yNow!==null)wtdYNow+=yNow*r.costM;
-    if(yThen!==null)wtdYThen+=yThen*r.costM;
+    var yThen=(r.costM>0&&repCapThen>0)?repCapThen/r.costM:null;
+    var yNow=(r.costM>0&&repCapNow>0)?repCapNow/r.costM:null;
+    var dep=isDepressed(r,rows);
+    var entry={label:r.label,shortLabel:r.shortLabel,costM:r.costM,own:own,dilShares:r.dilShares,
+      sharesRetired:r.sharesRetired,repThenM:r.repThenM,repCapThen:repCapThen,
+      repCapNow:repCapNow,yThen:yThen,yNow:yNow,depressed:dep};
+    active.push(entry);
+    if(r.costM>0&&r.sharesRetired>0){
+      totalCost+=r.costM;
+      totalOwn+=own;
+      totalRepNow+=repCapNow;
+      if(yNow!==null)wtdYNow+=yNow*r.costM;
+      if(yThen!==null)wtdYThen+=yThen*r.costM;
+    }
   }
   if(totalCost>0){wtdYNow/=totalCost;wtdYThen/=totalCost;}
 
   var h='';
 
-  // Summary cards
+  // ============ SUMMARY CARDS ============
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Total deployed</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(totalCost)+'</div></div>';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Ownership retired</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+(totalOwn*100).toFixed(2)+'%</div></div>';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pct(wtdYThen,1)+'</div></div>';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+pct(wtdYNow,1)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYThen,true)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNow,true)+'</div></div>';
   h+='</div>';
 
-  // Table
+  // ============ VINTAGE TABLE ============
+  h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Vintage Table</div>';
   h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.78rem;width:100%">';
-  h+='<tr><th>Year</th><th style="text-align:right">Cost</th><th style="text-align:right">Own %</th><th style="text-align:right">Total REP</th><th style="text-align:right">REP captured then</th><th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th><th style="text-align:right">Yield now</th></tr>';
+  h+='<tr><th>Year</th><th style="text-align:right">Cost</th><th style="text-align:right">Own %</th>';
+  h+='<th style="text-align:right">Total REP</th><th style="text-align:right">REP captured then</th>';
+  h+='<th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th>';
+  h+='<th style="text-align:right">Yield now</th></tr>';
 
-  for(var i=0;i<rows.length;i++){
-    var r=rows[i];
-    var ac=null;
-    for(var j=0;j<active.length;j++){if(active[j].label===r.label){ac=active[j];break;}}
-    if(r.costM<=0){
-      // Zero buyback year — same styling, zeros and dashes
-      h+='<tr><td><strong>'+r.label+'</strong></td><td style="text-align:right">0</td><td style="text-align:right">0</td>';
-      h+='<td style="text-align:right">'+(r.repThenM?fmtM(r.repThenM):'—')+'</td>';
+  for(var i=0;i<active.length;i++){
+    var a=active[i];
+    var depMark=a.depressed?' <span style="color:var(--red);font-size:.65rem">▼</span>':'';
+    if(a.costM<=0||a.sharesRetired<=0){
+      h+='<tr style="color:var(--text3)"><td><strong>'+a.label+'</strong></td>';
       h+='<td style="text-align:right">0</td><td style="text-align:right">0</td>';
-      h+='<td style="text-align:right"><span style="color:var(--text3)">—</span></td><td style="text-align:right"><span style="color:var(--text3)">—</span></td></tr>';
-    } else if(ac){
-      h+='<tr><td><strong>'+r.label+'</strong></td>';
-      h+='<td style="text-align:right">'+fmtM(ac.costM)+'</td>';
-      h+='<td style="text-align:right">'+(ac.own*100).toFixed(3)+'%</td>';
-      h+='<td style="text-align:right">'+(r.repThenM?fmtM(r.repThenM):'—')+'</td>';
-      h+='<td style="text-align:right">'+(ac.repCapThen?fmtM(ac.repCapThen):'—')+'</td>';
-      h+='<td style="text-align:right">'+(ac.repCapNow?fmtM(ac.repCapNow):'—')+'</td>';
-      h+='<td style="text-align:right">'+pill(ac.yThen,false)+'</td>';
-      h+='<td style="text-align:right">'+pill(ac.yNow,false)+'</td></tr>';
+      h+='<td style="text-align:right">'+(a.repThenM?fmtM(a.repThenM)+depMark:'—')+'</td>';
+      h+='<td style="text-align:right">0</td><td style="text-align:right">0</td>';
+      h+='<td style="text-align:right">—</td><td style="text-align:right">—</td></tr>';
+    } else {
+      h+='<tr><td><strong>'+a.label+'</strong></td>';
+      h+='<td style="text-align:right">'+fmtM(a.costM)+'</td>';
+      h+='<td style="text-align:right">'+(a.own*100).toFixed(3)+'%</td>';
+      h+='<td style="text-align:right">'+(a.repThenM?fmtM(a.repThenM)+depMark:'—')+'</td>';
+      h+='<td style="text-align:right">'+(a.repCapThen?fmtM(a.repCapThen):'—')+'</td>';
+      h+='<td style="text-align:right">'+(a.repCapNow?fmtM(a.repCapNow):'—')+'</td>';
+      h+='<td style="text-align:right">'+pill(a.yThen,false)+'</td>';
+      h+='<td style="text-align:right">'+pill(a.yNow,false)+'</td></tr>';
     }
   }
-
-  // Cumulative row — blue accent
+  // Cumulative row
   h+='<tr style="border-top:1.5px solid var(--blue);font-size:.82rem;font-weight:600">';
-  h+='<td style="color:var(--blue)">∑ Cumulative</td>';
+  h+='<td style="color:var(--blue)">Cumulative</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+fmtM(totalCost)+'</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+(totalOwn*100).toFixed(2)+'%</td>';
   h+='<td style="text-align:right">—</td><td style="text-align:right">—</td>';
@@ -2587,9 +2607,97 @@ function renderBuybackRoi(){
   h+='<td style="text-align:right">'+pill(wtdYNow,true)+'</td></tr>';
   h+='</table></div>';
 
+  // Footnotes
+  h+='<p style="font-size:.7rem;color:var(--text3);margin:8px 0 0">Own % = shares retired ÷ avg diluted shares that year. Total REP = REPA standard. REP captured = own % × total REP. Yield = REP captured ÷ cost. Shares derived from cost ÷ estimated avg annual price where Item 5 not available.</p>';
+
+  // ============ YIELD MATRIX ============
+  // Each row = one purchase vintage. Each column = a year's REP. Cell = yield on that vintage using that year's REP.
+  var buybackRows=active.filter(function(a){return a.costM>0&&a.sharesRetired>0;});
+  if(buybackRows.length>0&&rows.length>1){
+    h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px">Yield Matrix</div>';
+    // Column headers = all years with REP
+    var colLabels=[];
+    for(var i=0;i<active.length;i++){
+      if(active[i].repThenM)colLabels.push({label:active[i].shortLabel,rep:active[i].repThenM,dep:active[i].depressed});
+    }
+    h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.72rem;width:100%;border-collapse:collapse">';
+    h+='<tr><th style="text-align:left;padding:5px 8px">Year</th>';
+    for(var c=0;c<colLabels.length;c++){
+      var depC=colLabels[c].dep?' <span style="color:var(--red);font-size:.6rem">▼</span>':'';
+      h+='<th style="text-align:center;padding:5px 6px;min-width:54px">'+colLabels[c].label+depC+'</th>';
+    }
+    h+='</tr>';
+
+    for(var b=0;b<buybackRows.length;b++){
+      var br=buybackRows[b];
+      h+='<tr><td style="padding:5px 8px;font-weight:600">'+br.shortLabel+'</td>';
+      for(var c=0;c<colLabels.length;c++){
+        var colRep=colLabels[c].rep;
+        var colYear=colLabels[c].label;
+        // Only show cells from vintage year onward
+        if(parseInt(colYear)<parseInt(br.shortLabel)){
+          h+='<td style="padding:5px 6px"></td>';
+        } else {
+          var yld=(br.costM>0)?(br.own*colRep)/br.costM:0;
+          var isOrigin=(colYear===br.shortLabel);
+          var cellStyle='text-align:center;padding:4px 5px;border-radius:4px;font-weight:500;';
+          if(yld>=0.07)cellStyle+='background:rgba(46,204,113,.18);color:var(--green);';
+          else if(yld>=0.04)cellStyle+='background:rgba(230,126,34,.15);color:var(--orange);';
+          else if(yld>0)cellStyle+='background:rgba(231,76,60,.12);color:var(--red);';
+          else cellStyle+='color:var(--text3);';
+          if(isOrigin)cellStyle+='outline:1.5px solid var(--text3);outline-offset:-1px;';
+          h+='<td style="padding:2px"><div style="'+cellStyle+'">'+pct(yld,1)+'</div></td>';
+        }
+      }
+      h+='</tr>';
+    }
+    h+='</table></div>';
+    h+='<p style="font-size:.68rem;color:var(--text3);margin:6px 0 0">Each row = one purchase year. Each column = REP measured that year. Outlined cell = yield at time of purchase. Read across to see yield growing as REP compounded. ▼ = depressed REP year.</p>';
+  }
+
+  // ============ CAPITAL ALLOCATION FLAGS ============
+  var flags=[];
+  // Find depressed REP years
+  var depYears=[];
+  for(var i=0;i<active.length;i++){if(active[i].depressed)depYears.push(active[i].shortLabel);}
+  if(depYears.length>0){
+    flags.push({color:'var(--orange)',text:'▼ marks depressed REP years ('+depYears.join(', ')+' on REPA basis). Yield-now figures for all vintages are affected — substituting normalized REP would lift yields proportionally.'});
+  }
+  // Weighted avg yield commentary
+  if(wtdYNow>0){
+    var grade=wtdYNow>=0.07?'strong':wtdYNow>=0.04?'adequate':'below target';
+    flags.push({color:wtdYNow>=0.07?'var(--green)':wtdYNow>=0.04?'var(--orange)':'var(--red)',
+      text:'Wtd avg yield now of '+pct(wtdYNow,1)+' on REPA standard REP — '+grade+' return on buyback capital deployed.'});
+  }
+  // Concentration
+  if(buybackRows.length>=2){
+    var sorted=buybackRows.slice().sort(function(a,b){return b.costM-a.costM;});
+    var topTwo=sorted[0].costM+sorted[1].costM;
+    var topPct=topTwo/totalCost;
+    if(topPct>0.5){
+      flags.push({color:'var(--blue)',text:sorted[0].shortLabel+'–'+sorted[1].shortLabel+' represent '+pct(topPct,0)+' of total cost. '+
+        (sorted[0].yThen&&sorted[0].yThen<0.05?'Entry yield was below 5% — management paid up.':'Concentration in high-conviction periods.')});
+    }
+  }
+  // Zero buyback years
+  var zeroYears=active.filter(function(a){return a.costM<=0&&a.repThenM>0;});
+  if(zeroYears.length>0){
+    var zy=zeroYears.map(function(a){return a.shortLabel;});
+    flags.push({color:'var(--text3)',text:'Zero buybacks in '+zy.join(', ')+' — cost, own %, and captured REP all show 0. Yield columns show — as there is no purchase to measure.'});
+  }
+
+  if(flags.length>0){
+    h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px">Capital Allocation Flags</div>';
+    for(var f=0;f<flags.length;f++){
+      h+='<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:.76rem;color:var(--text2);line-height:1.55">';
+      h+='<div style="width:6px;height:6px;border-radius:50%;background:'+flags[f].color+';margin-top:6px;flex-shrink:0"></div>';
+      h+='<div>'+flags[f].text+'</div></div>';
+    }
+  }
+
   // REP basis note
   if(repNowM!==0){
-    h+='<p class="section-note" style="margin-top:10px">REP basis: most recent year REPA standard ('+fmtM(repNowM)+'). Look-Through REP or Bloomstran economic earnings will lift all yield-now figures proportionally — see annual audit for Look-Through calculation.</p>';
+    h+='<p class="section-note" style="margin-top:14px;font-size:.72rem;color:var(--text3)">REP basis for yield-now: most recent year REPA standard ('+fmtM(repNowM)+'). Look-Through REP or normalized economic earnings will lift all yield-now figures proportionally.</p>';
   }
 
   content.innerHTML=h;
