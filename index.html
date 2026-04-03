@@ -2568,6 +2568,11 @@ function renderBuybackRoi(){
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNow,true)+'</div></div>';
   h+='</div>';
 
+  // ---- Trim range: first buyback year to last buyback year (preserve gaps in between) ----
+  var firstBB=-1,lastBB=-1;
+  for(var i=0;i<active.length;i++){if(active[i].costM>0&&active[i].sharesRetired>0){if(firstBB<0)firstBB=i;lastBB=i;}}
+  var trimmed=firstBB>=0?active.slice(firstBB,lastBB+1):active;
+
   // ============ VINTAGE TABLE ============
   h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Vintage Table</div>';
   h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.78rem;width:100%">';
@@ -2576,8 +2581,8 @@ function renderBuybackRoi(){
   h+='<th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th>';
   h+='<th style="text-align:right">Yield now</th></tr>';
 
-  for(var i=0;i<active.length;i++){
-    var a=active[i];
+  for(var i=0;i<trimmed.length;i++){
+    var a=trimmed[i];
     var depMark=a.depressed?' <span style="color:var(--red);font-size:.65rem">▼</span>':'';
     if(a.costM<=0||a.sharesRetired<=0){
       h+='<tr><td><strong>'+a.label+'</strong></td>';
@@ -2612,13 +2617,14 @@ function renderBuybackRoi(){
 
   // ============ YIELD MATRIX ============
   // Each row = one purchase vintage. Each column = a year's REP. Cell = yield on that vintage using that year's REP.
+  // Columns trimmed to first-buyback through last-buyback year range (same as vintage table)
   var buybackRows=active.filter(function(a){return a.costM>0&&a.sharesRetired>0;});
-  if(buybackRows.length>0&&rows.length>1){
+  if(buybackRows.length>0&&trimmed.length>1){
     h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px">Yield Matrix</div>';
-    // Column headers = all years with REP
+    // Column headers = trimmed range years that have REP
     var colLabels=[];
-    for(var i=0;i<active.length;i++){
-      if(active[i].repThenM)colLabels.push({label:active[i].shortLabel,rep:active[i].repThenM,dep:active[i].depressed});
+    for(var i=0;i<trimmed.length;i++){
+      if(trimmed[i].repThenM)colLabels.push({label:trimmed[i].shortLabel,rep:trimmed[i].repThenM,dep:trimmed[i].depressed});
     }
     h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.72rem;width:100%;border-collapse:collapse">';
     h+='<tr><th style="text-align:left;padding:5px 8px">Year</th>';
@@ -2679,11 +2685,11 @@ function renderBuybackRoi(){
         (sorted[0].yThen&&sorted[0].yThen<0.05?'Entry yield was below 5% — management paid up.':'Concentration in high-conviction periods.')});
     }
   }
-  // Zero buyback years
-  var zeroYears=active.filter(function(a){return a.costM<=0&&a.repThenM>0;});
+  // Zero buyback years (only gaps within trimmed range, not leading/trailing)
+  var zeroYears=trimmed.filter(function(a){return a.costM<=0&&a.repThenM>0;});
   if(zeroYears.length>0){
     var zy=zeroYears.map(function(a){return a.shortLabel;});
-    flags.push({color:'var(--text3)',text:'Zero buybacks in '+zy.join(', ')+' — cost, own %, and captured REP all show 0. Yield columns show — as there is no purchase to measure.'});
+    flags.push({color:'var(--text3)',text:'Zero buybacks in '+zy.join(', ')+' — no purchase to measure. Gap years preserved to show buyback cadence.'});
   }
 
   if(flags.length>0){
