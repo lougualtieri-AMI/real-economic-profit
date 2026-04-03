@@ -2499,7 +2499,8 @@ function renderBuybackRoi(){
   for(var i=0;i<keys.length;i++){
     var yr=yearStore[keys[i]];
     if(!yr||!yr.formData)continue;
-    if(yr.isInterim)continue;
+    var _lbl=(yr.fiscal_year_label||'').toUpperCase();
+    if(yr.isInterim||_lbl.indexOf('TTM')===0||_lbl.indexOf('Q')===0)continue;
     var fd=yr.formData;
     var ex=yr.extra||{};
     var costM=fd.buyback_cost_m||0;
@@ -2526,14 +2527,16 @@ function renderBuybackRoi(){
   var repNowLabel='';
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
-    if(yr&&yr.formData&&!yr.isInterim){
+    var _lbl2=(yr&&yr.fiscal_year_label||'').toUpperCase();
+    if(yr&&yr.formData&&!yr.isInterim&&_lbl2.indexOf('TTM')!==0&&_lbl2.indexOf('Q')!==0){
       try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;repNowLabel=(yr.fiscal_year_label||keys[i]).replace(/^FY/,'');break;}}catch(e){}
     }
   }
   // Look-through REP now = most recent annual year with look_through_rep
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
-    if(yr&&yr.formData&&!yr.isInterim){
+    var _lbl3=(yr&&yr.fiscal_year_label||'').toUpperCase();
+    if(yr&&yr.formData&&!yr.isInterim&&_lbl3.indexOf('TTM')!==0&&_lbl3.indexOf('Q')!==0){
       var fd=yr.formData;var ex=yr.extra||{};
       var lt=fd.look_through_rep||ex.look_through_rep||0;
       if(lt>0){ltRepNowM=lt;break;}
@@ -2614,6 +2617,7 @@ function renderBuybackRoi(){
     for(var i=lastBB+1;i<active.length;i++){if(active[i].repThenM>0)lastBB=i;}
   }
   var trimmed=firstBB>=0?active.slice(firstBB,lastBB+1):active;
+  console.log('ROI trim debug: active='+active.length+' rows, firstBB='+firstBB+', lastBB='+lastBB+', trimmed='+trimmed.length+', labels='+trimmed.map(function(t){return t.label}).join(','));
 
   // ============ VINTAGE TABLE ============
   h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Vintage Table</div>';
