@@ -2586,7 +2586,7 @@ function renderBuybackRoi(){
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYThen,true)+'</div></div>';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNow,true)+'</div></div>';
   if(hasLookThrough&&ltRepNowM>0){
-    h+='<div style="background:var(--card2);border:1px solid var(--blue);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--blue);margin-bottom:2px">Yield now (Look-Through)</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNowLT,true)+'</div></div>';
+    h+='<div style="background:var(--card2);border:1px solid var(--blue);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--blue);margin-bottom:2px">Yield now (Look-Through REP)</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNowLT,true)+'</div><div style="font-size:.62rem;color:var(--text3);margin-top:3px">Adds investee retained earnings to standard REP</div></div>';
   }
   h+='</div>';
 
@@ -2602,7 +2602,7 @@ function renderBuybackRoi(){
   h+='<th style="text-align:right">Total REP</th><th style="text-align:right">REP captured then</th>';
   h+='<th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th>';
   h+='<th style="text-align:right">Yield now</th>';
-  if(hasLookThrough){h+='<th style="text-align:right;color:var(--blue)">Yield now (LT)</th>';}
+  if(hasLookThrough){h+='<th style="text-align:right;color:var(--blue)">Yield now<br>(Look-Through)</th>';}
   h+='</tr>';
 
   for(var i=0;i<trimmed.length;i++){
@@ -2733,7 +2733,16 @@ function renderBuybackRoi(){
 
   // REP basis note
   if(repNowM!==0){
-    h+='<p class="section-note" style="margin-top:14px;font-size:.72rem;color:var(--text3)">REP basis for yield-now: most recent year REPA standard ('+fmtM(repNowM)+'). Look-Through REP or normalized economic earnings will lift all yield-now figures proportionally.</p>';
+    h+='<p class="section-note" style="margin-top:14px;font-size:.72rem;color:var(--text3)">REP basis for "yield now": most recent year REPA standard ('+fmtM(repNowM)+').</p>';
+    if(hasLookThrough&&ltRepNowM>0){
+      h+='<div style="margin-top:10px;padding:10px 14px;background:var(--card2);border-left:3px solid var(--blue);border-radius:4px;font-size:.74rem;color:var(--text2);line-height:1.6">';
+      h+='<strong style="color:var(--blue)">What is Look-Through REP?</strong> REPA standard REP is based on Cash From Operations, which only captures <em>dividends received</em> from the equity portfolio. ';
+      h+='Look-Through REP adds the <em>retained earnings</em> of portfolio investees — profits earned on your behalf that compound inside those businesses without flowing through CFO. ';
+      h+='Methodology: portfolio market value × (earnings yield − dividend yield) × 97% tax haircut, added to standard REP. ';
+      h+='Current Look-Through REP: '+fmtM(ltRepNowM)+'. ';
+      h+='Source: Semper Augustus annual letter (updated annually). ';
+      h+='For companies with significant equity portfolios, Look-Through is the more complete measure of earning power.</div>';
+    }
   }
 
   content.innerHTML=h;
