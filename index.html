@@ -2605,9 +2605,13 @@ function renderBuybackRoi(){
   }
   h+='</div>';
 
-  // ---- Trim range: first buyback year to last buyback year (preserve gaps in between) ----
+  // ---- Trim range: first buyback year through latest REP year (preserve gaps, extend past last buyback) ----
   var firstBB=-1,lastBB=-1;
   for(var i=0;i<active.length;i++){if(active[i].costM>0&&active[i].sharesRetired>0){if(firstBB<0)firstBB=i;lastBB=i;}}
+  // Extend to include any subsequent years that have REP data (useful for seeing current yield on older vintages)
+  if(lastBB>=0){
+    for(var i=lastBB+1;i<active.length;i++){if(active[i].repThenM>0)lastBB=i;}
+  }
   var trimmed=firstBB>=0?active.slice(firstBB,lastBB+1):active;
 
   // ============ VINTAGE TABLE ============
@@ -6764,6 +6768,69 @@ function calculate(){
   verdictHTML+='</div>';
 
   verdictHTML+='</div>'; // end yield ladder
+
+  // --- Look-Through REP Panel (BRK and similar holding companies with equity portfolio earnings) ---
+  var _ltRepVal=0;
+  if(currentYearKey&&yearStore[currentYearKey]){
+    var _ltFd=yearStore[currentYearKey].formData||{};
+    var _ltEx=yearStore[currentYearKey].extra||{};
+    _ltRepVal=_ltFd.look_through_rep||_ltEx.look_through_rep||0;
+  }
+  if(_ltRepVal>0&&ev>0){
+    var _ltDelta=_ltRepVal-p3REP;
+    var _ltYield=_ltRepVal/ev;
+    var _ltRating=yieldRating(_ltYield);
+    var _ltMult=_ltRepVal>0?ev/_ltRepVal:null;
+    var _ltYieldDelta=_ltYield-p3Yield;
+    verdictHTML+='<div style="background:var(--card);border:2px solid rgba(52,152,219,.4);border-radius:12px;padding:20px;margin-top:14px">';
+    verdictHTML+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">';
+    verdictHTML+='<div style="font-size:.9rem;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Look-Through REP</div>';
+    verdictHTML+='<div style="display:inline-block;padding:3px 10px;border-radius:14px;font-size:.72rem;font-weight:600;background:rgba(52,152,219,.15);color:var(--blue)">Holding Company Adjustment</div>';
+    verdictHTML+='</div>';
+
+    // Yield + numbers row
+    verdictHTML+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">';
+    // Look-Through Yield
+    verdictHTML+='<div style="background:var(--bg);border:1px solid rgba(52,152,219,.3);border-radius:10px;padding:14px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--blue);margin-bottom:4px;font-weight:600">Look-Through Yield</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+yColor(_ltYield)+';line-height:1">'+pct(_ltYield)+'</div>';
+    verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+_ltRating.bg+';color:'+_ltRating.cssColor+'">'+_ltRating.text+'</div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:8px">Paying <strong style="color:var(--text)">'+(_ltMult?_ltMult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+    verdictHTML+='</div>';
+    // REP buildup
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:4px;font-weight:600">Look-Through REP</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.6rem;font-weight:700;color:var(--blue);line-height:1">'+fmtM(_ltRepVal)+'</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.8;margin-top:8px">';
+    verdictHTML+='Best Guess REP '+fmtM(p3REP)+'<br>';
+    verdictHTML+='<span style="color:var(--blue)">+ Investee earnings +'+fmtM(_ltDelta)+'</span>';
+    verdictHTML+='</div>';
+    verdictHTML+='</div>';
+    // Yield pickup
+    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text3);margin-bottom:4px;font-weight:600">Yield Pickup</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.6rem;font-weight:700;color:var(--green);line-height:1">+'+pct(_ltYieldDelta)+'</div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:8px">Best Guess '+pct(p3Yield)+' → '+pct(_ltYield)+'</div>';
+    verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:4px">'+fmtM(_ltDelta)+' of investee retained earnings added</div>';
+    verdictHTML+='</div>';
+    verdictHTML+='</div>';
+
+    // Explanation toggle
+    verdictHTML+='<div style="margin-top:2px">';
+    verdictHTML+='<div style="cursor:pointer;font-size:.78rem;color:var(--blue);font-weight:600" onclick="var el=document.getElementById(\'ltRepExplain\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">Why this matters ▾</div>';
+    verdictHTML+='<div id="ltRepExplain" style="display:none;margin-top:10px;background:var(--bg);border:1px solid rgba(52,152,219,.2);border-radius:8px;padding:14px;font-size:.78rem;color:var(--text2);line-height:1.65">';
+    verdictHTML+='<strong style="color:var(--text)">The owner-earnings problem for holding companies:</strong> Standard REPA calculates Real Economic Profit from the parent company\'s cash flow statement. ';
+    verdictHTML+='For most companies this captures all earnings. But for holding companies with large equity portfolios (like Berkshire Hathaway), there\'s a blind spot: the earnings <em>retained by investees</em> never appear in the parent\'s CFO.<br><br>';
+    verdictHTML+='<strong style="color:var(--text)">What REPA sees vs. what it misses:</strong> REPA correctly captures dividends received from investees (they flow through CFO). ';
+    verdictHTML+='It correctly <em>excludes</em> unrealized gains/losses on the portfolio — those aren\'t real economic profit. ';
+    verdictHTML+='But the retained earnings that investees keep and reinvest on the owner\'s behalf are real economic value that belongs to the shareholder. They compound inside the investees and are invisible to CFO-based analysis.<br><br>';
+    verdictHTML+='<strong style="color:var(--text)">The Look-Through adjustment:</strong> We estimate the owner\'s pro-rata share of investee net income, subtract the dividends already captured in CFO, apply a 3% tax haircut (deferred tax on eventual realization), and add the remainder to Best Guess REP. ';
+    verdictHTML+='This follows Buffett\'s original "look-through earnings" concept from his 1990 shareholder letter.<br><br>';
+    verdictHTML+='<span style="font-size:.72rem;color:var(--text3)">Source: Semper Augustus annual letter. Updated annually when portfolio composition and investee earnings are disclosed.</span>';
+    verdictHTML+='</div></div>';
+
+    verdictHTML+='</div>';
+  }
 
   // --- Wall Street Reference (separate card, clear labels) ---
   if(netIncome!==null&&ev>0){
