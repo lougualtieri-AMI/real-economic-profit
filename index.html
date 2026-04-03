@@ -985,6 +985,32 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Payback Lag</strong> — Years before reinvested capital reaches full return. Returns ramp linearly from 0 to full ROIIC over the lag period. Software = 0–1 years, consumer = 1–2, industrial = 2–4, infrastructure/utility = 4–7.</p>
       <p><strong style="color:var(--accent2)">Implied REP Growth</strong> — Reinvestment Rate × ROIIC. The steady-state annual growth rate of Real Economic Profit, before considering the payback lag. With lag, actual early-year growth is slower but accelerates as investments mature.</p>
 
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Capital Returns</h4>
+
+      <p><strong style="color:var(--accent2)">Share Repurchases</strong> — Total cash spent on share buybacks in a fiscal year ($M). Sourced from the financing activities section of the cash flow statement. Uses the CFS line (includes excise tax = actual cash out the door), not Note 10.</p>
+
+      <p><strong style="color:var(--accent2)">Buyback Shares</strong> — Total shares repurchased/retired in a fiscal year, in millions. Sourced from the share repurchase footnote or Item 5 table. Not the same as treasury stock changes (which include shares withheld for RSU tax).</p>
+
+      <p><strong style="color:var(--accent2)">Dividends Paid</strong> — Total cash dividends paid in a fiscal year ($M). From the financing activities section of the CFS.</p>
+
+      <p><strong style="color:var(--accent2)">Total Capital Returned</strong> — Share Repurchases + Dividends Paid. Total cash distributed to shareholders.</p>
+
+      <p><strong style="color:var(--accent2)">Buyback Return Tracker</strong> — Shows cumulative buybacks, dividends, and total capital returned over time. Includes net share count change (buybacks vs. SBC dilution) and SBC offset ratio.</p>
+
+      <p><strong style="color:var(--accent2)">Buyback ROI Analysis</strong> — Evaluates whether buybacks created or destroyed value. For each year's buybacks, computes: ownership % captured (shares retired ÷ diluted shares), average price paid, and yield on cost (what those repurchased shares earn at current REP levels). The vintage table shows each year's buyback cohort; the yield matrix shows how yields evolve over time. Only appears for annual periods (TTM/interim excluded).</p>
+
+      <p><strong style="color:var(--accent2)">Captured Yield</strong> — (Ownership % × Current REP) ÷ Buyback Cost. What return the company is earning today on each vintage of buyback spending. Higher = better capital allocation. Compare against T-bill rates to assess whether buybacks beat risk-free alternatives.</p>
+
+      <p><strong style="color:var(--accent2)">Buyback Vintage Yield Matrix</strong> — Cross-reference table showing each buyback year's captured yield evaluated at each subsequent year's REP. Shows how the yield on a given year's buybacks evolves as REP grows or shrinks. Trimmed to exclude years with no buyback activity at the edges.</p>
+
+      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Look-Through REP</h4>
+
+      <p><strong style="color:var(--accent2)">Look-Through Real Economic Profit</strong> — For companies with significant equity investment portfolios (e.g., Berkshire Hathaway), standard REP only captures dividends received from investees (which flow through CFO). Look-Through REP adds the after-tax retained earnings of those portfolio companies — profits earned on behalf of shareholders that compound inside investee businesses without appearing in CFO. Methodology: portfolio market value × (earnings yield − dividend yield) × 0.97 tax haircut, added to standard REP. Manually supplied — cannot be extracted from 10-K filings.</p>
+
+      <p><strong style="color:var(--accent2)">Look-Through Yield</strong> — Look-Through REP ÷ Enterprise Value. The more complete yield measure for companies whose equity portfolios generate significant unreported earnings power. Shown in a blue-bordered card below the standard yield ladder when Look-Through REP data is present.</p>
+
+      <p><strong style="color:var(--accent2)">Yield Pickup</strong> — Look-Through REP minus standard REP. The additional earning power from portfolio investee retained earnings not captured by CFO-based analysis.</p>
+
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Data Pipeline</h4>
 
       <p><strong style="color:var(--accent2)">10-K</strong> — SEC annual report. Primary source for all cash flow items and full-year financials.</p>
@@ -5018,6 +5044,37 @@ function exportBrief(){
   h+='<tr><td>Invested Capital</td><td>'+fmtM(latest.investedCapital)+'</td></tr>';
   h+='</table>';
 
+  // ===== Look-Through REP in Export (position 2 — only for companies with meaningful equity portfolios) =====
+  if(years.length>=1){
+    var ltRepYear=null;
+    for(var lti=years.length-1;lti>=0;lti--){
+      var ltFd=years[lti].formData||{};
+      var ltEx=years[lti].extra||{};
+      var ltVal=ltFd.look_through_rep||ltEx.look_through_rep||0;
+      if(ltVal>0){ltRepYear=years[lti];break;}
+    }
+    if(ltRepYear){
+      var ltRepVal=ltRepYear.formData.look_through_rep||ltRepYear.extra.look_through_rep||0;
+      var ltShares=ltRepYear.formData.shares||0;
+      var ltMcap=price*ltShares;
+      var ltDebt=ltRepYear.debt||0;
+      var ltCash=(ltRepYear.formData.cash||0)+(ltRepYear.formData.sti||0);
+      var ltEv=ltMcap+ltDebt-ltCash;
+      var ltYield=ltEv>0?ltRepVal/ltEv:0;
+      var stdRep=ltRepYear.realProfit||0;
+      var stdYield=ltEv>0?stdRep/ltEv:0;
+      var ltPickup=ltRepVal-stdRep;
+      h+='<h2>Look-Through REP</h2>';
+      h+='<div class="narrative" style="margin-bottom:12px">Standard REP only captures dividends received from equity portfolio investees (which flow through CFO). Look-Through REP adds their retained earnings — profits compounding inside those businesses on behalf of shareholders. This is the more complete measure of earning power for companies with significant equity portfolios.</div>';
+      h+='<table style="max-width:550px"><tr><th style="text-align:left">Metric</th><th>Standard</th><th style="color:#1a5fa8">Look-Through</th></tr>';
+      h+='<tr><td style="text-align:left">Real Economic Profit</td><td>'+fmtM(stdRep)+'</td><td style="color:#1a5fa8;font-weight:700">'+fmtM(ltRepVal)+'</td></tr>';
+      h+='<tr><td style="text-align:left">REP Yield (on EV)</td><td>'+pct(stdYield,1)+'</td><td style="color:#1a5fa8;font-weight:700">'+pct(ltYield,1)+'</td></tr>';
+      h+='<tr><td style="text-align:left">Yield Pickup</td><td colspan="2">'+fmtM(ltPickup)+' (+'+pct(ltYield-stdYield,1)+' yield improvement)</td></tr>';
+      h+='</table>';
+      h+='<div class="narrative" style="font-size:.82rem;color:#888">Source period: '+ltRepYear.label+'. Look-Through REP is manually supplied from external analysis (e.g., Semper Augustus annual letter for BRK). It cannot be extracted from SEC filings.</div>';
+    }
+  }
+
   // Profit Waterfall
   h+='<h2>Profit Waterfall ('+latest.label+')</h2>';
   h+='<table><tr><th>Line Item</th><th style="text-align:left">Notes</th><th>Amount</th></tr>';
@@ -5300,36 +5357,6 @@ function exportBrief(){
         h+='</table>';
         h+='<div class="narrative">Cumulative buybacks of '+fmtM(cumCost)+' acquired '+pct(totalOwnPct,1)+' ownership at an average price of $'+(totalAvgPrice>1000?Math.round(totalAvgPrice).toLocaleString():totalAvgPrice.toFixed(2))+' per share, generating a '+pct(totalCapturedYield,1)+' captured yield at current REP.</div>';
       }
-    }
-  }
-
-  // ===== Look-Through REP in Export =====
-  if(years.length>=1){
-    var ltRepYear=null;
-    for(var lti=years.length-1;lti>=0;lti--){
-      var ltFd=years[lti].formData||{};
-      var ltEx=years[lti].extra||{};
-      var ltVal=ltFd.look_through_rep||ltEx.look_through_rep||0;
-      if(ltVal>0){ltRepYear=years[lti];break;}
-    }
-    if(ltRepYear){
-      var ltRepVal=ltRepYear.formData.look_through_rep||ltRepYear.extra.look_through_rep||0;
-      var ltShares=ltRepYear.formData.shares||0;
-      var ltMcap=price*ltShares;
-      var ltDebt=ltRepYear.debt||0;
-      var ltCash=(ltRepYear.formData.cash||0)+(ltRepYear.formData.sti||0);
-      var ltEv=ltMcap+ltDebt-ltCash;
-      var ltYield=ltEv>0?ltRepVal/ltEv:0;
-      var stdRep=ltRepYear.realProfit||0;
-      var ltPickup=ltRepVal-stdRep;
-      h+='<h2>Look-Through REP</h2>';
-      h+='<table style="max-width:500px"><tr><th style="text-align:left">Metric</th><th>Value</th></tr>';
-      h+='<tr><td style="text-align:left">Standard REP</td><td>'+fmtM(stdRep)+'</td></tr>';
-      h+='<tr><td style="text-align:left">Look-Through REP</td><td style="color:#1a5fa8;font-weight:700">'+fmtM(ltRepVal)+'</td></tr>';
-      h+='<tr><td style="text-align:left">Yield Pickup</td><td>'+fmtM(ltPickup)+'</td></tr>';
-      h+='<tr><td style="text-align:left">Look-Through Yield (on EV)</td><td style="color:#1a5fa8;font-weight:700">'+pct(ltYield,1)+'</td></tr>';
-      h+='</table>';
-      h+='<div class="narrative">Look-Through REP includes retained earnings of equity portfolio investees — profits earned on behalf of shareholders that compound inside those businesses without flowing through CFO. Source period: '+ltRepYear.label+'.</div>';
     }
   }
 
