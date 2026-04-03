@@ -492,11 +492,11 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
   <div class="row">
     <div class="field"><label>Share Repurchases ($M)</label><input type="number" id="share_repurchases" step="1" value="0"><div class="hint">Total buyback spend this fiscal year (from cash flow stmt)</div></div>
-    <div class="field"><label>Dividends Paid ($M)</label><input type="number" id="dividends_paid" step="1" value="0"><div class="hint">Total dividends paid this fiscal year (from cash flow stmt)</div></div>
-  </div>
+    </div>
   <div class="row">
-    <div class="field"><label>Buyback Cost ($M) <span style="font-size:.7rem;color:var(--blue);font-weight:400">ROI</span></label><input type="number" id="buyback_cost_m" step="1" value="0"><div class="hint">Total dollars spent on repurchases this year (for Buyback ROI Analysis). Same as Share Repurchases if no avg price data.</div></div>
-    <div class="field"><label>Shares Repurchased <span style="font-size:.7rem;color:var(--blue);font-weight:400">ROI</span></label><input type="number" id="buyback_shares" step="1" value="0"><div class="hint">Number of shares retired this year (A-share equivalents for BRK). Used to compute avg price paid and ownership %.</div></div>
+    <div class="field"><label>Buyback Cost ($M) <span style="font-size:.7rem;color:var(--blue);font-weight:400">ROI</span></label><input type="number" id="buyback_cost_m" step="1" value="0"><div class="hint">Total dollars spent on repurchases this year (for Buyback ROI Analysis)</div></div>
+    <div class="field"><label>Shares Repurchased <span style="font-size:.7rem;color:var(--blue);font-weight:400">ROI</span></label><input type="number" id="buyback_shares" step="1" value="0"><div class="hint">Shares retired this year (A-share equivalents for BRK). Enables ownership % and yield calculation.</div></div>
+    <div class="field"><label>Dividends Paid ($M)</label><input type="number" id="dividends_paid" step="1" value="0"><div class="hint">Total dividends paid this fiscal year (from cash flow stmt)</div></div>
   </div>
   <h3>📐 ROIC Inputs</h3>
   <div class="row">
@@ -681,7 +681,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div class="card" id="buybackRoiCard" style="display:none">
     <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackRoiWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Buyback ROI Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="buybackRoiWrap">
-      <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">For each year buybacks occurred: what ownership % was acquired, what REP did that stake capture at the time, and what does that same stake earn today as REP compounds. Yield = REP captured ÷ cost paid.</p>
+      <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">For each year buybacks occurred: ownership % acquired, REP captured at time of purchase, and how that yield has grown as REP compounds. Yield = REP captured ÷ cost paid.</p>
       <div id="buybackRoiContent"></div>
     </div>
   </div>
@@ -2476,74 +2476,69 @@ function renderBuybackRoi(){
   var keys=getSortedYearKeys();
   if(keys.length<1){card.style.display='none';return;}
 
-  // Build per-year rows — requires buyback_cost_m OR share_repurchases
   var rows=[];
   var hasData=false;
   for(var i=0;i<keys.length;i++){
     var yr=yearStore[keys[i]];
     if(!yr||!yr.formData)continue;
     var fd=yr.formData;
-    // Support both new fields (buyback_cost_m, buyback_shares) and legacy (share_repurchases, avg_buyback_price)
     var costM=fd.buyback_cost_m||fd.share_repurchases||0;
     var sharesRetired=fd.buyback_shares||0;
-    var avgPrice=(sharesRetired>0&&costM>0)?(costM*1e6/sharesRetired):(fd.avg_buyback_price||0);
-    var dilShares=fd.shares||0; // diluted shares outstanding that year (millions)
-    // REP for this year — compute from stored metrics if available
+    var dilShares=fd.shares||0;
+    // Compute REP directly from formData — no Calculate needed
     var repThenM=0;
-    if(yr.metrics&&yr.metrics.rep!==undefined) repThenM=yr.metrics.rep;
+    try{var m=computeMetrics(yr);repThenM=m.realProfit||0;}catch(e){}
     var label=yr.fiscal_year_label||keys[i];
     if(costM>0)hasData=true;
-    rows.push({key:keys[i],label:label,costM:costM,sharesRetired:sharesRetired,avgPrice:avgPrice,dilShares:dilShares,repThenM:repThenM});
+    rows.push({key:keys[i],label:label,costM:costM,sharesRetired:sharesRetired,dilShares:dilShares,repThenM:repThenM});
   }
 
   if(!hasData){card.style.display='none';return;}
   card.style.display='block';
 
-  // Current REP — from most recent year metrics
+  // Current REP from most recent year
   var repNowM=0;
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
-    if(yr&&yr.metrics&&yr.metrics.rep!==undefined){repNowM=yr.metrics.rep;break;}
+    if(yr&&yr.formData){
+      try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;break;}}catch(e){}
+    }
   }
 
-  // Compute ownership % and yields per row
-  var active=[];
-  for(var i=0;i<rows.length;i++){
-    var r=rows[i];
-    if(r.costM<=0||r.dilShares<=0)continue;
-    // ownership % = shares retired ÷ diluted shares outstanding
-    // If sharesRetired not available, estimate from cost ÷ avgPrice
-    var sharesR=r.sharesRetired>0?r.sharesRetired:(r.avgPrice>0?(r.costM*1e6/r.avgPrice):0);
-    var ownPct=sharesR>0?(sharesR/(r.dilShares*1e6)):0;
-    var repCapThen=ownPct*r.repThenM;
-    var repCapNow=ownPct*repNowM;
-    var yThen=(repCapThen>0&&r.costM>0)?repCapThen/r.costM:null;
-    var yNow=(repCapNow>0&&r.costM>0)?repCapNow/r.costM:null;
-    active.push({label:r.label,costM:r.costM,ownPct:ownPct,repThenM:r.repThenM,repCapThen:repCapThen,repCapNow:repCapNow,yThen:yThen,yNow:yNow});
+  function calcOwn(r){
+    var sharesR=r.sharesRetired>0?r.sharesRetired:(0);
+    return(sharesR>0&&r.dilShares>0)?sharesR/(r.dilShares*1e6):0;
   }
-
-  // Summary metrics
-  var totalCost=0,totalRepNow=0,wtdYNow=0,wtdYThen=0,totalOwn=0;
-  for(var i=0;i<active.length;i++){
-    totalCost+=active[i].costM;
-    totalRepNow+=active[i].repCapNow;
-    totalOwn+=active[i].ownPct;
-    if(active[i].yNow!==null) wtdYNow+=active[i].yNow*active[i].costM;
-    if(active[i].yThen!==null) wtdYThen+=active[i].yThen*active[i].costM;
-  }
-  if(totalCost>0){wtdYNow/=totalCost;wtdYThen/=totalCost;}
-
   function pillColor(y){
-    if(y===null)return 'color:var(--text3)';
+    if(y===null||y===0)return 'color:var(--text3)';
     if(y>=0.07)return 'background:rgba(46,204,113,.15);color:var(--green)';
     if(y>=0.04)return 'background:rgba(230,126,34,.15);color:var(--orange)';
     return 'background:rgba(231,76,60,.15);color:var(--red)';
   }
-  function pill(y){
-    if(y===null)return '<span style="color:var(--text3)">—</span>';
-    return '<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600;'+pillColor(y)+'">'+pct(y,1)+'</span>';
+  function pill(y,lg){
+    if(y===null||y===0||isNaN(y))return '<span style="color:var(--text3)">—</span>';
+    var sz=lg?'.8rem':'.75rem';var pd=lg?'4px 11px':'2px 8px';
+    return '<span style="display:inline-block;padding:'+pd+';border-radius:20px;font-size:'+sz+';font-weight:'+(lg?700:600)+';'+pillColor(y)+'">'+pct(y,1)+'</span>';
   }
-  function ownFmt(o){return (o*100).toFixed(3)+'%';}
+
+  var active=[];
+  var totalCost=0,totalOwn=0,wtdYNow=0,wtdYThen=0,totalRepNow=0;
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    if(r.costM<=0||r.dilShares<=0)continue;
+    var own=calcOwn(r);
+    var repCapThen=own*r.repThenM;
+    var repCapNow=own*repNowM;
+    var yThen=(repCapThen>0&&r.costM>0)?repCapThen/r.costM:null;
+    var yNow=(repCapNow>0&&r.costM>0)?repCapNow/r.costM:null;
+    active.push({label:r.label,costM:r.costM,own:own,repThenM:r.repThenM,repCapThen:repCapThen,repCapNow:repCapNow,yThen:yThen,yNow:yNow});
+    totalCost+=r.costM;
+    totalOwn+=own;
+    totalRepNow+=repCapNow;
+    if(yNow!==null)wtdYNow+=yNow*r.costM;
+    if(yThen!==null)wtdYThen+=yThen*r.costM;
+  }
+  if(totalCost>0){wtdYNow/=totalCost;wtdYThen/=totalCost;}
 
   var h='';
 
@@ -2551,7 +2546,7 @@ function renderBuybackRoi(){
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Total deployed</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(totalCost)+'</div></div>';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Ownership retired</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+(totalOwn*100).toFixed(2)+'%</div></div>';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--text)">'+pct(wtdYThen,1)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pct(wtdYThen,1)+'</div></div>';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+pct(wtdYNow,1)+'</div></div>';
   h+='</div>';
 
@@ -2559,34 +2554,25 @@ function renderBuybackRoi(){
   h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.78rem;width:100%">';
   h+='<tr><th>Year</th><th style="text-align:right">Cost</th><th style="text-align:right">Own %</th><th style="text-align:right">Total REP</th><th style="text-align:right">REP captured then</th><th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th><th style="text-align:right">Yield now</th></tr>';
 
-  // All rows — including zero-buyback years shown inline
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
     var ac=null;
     for(var j=0;j<active.length;j++){if(active[j].label===r.label){ac=active[j];break;}}
     if(r.costM<=0){
-      // No buyback year — show zeros and dashes, same styling
-      h+='<tr>';
-      h+='<td><strong>'+r.label+'</strong></td>';
-      h+='<td style="text-align:right">0</td>';
-      h+='<td style="text-align:right">0</td>';
+      // Zero buyback year — same styling, zeros and dashes
+      h+='<tr><td><strong>'+r.label+'</strong></td><td style="text-align:right">0</td><td style="text-align:right">0</td>';
       h+='<td style="text-align:right">'+(r.repThenM?fmtM(r.repThenM):'—')+'</td>';
-      h+='<td style="text-align:right">0</td>';
-      h+='<td style="text-align:right">0</td>';
-      h+='<td style="text-align:right"><span style="color:var(--text3)">—</span></td>';
-      h+='<td style="text-align:right"><span style="color:var(--text3)">—</span></td>';
-      h+='</tr>';
+      h+='<td style="text-align:right">0</td><td style="text-align:right">0</td>';
+      h+='<td style="text-align:right"><span style="color:var(--text3)">—</span></td><td style="text-align:right"><span style="color:var(--text3)">—</span></td></tr>';
     } else if(ac){
-      h+='<tr>';
-      h+='<td><strong>'+r.label+'</strong></td>';
+      h+='<tr><td><strong>'+r.label+'</strong></td>';
       h+='<td style="text-align:right">'+fmtM(ac.costM)+'</td>';
-      h+='<td style="text-align:right">'+ownFmt(ac.ownPct)+'</td>';
+      h+='<td style="text-align:right">'+(ac.own*100).toFixed(3)+'%</td>';
       h+='<td style="text-align:right">'+(r.repThenM?fmtM(r.repThenM):'—')+'</td>';
       h+='<td style="text-align:right">'+(ac.repCapThen?fmtM(ac.repCapThen):'—')+'</td>';
       h+='<td style="text-align:right">'+(ac.repCapNow?fmtM(ac.repCapNow):'—')+'</td>';
-      h+='<td style="text-align:right">'+pill(ac.yThen)+'</td>';
-      h+='<td style="text-align:right">'+pill(ac.yNow)+'</td>';
-      h+='</tr>';
+      h+='<td style="text-align:right">'+pill(ac.yThen,false)+'</td>';
+      h+='<td style="text-align:right">'+pill(ac.yNow,false)+'</td></tr>';
     }
   }
 
@@ -2595,19 +2581,15 @@ function renderBuybackRoi(){
   h+='<td style="color:var(--blue)">∑ Cumulative</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+fmtM(totalCost)+'</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+(totalOwn*100).toFixed(2)+'%</td>';
-  h+='<td style="text-align:right">—</td>';
-  h+='<td style="text-align:right">—</td>';
+  h+='<td style="text-align:right">—</td><td style="text-align:right">—</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+fmtM(totalRepNow)+'</td>';
-  h+='<td style="text-align:right"><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:700;'+pillColor(wtdYThen)+'">'+pct(wtdYThen,1)+'</span></td>';
-  h+='<td style="text-align:right"><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:700;'+pillColor(wtdYNow)+'">'+pct(wtdYNow,1)+'</span></td>';
-  h+='</tr>';
+  h+='<td style="text-align:right">'+pill(wtdYThen,true)+'</td>';
+  h+='<td style="text-align:right">'+pill(wtdYNow,true)+'</td></tr>';
   h+='</table></div>';
 
-  // Note on REP basis
-  if(repNowM>0){
-    h+='<p class="section-note" style="margin-top:10px">REP basis: most recent year REPA standard ($'+Math.round(repNowM).toLocaleString()+'M). If Look-Through REP or Bloomstran economic earnings are higher, substitute in "REP now" field for a more complete picture. Yield now will scale proportionally.</p>';
-  } else {
-    h+='<p class="section-note" style="margin-top:10px">REP not yet calculated — run Calculate to populate yields. Requires buyback_cost_m (or share_repurchases) and shares outstanding per year.</p>';
+  // REP basis note
+  if(repNowM!==0){
+    h+='<p class="section-note" style="margin-top:10px">REP basis: most recent year REPA standard ('+fmtM(repNowM)+'). Look-Through REP or Bloomstran economic earnings will lift all yield-now figures proportionally — see annual audit for Look-Through calculation.</p>';
   }
 
   content.innerHTML=h;
@@ -2907,7 +2889,7 @@ function doImport(){
       'goodwill':'goodwill','goodwill_net':'goodwill',
       'intangible assets':'intangibles','intangible_assets':'intangibles','intangibles':'intangibles','net intangible assets':'intangibles','net_intangible_assets':'intangibles','intangible assets net':'intangibles','other intangible assets':'intangibles','other_intangible_assets':'intangibles',
       'ticker':'ticker','company':'ticker','share price':'price','current share price':'price','share_price':'price','end_of_year_price':'price','end_of_year_share_price':'price','eoy_price':'price','eoy_share_price':'price',
-      'buyback cost':'buyback_cost_m','buyback_cost':'buyback_cost_m','buyback_cost_m':'buyback_cost_m','buyback cost m':'buyback_cost_m','repurchase cost':'buyback_cost_m','buyback dollars':'buyback_cost_m',
+      'buyback cost':'buyback_cost_m','buyback_cost':'buyback_cost_m','buyback_cost_m':'buyback_cost_m','buyback cost m':'buyback_cost_m','repurchase cost':'buyback_cost_m',
       'shares repurchased':'buyback_shares','buyback_shares':'buyback_shares','shares retired':'buyback_shares','shares_repurchased':'buyback_shares','shares_retired':'buyback_shares'
     };
     var fyKeys={'fiscal_year_end':1,'fiscal year end':1,'fiscal_year_end_date':1,'fiscal year end date':1,'period_end_date':1,'period end date':1};
