@@ -2491,7 +2491,7 @@ function renderBuybackRoi(){
   var keys=getSortedYearKeys();
   if(keys.length<1){card.style.display='none';return;}
 
-  // ---- Gather data from yearStore ----
+  // ---- Gather data from yearStore (10-K only — skip interim/TTM) ----
   var rows=[];
   var hasData=false;
   var repByLabel={};
@@ -2499,6 +2499,7 @@ function renderBuybackRoi(){
   for(var i=0;i<keys.length;i++){
     var yr=yearStore[keys[i]];
     if(!yr||!yr.formData)continue;
+    if(yr.isInterim)continue;
     var fd=yr.formData;
     var ex=yr.extra||{};
     var costM=fd.buyback_cost_m||0;
@@ -2519,20 +2520,20 @@ function renderBuybackRoi(){
   if(!hasData){card.style.display='none';return;}
   card.style.display='block';
 
-  // Current REP = most recent year
+  // Current REP = most recent annual year (10-K)
   var repNowM=0;
   var ltRepNowM=0;
   var repNowLabel='';
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
-    if(yr&&yr.formData){
-      try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;repNowLabel=rows[i]?rows[i].shortLabel:'';break;}}catch(e){}
+    if(yr&&yr.formData&&!yr.isInterim){
+      try{var m=computeMetrics(yr);if(m.realProfit){repNowM=m.realProfit;repNowLabel=(yr.fiscal_year_label||keys[i]).replace(/^FY/,'');break;}}catch(e){}
     }
   }
-  // Look-through REP now = most recent year with look_through_rep
+  // Look-through REP now = most recent annual year with look_through_rep
   for(var i=keys.length-1;i>=0;i--){
     var yr=yearStore[keys[i]];
-    if(yr&&yr.formData){
+    if(yr&&yr.formData&&!yr.isInterim){
       var fd=yr.formData;var ex=yr.extra||{};
       var lt=fd.look_through_rep||ex.look_through_rep||0;
       if(lt>0){ltRepNowM=lt;break;}
