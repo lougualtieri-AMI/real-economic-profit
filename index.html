@@ -2617,7 +2617,6 @@ function renderBuybackRoi(){
     for(var i=lastBB+1;i<active.length;i++){if(active[i].repThenM>0)lastBB=i;}
   }
   var trimmed=firstBB>=0?active.slice(firstBB,lastBB+1):active;
-  console.log('ROI trim debug: active='+active.length+' rows, firstBB='+firstBB+', lastBB='+lastBB+', trimmed='+trimmed.length+', labels='+trimmed.map(function(t){return t.label}).join(','));
 
   // ============ VINTAGE TABLE ============
   h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Vintage Table</div>';
