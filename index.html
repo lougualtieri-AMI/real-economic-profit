@@ -2507,7 +2507,7 @@ function renderBuybackRoi(){
 
   function calcOwn(r){
     var sharesR=r.sharesRetired>0?r.sharesRetired:(0);
-    return(sharesR>0&&r.dilShares>0)?sharesR/(r.dilShares*1e6):0;
+    return(sharesR>0&&r.dilShares>0)?sharesR/r.dilShares:0;
   }
   function pillColor(y){
     if(y===null||y===0)return 'color:var(--text3)';
