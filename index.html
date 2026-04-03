@@ -2580,10 +2580,10 @@ function renderBuybackRoi(){
     var a=active[i];
     var depMark=a.depressed?' <span style="color:var(--red);font-size:.65rem">▼</span>':'';
     if(a.costM<=0||a.sharesRetired<=0){
-      h+='<tr style="color:var(--text3)"><td><strong>'+a.label+'</strong></td>';
-      h+='<td style="text-align:right">0</td><td style="text-align:right">0</td>';
+      h+='<tr><td><strong>'+a.label+'</strong></td>';
+      h+='<td style="text-align:right">'+fmtM(0)+'</td><td style="text-align:right">0</td>';
       h+='<td style="text-align:right">'+(a.repThenM?fmtM(a.repThenM)+depMark:'—')+'</td>';
-      h+='<td style="text-align:right">0</td><td style="text-align:right">0</td>';
+      h+='<td style="text-align:right">'+fmtM(0)+'</td><td style="text-align:right">'+fmtM(0)+'</td>';
       h+='<td style="text-align:right">—</td><td style="text-align:right">—</td></tr>';
     } else {
       h+='<tr><td><strong>'+a.label+'</strong></td>';
