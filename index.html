@@ -6715,8 +6715,28 @@ function calculate(){
   var hasLightView=deprOnly>0&&da>0&&deprOnly<da*0.95;
   var maintCapexLight=hasLightView?deprOnly*1.05:null;
 
-  var realSBC=Math.max(sbcExp,sbcGrant);
-  var sbcSource=sbcGrant>sbcExp?'Grant Value (higher)':'Expense';
+  // SBC Grant Date FV carry-forward: if current year has no grant FV (null/0),
+  // use the most recent prior 10-K annual year's grant FV as floor.
+  // TTM/interim extractions rarely have grant tables; the 10-K value is the best proxy.
+  var sbcGrantEffective=sbcGrant;
+  var sbcCarryForwardFrom=null;
+  if((!sbcGrant||sbcGrant<=0)&&currentYearKey){
+    var sortedKeys=getSortedYearKeys();
+    var curIdx=sortedKeys.indexOf(currentYearKey);
+    for(var _ci=curIdx-1;_ci>=0;_ci--){
+      var _yr=yearStore[sortedKeys[_ci]];
+      if(_yr&&!_yr.isInterim&&_yr.formData&&_yr.formData.sbc_grant>0){
+        var _lbl=(_yr.fiscal_year_label||sortedKeys[_ci]).toUpperCase();
+        if(_lbl.indexOf('TTM')!==0&&_lbl.indexOf('Q')!==0){
+          sbcGrantEffective=_yr.formData.sbc_grant;
+          sbcCarryForwardFrom=sortedKeys[_ci];
+          break;
+        }
+      }
+    }
+  }
+  var realSBC=Math.max(sbcExp,sbcGrantEffective);
+  var sbcSource=sbcGrantEffective>sbcExp?('Grant Value'+(sbcCarryForwardFrom?' (carried from '+sbcCarryForwardFrom+')':' (higher)')):'Expense';
   var wcDrag=invChange+recvChange+apChange;
   var investmentIncome=ltInvestments*invReturnRate;
   var onetimeAdj=v('onetime_adj')||0;
@@ -6819,6 +6839,7 @@ function calculate(){
   var rdPresetLabel=getRdSectorPreset().label;
   var rdIsCustom=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
 
+  verdictHTML+='<div style="font-size:.82rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Yield Ladder</div>';
   verdictHTML+='<div id="yieldLadder" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">';
 
   // --- Panel 1: Full D&A ---
