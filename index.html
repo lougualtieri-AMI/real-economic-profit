@@ -2549,7 +2549,8 @@ function renderBuybackRoi(){
   }
 
   if(!hasData){console.log('BuybackROI: no year has both cost>0 AND shares>0',rows.map(function(r){return r.label+': cost='+r.costM+' shares='+r.sharesRetired;}));card.style.display='none';return;}
-  console.log('BuybackROI: rendering',rows.length,'rows'); = most recent annual year (10-K)
+  console.log('BuybackROI: rendering',rows.length,'rows');
+  // Current REP = most recent annual year (10-K)
   var repNowM=0;
   var ltRepNowM=0;
   var repNowLabel='';
