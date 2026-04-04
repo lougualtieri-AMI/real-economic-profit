@@ -2548,7 +2548,7 @@ function renderBuybackRoi(){
     repByLabel[shortLabel]=repThenM;
   }
 
-  if(!hasData){card.style.display='none';return;}
+  if(!hasData){console.warn('Buyback ROI: no data — rows:',rows.map(function(r){return r.label+' cost='+r.costM+' shares='+r.sharesRetired;}));card.style.display='none';return;}
   card.style.display='block';
 
   // Current REP = most recent annual year (10-K)
