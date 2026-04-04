@@ -2548,9 +2548,7 @@ function renderBuybackRoi(){
     repByLabel[shortLabel]=repThenM;
   }
 
-  if(!hasData){alert('Buyback ROI hidden: no year has both cost>0 AND shares>0.\n'+rows.map(function(r){return r.label+': cost='+r.costM+' shares='+r.sharesRetired;}).join('\n'));card.style.display='none';return;}
-  alert('Buyback ROI: hasData=true, '+rows.length+' rows. Rendering...');
-
+  if(!hasData){card.style.display='none';return;}
   // Current REP = most recent annual year (10-K)
   var repNowM=0;
   var ltRepNowM=0;
@@ -3270,7 +3268,7 @@ function doImport(){
 
 // ============ Year Management ============
 function captureForm(){
-  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),ap_change:v('ap_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
+  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),ap_change:v('ap_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),buyback_cost_m:v('buyback_cost_m'),buyback_shares:v('buyback_shares'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
   // Preserve JSON-only fields from current yearStore entry
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
     var prev=yearStore[currentYearKey].formData;
@@ -3280,7 +3278,7 @@ function captureForm(){
 }
 
 function restoreForm(d){
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   // Price: always restore from year data so each year carries its own price (critical for historical backfills)
