@@ -3272,7 +3272,7 @@ function captureForm(){
   // Preserve JSON-only fields from current yearStore entry
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
     var prev=yearStore[currentYearKey].formData;
-    ['avg_buyback_price','buyback_cost_m','buyback_shares','look_through_rep','revenue','net_income','operating_income','r_and_d_expense'].forEach(function(k){if(prev[k]!==undefined)fd[k]=prev[k];});
+    ['avg_buyback_price','look_through_rep','revenue','net_income','operating_income','r_and_d_expense'].forEach(function(k){if(prev[k]!==undefined)fd[k]=prev[k];});
   }
   return fd;
 }
