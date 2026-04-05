@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-02';
-  var buildId='v4.8.1';
+  var buildId='v4.8.2';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -1092,7 +1092,7 @@ function loadFromPortfolio(){
       if(!yr.formData.look_through_rep&&yr.extra.look_through_rep)yr.formData.look_through_rep=yr.extra.look_through_rep;
     }
     // Auto-copy share_repurchases → buyback_cost_m if buyback_cost_m not separately provided
-    if(yr&&yr.formData&&(!yr.formData.buyback_cost_m||yr.formData.buyback_cost_m===0)&&yr.formData.share_repurchases&&yr.formData.share_repurchases>0){
+    if(yr&&yr.formData&&(!yr.formData.buyback_cost_m||yr.formData.buyback_cost_m===0||yr.formData.buyback_cost_m===null)&&yr.formData.share_repurchases&&yr.formData.share_repurchases>0){
       yr.formData.buyback_cost_m=yr.formData.share_repurchases;
     }
   }
@@ -2533,7 +2533,9 @@ function renderBuybackRoi(){
     if(yr.isInterim||_lbl.indexOf('TTM')===0||_lbl.indexOf('Q')===0)continue;
     var fd=yr.formData;
     var ex=yr.extra||{};
-    var costM=fd.buyback_cost_m||fd.share_repurchases||0;
+    // Primary: share_repurchases (from JSON). Override: buyback_cost_m (manual, if user entered different value)
+    var costM=fd.share_repurchases||0;
+    if(fd.buyback_cost_m&&fd.buyback_cost_m>0&&fd.buyback_cost_m!==costM)costM=fd.buyback_cost_m;
     var sharesRetired=fd.buyback_shares||0;
     var dilShares=fd.shares||0;
     var repThenM=0;
@@ -3222,15 +3224,10 @@ function doImport(){
         if(extra.look_through_rep)yearStore[yearKey].formData.look_through_rep=extra.look_through_rep;
       }
       // Auto-copy share_repurchases → buyback_cost_m if buyback_cost_m not separately provided
-      // Also handle null (v() returns null for empty fields) — treat null same as 0
       if(yearStore[yearKey]&&yearStore[yearKey].formData){
         var _fd=yearStore[yearKey].formData;
         if((!_fd.buyback_cost_m||_fd.buyback_cost_m===0||_fd.buyback_cost_m===null)&&_fd.share_repurchases&&_fd.share_repurchases>0){
           _fd.buyback_cost_m=_fd.share_repurchases;
-        }
-        // Also ensure buyback_shares is recovered from extra if null in formData
-        if((!_fd.buyback_shares||_fd.buyback_shares===null)&&yearStore[yearKey].extra&&yearStore[yearKey].extra.buyback_shares){
-          _fd.buyback_shares=yearStore[yearKey].extra.buyback_shares;
         }
       }
       // Store interim metadata
@@ -5325,14 +5322,15 @@ function exportBrief(){
   // ===== Buyback ROI Vintage Summary in Export =====
   if(years.length>=2){
     var roiYears=years.filter(function(y){return !y.isInterim&&y.label.indexOf('TTM')!==0&&y.label.indexOf('Q')!==0;});
-    var hasRoiData=roiYears.some(function(y){return y.formData&&((y.formData.buyback_cost_m>0||y.formData.share_repurchases>0)||y.formData.buyback_shares>0);});
+    var hasRoiData=roiYears.some(function(y){return y.formData&&(y.formData.share_repurchases>0||y.formData.buyback_cost_m>0||y.formData.buyback_shares>0);});
     if(hasRoiData){
       h+='<h2>Buyback ROI Analysis</h2>';
       var cumCost=0,cumShares=0;
       var vintageRows=[];
       roiYears.forEach(function(y){
         var fd=y.formData||{};
-        var costM=fd.buyback_cost_m||fd.share_repurchases||0;
+        var costM=fd.share_repurchases||0;
+        if(fd.buyback_cost_m&&fd.buyback_cost_m>0&&fd.buyback_cost_m!==costM)costM=fd.buyback_cost_m;
         var sharesRet=fd.buyback_shares||0;
         var diluted=fd.shares||0;
         var avgPrice=sharesRet>0?costM/sharesRet:0;
