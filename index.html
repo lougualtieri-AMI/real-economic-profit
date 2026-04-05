@@ -2548,8 +2548,7 @@ function renderBuybackRoi(){
     repByLabel[shortLabel]=repThenM;
   }
 
-  if(!hasData){console.log('BuybackROI: no year has both cost>0 AND shares>0',rows.map(function(r){return r.label+': cost='+r.costM+' shares='+r.sharesRetired;}));card.style.display='none';return;}
-  console.log('BuybackROI: rendering',rows.length,'rows');
+  if(!hasData){card.style.display='none';return;}
   card.style.display='block';
   // Current REP = most recent annual year (10-K)
   var repNowM=0;
@@ -7428,7 +7427,7 @@ function calculate(){
 
   // Buyback Return Tracker
   try{renderBuybackTracker();}catch(e){console.warn('Buyback tracker error:',e);}
-  try{renderBuybackRoi();}catch(e){alert('Buyback ROI error: '+e.message+' at line '+e.lineNumber);console.warn('Buyback ROI error:',e);}
+  try{renderBuybackRoi();}catch(e){console.warn('Buyback ROI error:',e);}
 
   // Render trend
   try{renderTrend();}catch(e){console.warn('Trend error:',e);}
