@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-02';
-  var buildId='v4.8.2';
+  var buildId='v4.8.3';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -2533,9 +2533,8 @@ function renderBuybackRoi(){
     if(yr.isInterim||_lbl.indexOf('TTM')===0||_lbl.indexOf('Q')===0)continue;
     var fd=yr.formData;
     var ex=yr.extra||{};
-    // Primary: share_repurchases (from JSON). Override: buyback_cost_m (manual, if user entered different value)
+    // Primary: share_repurchases (from JSON extraction). buyback_cost_m override removed — was source of cross-year contamination bugs.
     var costM=fd.share_repurchases||0;
-    if(fd.buyback_cost_m&&fd.buyback_cost_m>0&&fd.buyback_cost_m!==costM)costM=fd.buyback_cost_m;
     var sharesRetired=fd.buyback_shares||0;
     var dilShares=fd.shares||0;
     var repThenM=0;
@@ -5330,7 +5329,6 @@ function exportBrief(){
       roiYears.forEach(function(y){
         var fd=y.formData||{};
         var costM=fd.share_repurchases||0;
-        if(fd.buyback_cost_m&&fd.buyback_cost_m>0&&fd.buyback_cost_m!==costM)costM=fd.buyback_cost_m;
         var sharesRet=fd.buyback_shares||0;
         var diluted=fd.shares||0;
         var avgPrice=sharesRet>0?costM/sharesRet:0;
