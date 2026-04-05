@@ -2598,7 +2598,7 @@ function renderBuybackRoi(){
   // ---- Compute vintage data ----
   var active=[];
   var totalCost=0,totalOwn=0,wtdYNow=0,wtdYThen=0,totalRepNow=0;
-  var wtdYNowLT=0,totalRepNowLT=0;
+  var wtdYNowLT=0,totalRepNowLT=0,totalSharesRetired=0;
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
     var own=calcOwn(r);
@@ -2616,6 +2616,7 @@ function renderBuybackRoi(){
     if(r.costM>0&&r.sharesRetired>0){
       totalCost+=r.costM;
       totalOwn+=own;
+      totalSharesRetired+=r.sharesRetired;
       totalRepNow+=repCapNow;
       totalRepNowLT+=repCapNowLT;
       if(yNow!==null)wtdYNow+=yNow*r.costM;
@@ -2650,19 +2651,25 @@ function renderBuybackRoi(){
   // ============ VINTAGE TABLE ============
   h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Vintage Table</div>';
   h+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.78rem;width:100%">';
-  h+='<tr><th>Year</th><th style="text-align:right">Cost</th><th style="text-align:right">Own %</th>';
-  h+='<th style="text-align:right">Total REP</th><th style="text-align:right">REP captured then</th>';
-  h+='<th style="text-align:right">REP captured now</th><th style="text-align:right">Yield then</th>';
-  h+='<th style="text-align:right">Yield now</th>';
-  if(hasLookThrough){h+='<th style="text-align:right;color:var(--blue)">Yield now<br>(Look-Through)</th>';}
+  // Two-row header with grouped REP Captured
+  var ltCol=hasLookThrough?1:0;
+  h+='<tr><th rowspan="2">Year</th><th rowspan="2" style="text-align:right">Cost</th><th rowspan="2" style="text-align:right">Avg Price</th><th rowspan="2" style="text-align:right">Own %</th>';
+  h+='<th rowspan="2" style="text-align:right">Total REP</th>';
+  h+='<th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);padding-bottom:4px">REP Captured</th>';
+  h+='<th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);padding-bottom:4px">Yield</th>';
+  if(hasLookThrough){h+='<th rowspan="2" style="text-align:right;color:var(--blue)">Yield now<br>(LT)</th>';}
   h+='</tr>';
+  h+='<tr><th style="text-align:right;font-size:.68rem;color:var(--text3)">Then</th><th style="text-align:right;font-size:.68rem;color:var(--text3)">Now</th>';
+  h+='<th style="text-align:right;font-size:.68rem;color:var(--text3)">Then</th><th style="text-align:right;font-size:.68rem;color:var(--text3)">Now</th></tr>';
 
   for(var i=0;i<trimmed.length;i++){
     var a=trimmed[i];
     var depMark=a.depressed?' <span style="color:var(--red);font-size:.65rem">▼</span>':'';
+    var avgPrice=(a.costM>0&&a.sharesRetired>0)?(a.costM/a.sharesRetired):0;
+    var avgPriceFmt=avgPrice>0?'$'+avgPrice.toFixed(2):'—';
     if(a.costM<=0||a.sharesRetired<=0){
       h+='<tr><td><strong>'+a.label+'</strong></td>';
-      h+='<td style="text-align:right">'+fmtM(0)+'</td><td style="text-align:right">0</td>';
+      h+='<td style="text-align:right">'+fmtM(0)+'</td><td style="text-align:right">—</td><td style="text-align:right">0</td>';
       h+='<td style="text-align:right">'+(a.repThenM?fmtM(a.repThenM)+depMark:'—')+'</td>';
       h+='<td style="text-align:right">'+fmtM(0)+'</td><td style="text-align:right">'+fmtM(0)+'</td>';
       h+='<td style="text-align:right">—</td><td style="text-align:right">—</td>';
@@ -2671,6 +2678,7 @@ function renderBuybackRoi(){
     } else {
       h+='<tr><td><strong>'+a.label+'</strong></td>';
       h+='<td style="text-align:right">'+fmtM(a.costM)+'</td>';
+      h+='<td style="text-align:right">'+avgPriceFmt+'</td>';
       h+='<td style="text-align:right">'+(a.own*100).toFixed(3)+'%</td>';
       h+='<td style="text-align:right">'+(a.repThenM?fmtM(a.repThenM)+depMark:'—')+'</td>';
       h+='<td style="text-align:right">'+(a.repCapThen?fmtM(a.repCapThen):'—')+'</td>';
@@ -2682,9 +2690,12 @@ function renderBuybackRoi(){
     }
   }
   // Cumulative row
+  var cumAvgPrice=totalSharesRetired>0?(totalCost/totalSharesRetired):0;
+  var cumAvgPriceFmt=cumAvgPrice>0?'$'+cumAvgPrice.toFixed(2):'—';
   h+='<tr style="border-top:1.5px solid var(--blue);font-size:.82rem;font-weight:600">';
   h+='<td style="color:var(--blue)">Cumulative</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+fmtM(totalCost)+'</td>';
+  h+='<td style="text-align:right;color:var(--blue)">'+cumAvgPriceFmt+'</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+(totalOwn*100).toFixed(2)+'%</td>';
   h+='<td style="text-align:right">—</td><td style="text-align:right">—</td>';
   h+='<td style="text-align:right;color:var(--blue)">'+fmtM(totalRepNow)+'</td>';
@@ -2695,7 +2706,7 @@ function renderBuybackRoi(){
   h+='</table></div>';
 
   // Footnotes
-  h+='<p style="font-size:.7rem;color:var(--text3);margin:8px 0 0">Own % = shares retired ÷ avg diluted shares that year. Total REP = REPA standard. REP captured = own % × total REP. Yield = REP captured ÷ cost. Shares derived from cost ÷ estimated avg annual price where Item 5 not available.</p>';
+  h+='<p style="font-size:.7rem;color:var(--text3);margin:8px 0 0">Own % = shares retired ÷ avg diluted shares that year. Avg Price = cost ÷ shares retired. Total REP = REPA standard. REP captured = own % × total REP. Yield = REP captured ÷ cost.</p>';
 
   // ============ YIELD MATRIX ============
   // Each row = one purchase vintage. Each column = a year's REP. Cell = yield on that vintage using that year's REP.
