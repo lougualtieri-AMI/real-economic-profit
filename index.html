@@ -590,8 +590,45 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       </div>
     </div>
   </div>
+  <!-- Profit-Capital Base Analysis -->
+  <div class="card" id="pcbaCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('pcbaContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Profit-Capital Base Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="pcbaContent"></div>
+  </div>
+
+  <!-- Share Count & Capital Return Tracker -->
+  <div class="card" id="buybackCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return Tracker <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="buybackWrap">
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">SBC dilution vs. buyback offset at a glance. Tracks share count trajectory, cumulative repurchases, and whether management is net-shrinking or net-diluting the share base.</p>
+    <div id="buybackContent"></div>
+    </div>
+  </div>
+
+  <!-- Buyback ROI Analysis -->
+  <div class="card" id="buybackRoiCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackRoiWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Buyback ROI Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="buybackRoiWrap">
+      <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">For each year buybacks occurred: ownership % acquired, REP captured at time of purchase, and how that yield has grown as REP compounds. Yield = REP captured ÷ cost paid.</p>
+      <div id="buybackRoiContent"></div>
+    </div>
+  </div>
+
+  <!-- Historical Trend -->
+  <div class="card" id="trendCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('trendContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📈 Historical Trend <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="trendContent"></div>
+  </div>
+
+  <!-- Long-Run History -->
+  <div class="card" id="longRunCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('longRunContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔭 Long-Run History <span style="font-size:.72rem;color:var(--text3);font-weight:400;margin-left:8px">(all stored years)</span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="longRunContent"></div>
+  </div>
+
   <div class="card" id="roicCard" style="display:none">
-    <h2>🔄 ROIC & Growth CapEx Analysis</h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('roicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 ROIC & Growth CapEx Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="roicWrap">
     <div id="roicMetrics" class="metrics" style="margin-bottom:16px;grid-template-columns:1fr 1fr 1fr"></div>
     <div id="growthProjection"></div>
     <div id="yocSection" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
@@ -615,11 +652,13 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
         <div id="yocResults"></div>
       </div>
     </div>
+    </div>
   </div>
 
-  <!-- ROIIC Analysis — follows ROIC naturally -->
+  <!-- ROIIC Analysis -->
   <div class="card" id="roiicCard" style="display:none">
-    <h2>📊 ROIIC Analysis</h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('roiicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📊 ROIIC Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <div id="roiicWrap">
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:14px">Return on Incremental Invested Capital — measures how efficiently new capital generates Real Economic Profit growth.</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -656,46 +695,11 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
     <div id="roiicChartArea" style="min-height:120px;padding:10px 0"></div>
 
-    <h3 style="margin-top:8px">Per-Year ROIIC Detail</h3>
-    <div style="overflow-x:auto">
+    <div style="cursor:pointer;user-select:none;font-size:.78rem;font-weight:600;color:var(--text2);padding:8px 0;margin-top:4px" onclick="var el=document.getElementById('roiicDetailWrap');var arr=this.querySelector('.da');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">Per-Year ROIIC Detail <span class="da" style="font-size:.72rem;color:var(--text3);margin-left:4px">▶</span></div>
+    <div id="roiicDetailWrap" style="display:none;overflow-x:auto">
       <table id="roiicTable" class="trend-table" style="font-size:.78rem"></table>
     </div>
-  </div>
-
-  <!-- Profit-Capital Base Analysis -->
-  <div class="card" id="pcbaCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('pcbaContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Profit-Capital Base Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="pcbaContent"></div>
-  </div>
-
-  <!-- Buyback Return Tracker -->
-  <div class="card" id="buybackCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return Tracker <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="buybackWrap">
-    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">SBC dilution vs. buyback offset at a glance. Tracks share count trajectory, cumulative repurchases, and whether management is net-shrinking or net-diluting the share base.</p>
-    <div id="buybackContent"></div>
     </div>
-  </div>
-
-  <!-- Buyback ROI Analysis -->
-  <div class="card" id="buybackRoiCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackRoiWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📐 Buyback ROI Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="buybackRoiWrap">
-      <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">For each year buybacks occurred: ownership % acquired, REP captured at time of purchase, and how that yield has grown as REP compounds. Yield = REP captured ÷ cost paid.</p>
-      <div id="buybackRoiContent"></div>
-    </div>
-  </div>
-
-  <!-- Historical Trend -->
-  <div class="card" id="trendCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('trendContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📈 Historical Trend <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="trendContent"></div>
-  </div>
-
-  <!-- Long-Run History -->
-  <div class="card" id="longRunCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('longRunContent');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔭 Long-Run History <span style="font-size:.72rem;color:var(--text3);font-weight:400;margin-left:8px">(all stored years)</span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="longRunContent"></div>
   </div>
 
   <!-- Red Flags -->
@@ -2410,6 +2414,58 @@ function renderBuybackTracker(){
 
   // Buyback vs SBC offset ratio
   var buybackOffsetRatio=(cumRealSBC>0)?(cumRepurch/cumRealSBC):null;
+  var netCapitalReturned=cumCapReturn-cumRealSBC;
+
+  // --- Summary pills (above the chart) ---
+  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
+  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
+  h+='</div>';
+  if(cumDivs>0){
+    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Dividends</div>';
+    h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+fmtM(cumDivs)+'</div>';
+    h+='</div>';
+  }
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Real SBC</div>';
+  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--red)">'+fmtM(cumRealSBC)+'</div>';
+  h+='</div>';
+  var ncrClr=netCapitalReturned>=0?'var(--green)':'var(--red)';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net Capital Returned</div>';
+  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
+  h+='<div style="font-size:.58rem;color:var(--text3);margin-top:2px">Buybacks'+(cumDivs>0?' + Divs':'')+'  − Real SBC</div>';
+  h+='</div>';
+  h+='</div>';
+
+  // Buyback cost basis + return row (separate from main pills)
+  if(avgCostBasis>0){
+    var dispCostBasis=avgCostBasis/pxDiv;
+    var dispPrice=price/pxDiv;
+    h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
+    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Avg Buyback Cost'+shrNote+'</div>';
+    h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">$'+dispCostBasis.toFixed(isBRK?2:0)+'</div>';
+    h+='</div>';
+    if(buybackReturn!==null){
+      var brClr=buybackReturn>=0?'var(--green)':'var(--red)';
+      h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+      h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buyback Return vs Current</div>';
+      h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+brClr+'">'+(buybackReturn>=0?'+':'')+pct(buybackReturn,1)+'</div>';
+      h+='<div style="font-size:.68rem;color:var(--text3)">$'+dispCostBasis.toFixed(isBRK?2:0)+' avg → $'+dispPrice.toFixed(isBRK?2:0)+' now</div>';
+      h+='</div>';
+    }
+    if(buybackOffsetRatio!==null){
+      h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
+      h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buyback / SBC Offset</div>';
+      var ratClr=buybackOffsetRatio>=1?'var(--green)':buybackOffsetRatio>=0.5?'var(--orange)':'var(--red)';
+      h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ratClr+'">'+buybackOffsetRatio.toFixed(1)+'×</div>';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
 
   // ============================================================
   // SHARE COUNT VISUAL — SVG chart: share line + tug-of-war bars
@@ -2545,43 +2601,6 @@ function renderBuybackTracker(){
     }
   }
 
-  // --- Summary pills ---
-  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
-  h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
-  h+='</div>';
-  if(cumDivs>0){
-    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Dividends</div>';
-    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+fmtM(cumDivs)+'</div>';
-    h+='</div>';
-  }
-  if(cumDivs>0){
-    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Total Capital Returned</div>';
-    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+fmtM(cumCapReturn)+'</div>';
-    h+='<div style="font-size:.62rem;color:var(--text3);margin-top:2px">Buybacks + Dividends</div>';
-    h+='</div>';
-  }
-  if(avgCostBasis>0){
-    var dispCostBasis=avgCostBasis/pxDiv;
-    var dispPrice=price/pxDiv;
-    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Avg Buyback Cost'+shrNote+'</div>';
-    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">$'+dispCostBasis.toFixed(isBRK?2:0)+'</div>';
-    h+='</div>';
-    if(buybackReturn!==null){
-      var brClr=buybackReturn>=0?'var(--green)':'var(--red)';
-      h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-      h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buyback Return vs Current</div>';
-      h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+brClr+'">'+(buybackReturn>=0?'+':'')+pct(buybackReturn,1)+'</div>';
-      h+='<div style="font-size:.68rem;color:var(--text3)">$'+dispCostBasis.toFixed(isBRK?2:0)+' avg → $'+dispPrice.toFixed(isBRK?2:0)+' now</div>';
-      h+='</div>';
-    }
-  }
-  h+='</div>';
-
   // --- Net Share Impact (text version, shown when no chart) ---
   if(rows.length<2&&netShareChange!==null){
     var shrClr=netShareChange<=0?'var(--green)':'var(--red)';
@@ -2593,22 +2612,6 @@ function renderBuybackTracker(){
       h+=' — <span style="color:var(--green)">net shrinkage ✓</span>';
     } else {
       h+=' — <span style="color:var(--red)">net dilution ✗</span>';
-    }
-    h+='</div>';
-  }
-
-  // --- Buyback vs SBC Offset ---
-  if(buybackOffsetRatio!==null){
-    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.82rem">';
-    h+='<strong>Buyback vs SBC Offset:</strong> Cumulative buybacks ('+fmtM(cumRepurch)+') = <strong>'+buybackOffsetRatio.toFixed(1)+'×</strong> cumulative Real SBC ('+fmtM(cumRealSBC)+'). ';
-    if(buybackOffsetRatio>=2){
-      h+='<span style="color:var(--green)">Strong offset — management is buying back well beyond SBC dilution.</span>';
-    } else if(buybackOffsetRatio>=1){
-      h+='<span style="color:var(--green)">Covers SBC dilution. Net positive for existing shareholders.</span>';
-    } else if(buybackOffsetRatio>=0.5){
-      h+='<span style="color:var(--orange)">Partial offset — buybacks cover some but not all SBC dilution.</span>';
-    } else {
-      h+='<span style="color:var(--red)">Minimal offset — SBC dilution substantially exceeds buyback activity.</span>';
     }
     h+='</div>';
   }
