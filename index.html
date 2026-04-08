@@ -383,7 +383,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-02';
-  var buildId='v4.8.4';
+  var buildId='v4.9.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -4352,6 +4352,9 @@ function renderLongRun(){
     y.yieldBestGuess=ev>0?y.repBestGuess/ev:0;
     y.rdGrowthAddback=rdGrowth;
     y.rdExp=rdExp;
+    // REP / Revenue margin
+    var _yr_rev=y.revenue||0;
+    y.repMargin=_yr_rev>0?y.realProfit/_yr_rev:null;
   });
 
   // Determine which yield variant is the "headline" for this company
@@ -4377,10 +4380,13 @@ function renderLongRun(){
 
   function xP(i){return pL+(n>1?i/(n-1)*plotW:plotW/2);}
 
-  // Left axis: yield % (headline + ROIC)
+  // Left axis: yield % (headline + ROIC + REP margin)
   var yieldVals=years.map(function(y){return y[headlineKey];});
   var roicVals=years.map(function(y){return y.realROIC;});
+  var marginVals=years.map(function(y){return y.repMargin||0;});
+  var hasMarginData=years.some(function(y){return y.repMargin!==null;});
   var allPctVals=yieldVals.concat(roicVals);
+  if(hasMarginData) allPctVals=allPctVals.concat(marginVals);
   var pctMin=Math.min.apply(null,allPctVals);
   var pctMax=Math.max.apply(null,allPctVals);
   // Add padding
@@ -4442,7 +4448,7 @@ function renderLongRun(){
   });
 
   // Axis titles
-  html+='<text x="12" y="'+(pT+plotH/2)+'" fill="'+headlineColor+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(-90,12,'+(pT+plotH/2)+')">Yield / ROIC (%)</text>';
+  html+='<text x="12" y="'+(pT+plotH/2)+'" fill="'+headlineColor+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(-90,12,'+(pT+plotH/2)+')">'+(hasMarginData?'Yield / ROIC / Margin (%)':'Yield / ROIC (%)')+'</text>';
   html+='<text x="'+(cW-8)+'" y="'+(pT+plotH/2)+'" fill="'+barStroke+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(90,'+(cW-8)+','+(pT+plotH/2)+')">'+barLabel+'</text>';
 
   // Revenue/Profit bars (background)
@@ -4481,6 +4487,20 @@ function renderLongRun(){
     html+='<circle cx="'+xP(i)+'" cy="'+yPct(y.realROIC)+'" r="3.5" fill="'+roicColor+'" stroke="#0f0f0f" stroke-width="1.5"/>';
   });
 
+  // REP Margin line (teal/cyan, shown when revenue data exists)
+  var marginColor='#1abc9c';
+  if(hasMarginData){
+    if(n>1){
+      var mPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y.repMargin||0).toFixed(1);}).join(' ');
+      html+='<path d="'+mPath+'" fill="none" stroke="'+marginColor+'" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="6,3"/>';
+    }
+    years.forEach(function(y,i){
+      if(y.repMargin===null)return;
+      html+='<circle cx="'+xP(i)+'" cy="'+yPct(y.repMargin)+'" r="3.5" fill="'+marginColor+'" stroke="#0f0f0f" stroke-width="1.5"/>';
+      html+='<text x="'+xP(i)+'" y="'+(yPct(y.repMargin)-10)+'" fill="'+marginColor+'" font-size="8.5" text-anchor="middle" font-family="JetBrains Mono" font-weight="600">'+pct(y.repMargin,1)+'</text>';
+    });
+  }
+
   // Headline yield line (bold, on top)
   if(n>1){
     var hArea='M'+xP(0)+','+yPct(years[0][headlineKey]);
@@ -4501,6 +4521,7 @@ function renderLongRun(){
   html+='<div class="chart-legend" style="flex-wrap:wrap;gap:8px 16px">';
   html+='<span><span class="dot" style="background:'+headlineColor+'"></span> '+headlineLabel+'</span>';
   html+='<span><span class="dot" style="background:'+roicColor+'"></span> Real ROIC</span>';
+  if(hasMarginData) html+='<span><span class="dot" style="background:'+marginColor+';border:1px dashed '+marginColor+'"></span> REP Margin (REP/Rev)</span>';
   html+='<span><span class="dot" style="background:'+barStroke+'"></span> '+barLabel+'</span>';
   secondaryLines.forEach(function(sl){
     html+='<span style="opacity:.55"><span class="dot" style="background:'+sl.color+'"></span> '+sl.label+' (ref)</span>';
