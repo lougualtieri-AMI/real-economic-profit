@@ -2416,6 +2416,14 @@ function renderBuybackTracker(){
   var buybackOffsetRatio=(cumRealSBC>0)?(cumRepurch/cumRealSBC):null;
   var netCapitalReturned=cumCapReturn-cumRealSBC;
 
+  // Current EV for context
+  var _bbShares=v('shares')||0;
+  var _bbDebt=v('debt')||0;
+  var _bbCash=(v('cash')||0)+(v('sti')||0);
+  var _bbMktCap=price*_bbShares;
+  var _bbEV=_bbMktCap+_bbDebt-_bbCash;
+  if(_bbEV<=0)_bbEV=_bbMktCap;
+
   // --- Summary pills (above the chart) ---
   h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
@@ -2437,6 +2445,7 @@ function renderBuybackTracker(){
   h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net Capital Returned</div>';
   h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
   h+='<div style="font-size:.58rem;color:var(--text3);margin-top:2px">Buybacks'+(cumDivs>0?' + Divs':'')+'  − Real SBC</div>';
+  if(_bbEV>0)h+='<div style="font-size:.58rem;color:var(--text3)">EV: '+fmtM(_bbEV)+'</div>';
   h+='</div>';
   h+='</div>';
 
@@ -4403,6 +4412,15 @@ function renderLongRun(){
   html+='<div style="flex:1"></div>';
   html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:rgba(212,160,37,.12);color:var(--accent)">ROIC: '+pct(roicFirst,1)+' → '+pct(roicLast,1)+'</div>';
   html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:'+(headlineColor==='#d4a025'?'rgba(212,160,37,.12)':headlineColor==='#9b59b6'?'rgba(155,89,182,.12)':'rgba(52,152,219,.12)')+';color:'+headlineColor+'">'+headlineLabel+': '+pct(yieldFirst,1)+' → '+pct(yieldLast,1)+'</div>';
+  if(hasRev){
+    var _mFirst=firstY.revenue>0?firstY.realProfit/firstY.revenue:null;
+    var _mLast=lastY.revenue>0?lastY.realProfit/lastY.revenue:null;
+    if(_mFirst!==null&&_mLast!==null){
+      var _mDir=_mLast>=_mFirst?'rgba(46,204,113,.12)':'rgba(231,76,60,.12)';
+      var _mTxt=_mLast>=_mFirst?'#2ecc71':'#e74c3c';
+      html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:'+_mDir+';color:'+_mTxt+'">REP Margin: '+pct(_mFirst,1)+' → '+pct(_mLast,1)+'</div>';
+    }
+  }
   html+='</div>';
 
   // SVG
@@ -4511,15 +4529,20 @@ function renderLongRun(){
   if(hasRev) html+='<th>Revenue</th>';
   html+='<th>REP (Full)</th><th>REP (Add-Back)</th>';
   if(hasRd) html+='<th>REP (Best Guess)</th>';
+  if(hasRev) html+='<th>REP Margin</th>';
   html+='<th>ROIC</th><th>'+headlineLabel+'</th>';
   html+='</tr>';
   years.forEach(function(y){
+    var _rev=y.revenue||0;
+    var _repMargin=_rev>0?y.realProfit/_rev:null;
+    var _rmClr=_repMargin!==null?(_repMargin>=0.20?'color:var(--green)':_repMargin>=0.12?'color:var(--blue)':_repMargin>=0.05?'color:var(--orange)':'color:var(--red)'):'';
     html+='<tr>';
     html+='<td style="text-align:left;font-weight:600">'+y.label+'</td>';
-    if(hasRev) html+='<td>'+fmtM(y.revenue||0)+'</td>';
+    if(hasRev) html+='<td>'+fmtM(_rev)+'</td>';
     html+='<td>'+fmtM(y.realProfit)+'</td>';
     html+='<td>'+(y.realProfitLight!==null?fmtM(y.realProfitLight):'—')+'</td>';
     if(hasRd) html+='<td>'+fmtM(y.repBestGuess)+'</td>';
+    if(hasRev) html+='<td style="font-weight:600;'+_rmClr+'">'+(_repMargin!==null?pct(_repMargin,1):'—')+'</td>';
     html+='<td>'+pct(y.realROIC,1)+'</td>';
     html+='<td style="font-weight:700;color:'+headlineColor+'">'+pct(y[headlineKey],1)+'</td>';
     html+='</tr>';
@@ -6967,6 +6990,25 @@ function calculate(){
   verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:16px;font-family:JetBrains Mono,monospace">';
   verdictHTML+='EV = '+fmtM(marketCap)+' <span style="color:var(--text3)">mkt cap</span> + '+fmtM(debt)+' <span style="color:var(--text3)">debt</span> − '+fmtM(cash+sti)+' <span style="color:var(--text3)">cash</span> = <strong style="color:var(--text)">'+fmtM(ev)+'</strong></div>';
 
+  // --- REP / Revenue Margin (prominent) ---
+  var _repRevenue=null;
+  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
+    _repRevenue=yearStore[currentYearKey].extra.revenue||yearStore[currentYearKey].extra.total_revenue||yearStore[currentYearKey].extra.net_revenue||null;
+  }
+  if(_repRevenue&&_repRevenue>0){
+    var repMargin=realProfit/_repRevenue;
+    var repMarginClr=repMargin>=0.20?'var(--green)':repMargin>=0.12?'var(--blue)':repMargin>=0.05?'var(--orange)':'var(--red)';
+    var repMarginLabel=repMargin>=0.20?'Exceptional':repMargin>=0.12?'Strong':repMargin>=0.05?'Moderate':'Thin';
+    verdictHTML+='<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;flex-wrap:wrap">';
+    verdictHTML+='<div><div style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Real Profit Margin</div>';
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.6rem;font-weight:700;color:'+repMarginClr+';line-height:1">'+pct(repMargin,1)+'</div></div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);line-height:1.5">';
+    verdictHTML+='REP '+fmtM(realProfit)+' ÷ Revenue '+fmtM(_repRevenue);
+    verdictHTML+=' · <span style="color:'+repMarginClr+';font-weight:600">'+repMarginLabel+'</span>';
+    verdictHTML+='</div>';
+    verdictHTML+='</div>';
+  }
+
   // ===== THREE REP PANELS (the hero) =====
   function yColor(y){return y>=0.07?'var(--green)':y>=0.04?'var(--blue)':y>=0.02?'var(--orange)':'var(--red)';}
 
@@ -7197,6 +7239,11 @@ function calculate(){
     {label:'Real ROIC',value:pct(roicVal),sub:fmtM(realProfit)+' / '+fmtM(investedCapital),customStyle:'color:'+roicColor},
     {label:'Growth CapEx',value:fmtM(growthCapex),sub:pct(capex>0?growthCapex/capex:0,0)+' of total '+fmtM(capex)}
   ];
+  if(_repRevenue&&_repRevenue>0){
+    var _mgRepMargin=realProfit/_repRevenue;
+    var _mgClr=_mgRepMargin>=0.20?'var(--green)':_mgRepMargin>=0.12?'var(--blue)':_mgRepMargin>=0.05?'var(--orange)':'var(--red)';
+    metricsData.splice(1,0,{label:'REP Margin (REP/Rev)',value:pct(_mgRepMargin,1),sub:fmtM(realProfit)+' / '+fmtM(_repRevenue),customStyle:'color:'+_mgClr});
+  }
   document.getElementById('metricsGrid').innerHTML=metricsData.map(function(m){
     var style=m.neg?'style="color:var(--red)"':(m.customStyle?'style="'+m.customStyle+'"':'');
     return '<div class="metric'+(m.hl?' highlight':'')+'"><div class="val" '+style+'>'+m.value+'</div><div class="lbl">'+m.label+(m.sub?' · '+m.sub:'')+'</div></div>';
