@@ -670,9 +670,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
   <!-- Buyback Return Tracker -->
   <div class="card" id="buybackCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Buyback Return Tracker <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybackWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return Tracker <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="buybackWrap">
-    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">Tracks cumulative share repurchases across years. Compares average buyback cost basis to current price, and measures whether buybacks offset SBC dilution (net shares retired vs. net shares issued).</p>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">SBC dilution vs. buyback offset at a glance. Tracks share count trajectory, cumulative repurchases, and whether management is net-shrinking or net-diluting the share base.</p>
     <div id="buybackContent"></div>
     </div>
   </div>
@@ -2351,6 +2351,14 @@ function renderBuybackTracker(){
   var keys=getSortedYearKeys();
   if(keys.length<1){card.style.display='none';return;}
 
+  // BRK B-share detection: ÷1500 for prices, ×1500 for share counts
+  var tickerRaw=document.getElementById('ticker').value.trim().toUpperCase();
+  var isBRK=/^BRK[\.\-]?[AB]?$/i.test(tickerRaw)||tickerRaw==='BRKA'||tickerRaw==='BRKB'||tickerRaw==='BERKSHIRE';
+  var shrMult=isBRK?1500:1;   // multiply share counts by this
+  var pxDiv=isBRK?1500:1;     // divide prices by this
+  var shrUnit=isBRK?'B-shares':'M';
+  var shrNote=isBRK?' (B-share equiv.)':'';
+
   // Gather per-year data
   var rows=[];
   var hasBuybackData=false;
@@ -2365,9 +2373,10 @@ function renderBuybackTracker(){
     var sbcGrant=fd.sbc_grant||0;
     var realSBC=Math.max(sbcExp,sbcGrant);
     var avgBuyPrice=fd.avg_buyback_price||0;
+    var buybackShares=fd.buyback_shares||0;
     var label=yr.fiscal_year_label||keys[i];
     if(repurch>0||divs>0)hasBuybackData=true;
-    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice});
+    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice,buybackShares:buybackShares});
   }
 
   if(!hasBuybackData){card.style.display='none';return;}
@@ -2402,6 +2411,140 @@ function renderBuybackTracker(){
   // Buyback vs SBC offset ratio
   var buybackOffsetRatio=(cumRealSBC>0)?(cumRepurch/cumRealSBC):null;
 
+  // ============================================================
+  // SHARE COUNT VISUAL — SVG chart: share line + tug-of-war bars
+  // ============================================================
+  if(rows.length>=2){
+    var hasShareData=rows.every(function(r){return r.shares>0;});
+    if(hasShareData){
+      var n=rows.length;
+      var cW=740,cH=240,pL=68,pR=68,pT=28,pB=40;
+      var plotW=cW-pL-pR,plotH=cH-pT-pB;
+
+      // Compute per-year delta and implied SBC shares (approx)
+      var chartRows=rows.map(function(r,i){
+        var delta=(i>0&&rows[i-1].shares>0)?(r.shares-rows[i-1].shares):0;
+        // Estimate SBC shares: realSBC $ / avg share price (rough)
+        var avgPx=r.avgBuyPrice>0?r.avgBuyPrice:(price>0?price:1);
+        var sbcSharesEst=avgPx>0?(r.realSBC/avgPx):0;
+        var bbShares=r.buybackShares>0?r.buybackShares:(avgPx>0&&r.repurch>0?(r.repurch/avgPx):0);
+        return {label:r.label,shares:r.shares*shrMult,delta:delta*shrMult,sbcSharesEst:sbcSharesEst*shrMult,bbShares:bbShares*shrMult,realSBC:r.realSBC,repurch:r.repurch};
+      });
+
+      // Share count range for line
+      var shareVals=chartRows.map(function(c){return c.shares;});
+      var shrMin=Math.min.apply(null,shareVals);
+      var shrMax=Math.max.apply(null,shareVals);
+      var shrPad=(shrMax-shrMin)*0.15||shrMax*0.05;
+      shrMin=Math.max(0,shrMin-shrPad);
+      shrMax=shrMax+shrPad;
+      var shrRange=shrMax-shrMin;if(shrRange<1)shrRange=1;
+
+      // Bar range: SBC up (positive), buybacks down (negative) — in $M
+      var barValsUp=chartRows.map(function(c){return c.realSBC;});
+      var barValsDown=chartRows.map(function(c){return c.repurch;});
+      var barMax=Math.max(Math.max.apply(null,barValsUp),Math.max.apply(null,barValsDown))*1.2;
+      if(barMax<1)barMax=1;
+
+      function xPos(i){return pL+(n>1?i/(n-1)*plotW:plotW/2);}
+      function yShr(val){return pT+plotH-((val-shrMin)/shrRange*plotH);}
+
+      // The bars: center on a midline, SBC goes up (red), buybacks go down (green)
+      var barMidY=pT+plotH*0.5;
+      var barHalfH=plotH*0.4;
+      function barH(val){return (val/barMax)*barHalfH;}
+      var barW=Math.min(36,plotW/n*0.55);
+
+      h+='<div style="margin-bottom:16px">';
+      // Title row
+      h+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
+      h+='<span style="font-size:.85rem;font-weight:600;color:var(--text)">Share Count vs. Dilution & Buybacks'+shrNote+'</span>';
+      if(netShareChange!==null){
+        var nscDisp=Math.abs(netShareChange)*shrMult;
+        var nscClr=netShareChange<=0?'var(--green)':'var(--red)';
+        var nscArrow=netShareChange<=0?'▼':'▲';
+        var nscLabel=netShareChange<=0?'net shrinkage':'net dilution';
+        h+='<span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:'+(netShareChange<=0?'rgba(46,204,113,.12)':'rgba(231,76,60,.12)')+';color:'+nscClr+'">'+nscArrow+' '+nscDisp.toFixed(0)+shrUnit+' ('+pct(Math.abs(netShareChangePct),1)+') '+nscLabel+'</span>';
+      }
+      h+='</div>';
+
+      h+='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
+
+      // Background grid
+      for(var g=0;g<=4;g++){
+        var gy=pT+(plotH/4)*g;
+        h+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
+        // Left axis: share count
+        var sv=shrMax-((shrMax-shrMin)/4)*g;
+        h+='<text x="'+(pL-8)+'" y="'+(gy+4)+'" fill="#bbb" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+Math.round(sv).toLocaleString()+'</text>';
+      }
+
+      // Right axis labels: $ amounts for bars
+      var rightTicks=[0,barMax*0.5,barMax];
+      rightTicks.forEach(function(rv){
+        h+='<text x="'+(cW-pR+8)+'" y="'+(barMidY-barH(rv)+4)+'" fill="#2ecc71" font-size="8" text-anchor="start" font-family="JetBrains Mono" opacity=".5">'+fmtM(rv)+'</text>';
+        if(rv>0) h+='<text x="'+(cW-pR+8)+'" y="'+(barMidY+barH(rv)+4)+'" fill="#e74c3c" font-size="8" text-anchor="start" font-family="JetBrains Mono" opacity=".5">'+fmtM(rv)+'</text>';
+      });
+
+      // X labels
+      chartRows.forEach(function(c,i){
+        h+='<text x="'+xPos(i)+'" y="'+(cH-6)+'" fill="#bbb" font-size="10" text-anchor="middle" font-family="DM Sans">'+c.label+'</text>';
+      });
+
+      // Axis titles
+      h+='<text x="12" y="'+(pT+plotH/2)+'" fill="#3498db" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(-90,12,'+(pT+plotH/2)+')">Shares ('+shrUnit+')</text>';
+      h+='<text x="'+(cW-8)+'" y="'+(pT+plotH/2)+'" fill="#999" font-size="8" font-weight="500" text-anchor="middle" font-family="DM Sans" transform="rotate(90,'+(cW-8)+','+(pT+plotH/2)+')">Buyback / SBC ($M)</text>';
+
+      // Bars: buybacks (green, going down from midline) + SBC (red, going up from midline)
+      // Only show for years after the first (since bars represent annual activity)
+      chartRows.forEach(function(c,i){
+        if(i===0)return; // no bar for first year (no prior-year comparison)
+        var bx=xPos(i)-barW/2;
+        // Buyback bar — goes downward (green)
+        if(c.repurch>0){
+          var bh=barH(c.repurch);
+          h+='<rect x="'+bx+'" y="'+barMidY+'" width="'+(barW/2)+'" height="'+bh+'" fill="rgba(46,204,113,.25)" stroke="#2ecc71" stroke-width="0.8" rx="2"/>';
+        }
+        // SBC bar — goes upward (red)
+        if(c.realSBC>0){
+          var sh=barH(c.realSBC);
+          h+='<rect x="'+(bx+barW/2)+'" y="'+(barMidY-sh)+'" width="'+(barW/2)+'" height="'+sh+'" fill="rgba(231,76,60,.25)" stroke="#e74c3c" stroke-width="0.8" rx="2"/>';
+        }
+      });
+
+      // Midline label
+      h+='<line x1="'+pL+'" y1="'+barMidY+'" x2="'+(cW-pR)+'" y2="'+barMidY+'" stroke="#555" stroke-width="0.5" stroke-dasharray="4,3"/>';
+
+      // Share count line (on top of bars)
+      if(n>1){
+        // Area fill under line
+        var areaPath='M'+xPos(0)+','+yShr(chartRows[0].shares);
+        for(var si=1;si<n;si++) areaPath+=' L'+xPos(si)+','+yShr(chartRows[si].shares);
+        areaPath+=' L'+xPos(n-1)+','+(pT+plotH)+' L'+xPos(0)+','+(pT+plotH)+' Z';
+        h+='<path d="'+areaPath+'" fill="rgba(52,152,219,.06)"/>';
+
+        var linePath=chartRows.map(function(c,i){return (i===0?'M':'L')+xPos(i).toFixed(1)+','+yShr(c.shares).toFixed(1);}).join(' ');
+        h+='<path d="'+linePath+'" fill="none" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      // Dots and labels
+      chartRows.forEach(function(c,i){
+        var cy=yShr(c.shares);
+        h+='<circle cx="'+xPos(i)+'" cy="'+cy+'" r="4" fill="#3498db" stroke="#0f0f0f" stroke-width="2"/>';
+        h+='<text x="'+xPos(i)+'" y="'+(cy-10)+'" fill="#3498db" font-size="9" text-anchor="middle" font-family="JetBrains Mono" font-weight="600">'+Math.round(c.shares).toLocaleString()+'</text>';
+      });
+
+      h+='</svg>';
+
+      // Legend
+      h+='<div class="chart-legend" style="gap:8px 16px;margin-top:4px">';
+      h+='<span><span class="dot" style="background:#3498db"></span> Diluted Shares</span>';
+      h+='<span><span class="dot" style="background:#2ecc71"></span> Buybacks ($)</span>';
+      h+='<span><span class="dot" style="background:#e74c3c"></span> Real SBC ($)</span>';
+      h+='</div>';
+      h+='</div>';
+    }
+  }
+
   // --- Summary pills ---
   h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
@@ -2422,32 +2565,34 @@ function renderBuybackTracker(){
     h+='</div>';
   }
   if(avgCostBasis>0){
+    var dispCostBasis=avgCostBasis/pxDiv;
+    var dispPrice=price/pxDiv;
     h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Avg Buyback Cost Basis</div>';
-    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">$'+avgCostBasis.toFixed(0)+'</div>';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Avg Buyback Cost'+shrNote+'</div>';
+    h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">$'+dispCostBasis.toFixed(isBRK?2:0)+'</div>';
     h+='</div>';
     if(buybackReturn!==null){
       var brClr=buybackReturn>=0?'var(--green)':'var(--red)';
       h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px">';
       h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buyback Return vs Current</div>';
       h+='<div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+brClr+'">'+(buybackReturn>=0?'+':'')+pct(buybackReturn,1)+'</div>';
-      h+='<div style="font-size:.68rem;color:var(--text3)">$'+avgCostBasis.toFixed(0)+' avg → $'+price.toFixed(0)+' now</div>';
+      h+='<div style="font-size:.68rem;color:var(--text3)">$'+dispCostBasis.toFixed(isBRK?2:0)+' avg → $'+dispPrice.toFixed(isBRK?2:0)+' now</div>';
       h+='</div>';
     }
   }
   h+='</div>';
 
-  // --- Net Share Impact ---
-  if(netShareChange!==null){
+  // --- Net Share Impact (text version, shown when no chart) ---
+  if(rows.length<2&&netShareChange!==null){
     var shrClr=netShareChange<=0?'var(--green)':'var(--red)';
     var shrArrow=netShareChange<=0?'▼':'▲';
     h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.82rem">';
-    h+='<strong>Net Share Count Change:</strong> <span style="color:'+shrClr+';font-weight:700">'+shrArrow+' '+Math.abs(netShareChange).toFixed(0)+'M shares ('+pct(Math.abs(netShareChangePct),1)+')</span>';
-    h+=' · from '+firstShares.toFixed(0)+'M ('+rows[0].label+') to '+lastShares.toFixed(0)+'M ('+rows[rows.length-1].label+')';
+    h+='<strong>Net Share Count Change:</strong> <span style="color:'+shrClr+';font-weight:700">'+shrArrow+' '+Math.abs(netShareChange*shrMult).toFixed(0)+shrUnit+' ('+pct(Math.abs(netShareChangePct),1)+')</span>';
+    h+=' · from '+(firstShares*shrMult).toFixed(0)+shrUnit+' ('+rows[0].label+') to '+(lastShares*shrMult).toFixed(0)+shrUnit+' ('+rows[rows.length-1].label+')';
     if(netShareChange<0){
-      h+=' — <span style="color:var(--green)">net shrinkage ✓</span> (buybacks exceed dilution)';
+      h+=' — <span style="color:var(--green)">net shrinkage ✓</span>';
     } else {
-      h+=' — <span style="color:var(--red)">net dilution ✗</span> (SBC/issuance exceeds buybacks)';
+      h+=' — <span style="color:var(--red)">net dilution ✗</span>';
     }
     h+='</div>';
   }
@@ -2468,31 +2613,32 @@ function renderBuybackTracker(){
     h+='</div>';
   }
 
-  // --- Year-by-Year Table ---
+  // --- Year-by-Year Table (reordered: shares first, then dollars) ---
+  var hasAvgPrice=rows.some(function(r){return r.avgBuyPrice>0;});
   h+='<div style="overflow-x:auto">';
   h+='<table class="breakdown" style="font-size:.78rem;width:100%">';
-  h+='<tr><th>Year</th><th style="text-align:right">Buybacks</th><th style="text-align:right">Dividends</th><th style="text-align:right">Total Return</th><th style="text-align:right">Real SBC</th><th style="text-align:right">Buyback / SBC</th><th style="text-align:right">Shares (M)</th><th style="text-align:right">Δ Shares</th>';
-  if(rows.some(function(r){return r.avgBuyPrice>0;}))h+='<th style="text-align:right">Avg Buy Price</th>';
+  h+='<tr><th>Year</th><th style="text-align:right">Shares'+shrNote+'</th><th style="text-align:right">Δ Shares</th><th style="text-align:right">Real SBC</th><th style="text-align:right">Buybacks</th><th style="text-align:right">BB / SBC</th>';
+  if(hasAvgPrice)h+='<th style="text-align:right">Avg Buy'+shrNote+'</th>';
+  h+='<th style="text-align:right">Dividends</th>';
   h+='</tr>';
-  var hasAvgPrice=rows.some(function(r){return r.avgBuyPrice>0;});
-  var runningCum=0;
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
-    runningCum+=r.repurch;
     var ratio=r.realSBC>0?(r.repurch/r.realSBC):null;
     var deltaShares=(i>0&&rows[i-1].shares>0&&r.shares>0)?(r.shares-rows[i-1].shares):null;
     var dsClr=(deltaShares!==null&&deltaShares<=0)?'var(--green)':'var(--red)';
+    var dispShares=r.shares*shrMult;
+    var dispDelta=deltaShares!==null?deltaShares*shrMult:null;
+    var dispAvgPx=r.avgBuyPrice>0?(r.avgBuyPrice/pxDiv):0;
     h+='<tr>';
     h+='<td style="font-weight:600">'+r.label+'</td>';
-    h+='<td style="text-align:right;color:var(--blue)">'+fmtM(r.repurch)+'</td>';
-    h+='<td style="text-align:right;color:var(--green)">'+(r.divs>0?fmtM(r.divs):'—')+'</td>';
-    h+='<td style="text-align:right;font-weight:600">'+fmtM(r.repurch+r.divs)+'</td>';
-    h+='<td style="text-align:right;color:var(--orange)">'+fmtM(r.realSBC)+'</td>';
+    h+='<td style="text-align:right;font-weight:600;color:var(--blue)">'+Math.round(dispShares).toLocaleString()+'</td>';
+    h+='<td style="text-align:right;color:'+(dispDelta!==null?dsClr:'var(--text3)')+'">'+
+      (dispDelta!==null?(dispDelta<=0?'':'+')+Math.round(dispDelta).toLocaleString():(i===0?'—':'N/A'))+'</td>';
+    h+='<td style="text-align:right;color:var(--red)">'+fmtM(r.realSBC)+'</td>';
+    h+='<td style="text-align:right;color:var(--green)">'+fmtM(r.repurch)+'</td>';
     h+='<td style="text-align:right;font-weight:600">'+(ratio!==null?ratio.toFixed(1)+'×':'—')+'</td>';
-    h+='<td style="text-align:right">'+r.shares.toFixed(0)+'</td>';
-    h+='<td style="text-align:right;color:'+(deltaShares!==null?dsClr:'var(--text3)')+'">'+
-      (deltaShares!==null?(deltaShares<=0?'':'+')+(deltaShares).toFixed(0)+'M':(i===0?'—':'N/A'))+'</td>';
-    if(hasAvgPrice)h+='<td style="text-align:right">'+(r.avgBuyPrice>0?'$'+r.avgBuyPrice.toFixed(0):'—')+'</td>';
+    if(hasAvgPrice)h+='<td style="text-align:right">'+(dispAvgPx>0?'$'+dispAvgPx.toFixed(isBRK?2:0):'—')+'</td>';
+    h+='<td style="text-align:right">'+(r.divs>0?fmtM(r.divs):'—')+'</td>';
     h+='</tr>';
   }
   h+='</table></div>';
@@ -2500,12 +2646,13 @@ function renderBuybackTracker(){
   // --- Insight ---
   if(rows.length>=2){
     h+='<div style="margin-top:12px;font-size:.78rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">';
-    h+='<strong>Reading this card:</strong> Buyback / SBC ratio >1× means the company is buying back more shares than it dilutes via SBC. ';
-    h+='The Δ Shares column shows actual share count changes (includes all issuance, buybacks, conversions). ';
+    h+='<strong>Reading this card:</strong> The chart shows diluted share count over time (blue line) with annual buyback spending (green bars, ▼) vs. Real SBC cost (red bars, ▲). ';
+    h+='BB/SBC >1× means buybacks exceed SBC dilution that year. Δ Shares shows actual count changes (all sources). ';
+    if(isBRK) h+='All share counts and per-share prices converted to B-share equivalents (÷1,500). ';
     if(avgCostBasis>0){
-      h+='Avg Buyback Cost Basis is the weighted average price the company paid — compare to current price to judge whether management timed buybacks well.';
+      h+='Avg Buy is the weighted average price paid for buybacks — compare to current price.';
     } else {
-      h+='To calculate buyback return, include "average_buyback_price" in your JSON (weighted avg price per share repurchased in each year\'s filing).';
+      h+='Add "average_buyback_price" to your JSON to see buyback return analysis.';
     }
     h+='</div>';
   }
