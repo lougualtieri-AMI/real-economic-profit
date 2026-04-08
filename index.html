@@ -2441,11 +2441,15 @@ function renderBuybackTracker(){
   h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--red)">'+fmtM(cumRealSBC)+'</div>';
   h+='</div>';
   var ncrClr=netCapitalReturned>=0?'var(--green)':'var(--red)';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">';
   h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net Capital Returned</div>';
-  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
-  h+='<div style="font-size:.58rem;color:var(--text3);margin-top:2px">Buybacks'+(cumDivs>0?' + Divs':'')+'  − Real SBC</div>';
-  if(_bbEV>0)h+='<div style="font-size:.58rem;color:var(--text3)">EV: '+fmtM(_bbEV)+'</div>';
+  h+='<div style="font-size:1.15rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
+  h+='<div style="font-size:.62rem;color:var(--text2);margin-top:4px;line-height:1.5;font-family:\'JetBrains Mono\',monospace">';
+  h+='<span style="color:var(--blue)">'+fmtM(cumRepurch)+'</span> <span style="color:var(--text3)">BB</span>';
+  if(cumDivs>0) h+=' + <span style="color:var(--green)">'+fmtM(cumDivs)+'</span> <span style="color:var(--text3)">Div</span>';
+  h+=' − <span style="color:var(--red)">'+fmtM(cumRealSBC)+'</span> <span style="color:var(--text3)">SBC</span>';
+  h+='</div>';
+  if(_bbEV>0) h+='<div style="font-size:.92rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent2);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">EV: '+fmtM(_bbEV)+'</div>';
   h+='</div>';
   h+='</div>';
 
@@ -4460,22 +4464,6 @@ function renderLongRun(){
     html+='<rect x="'+(xP(i)-barW/2)+'" y="'+(pT+plotH-bh)+'" width="'+barW+'" height="'+bh+'" fill="'+barColor+'" stroke="'+barStroke+'" stroke-width="0.8" rx="2"/>';
   });
 
-  // Secondary yield lines (faded, dashed) — show the ones that aren't the headline
-  var secondaryLines=[];
-  if(headlineKey!=='yieldFullDA') secondaryLines.push({key:'yieldFullDA',color:'#3498db',label:'Full D&A'});
-  if(headlineKey!=='yieldAddBack'&&years.some(function(y){return y.realProfitLight!==null;})) secondaryLines.push({key:'yieldAddBack',color:'#9b59b6',label:'Add-Back'});
-  if(headlineKey!=='yieldBestGuess'&&hasRd) secondaryLines.push({key:'yieldBestGuess',color:'#d4a025',label:'Best Guess'});
-
-  secondaryLines.forEach(function(sl){
-    if(n>1){
-      var sp=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y[sl.key]).toFixed(1);}).join(' ');
-      html+='<path d="'+sp+'" fill="none" stroke="'+sl.color+'" stroke-width="1.2" stroke-dasharray="4,3" opacity=".45"/>';
-    }
-    years.forEach(function(y,i){
-      html+='<circle cx="'+xP(i)+'" cy="'+yPct(y[sl.key])+'" r="2.5" fill="'+sl.color+'" opacity=".4"/>';
-    });
-  });
-
   // ROIC line (gold, always shown)
   var roicColor='#d4a025';
   if(headlineKey==='yieldBestGuess') roicColor='#e67e22'; // shift gold to orange to differentiate from Best Guess gold
@@ -4523,9 +4511,6 @@ function renderLongRun(){
   html+='<span><span class="dot" style="background:'+roicColor+'"></span> Real ROIC</span>';
   if(hasMarginData) html+='<span><span class="dot" style="background:'+marginColor+';border:1px dashed '+marginColor+'"></span> REP Margin (REP/Rev)</span>';
   html+='<span><span class="dot" style="background:'+barStroke+'"></span> '+barLabel+'</span>';
-  secondaryLines.forEach(function(sl){
-    html+='<span style="opacity:.55"><span class="dot" style="background:'+sl.color+'"></span> '+sl.label+' (ref)</span>';
-  });
   html+='</div>';
 
   // Explain which yield variant was chosen and why
