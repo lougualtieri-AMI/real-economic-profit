@@ -79,6 +79,35 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .wf-fill.negative{background:linear-gradient(90deg,#e74c3c,#c0392b)}
 .wf-fill.invest{background:linear-gradient(90deg,var(--blue),#2980b9)}
 .wf-fill.result{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#000}
+.wf-fill.delta{background:linear-gradient(90deg,#5dade2,#2980b9)}
+/* v4.9.1: Waterfall descriptive labels, tooltips, and dropdowns */
+.wf-row{margin-bottom:6px}
+.wf-row.wf-separator{height:1px;background:#444;margin:12px 0;opacity:.5}
+.wf-separator{height:1px;background:#444;margin:12px 0;opacity:.5}
+.wf-label-wrap{width:180px;text-align:right;padding-right:10px;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.wf-label-main{font-size:.82rem;color:var(--text2);line-height:1.25;display:flex;align-items:center;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+.wf-label-formula{font-size:.68rem;color:var(--text3);font-family:'JetBrains Mono',monospace;font-style:italic;line-height:1.2}
+.wf-info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--card2);color:var(--text3);font-size:.62rem;font-weight:700;cursor:help;position:relative;border:1px solid var(--border);flex-shrink:0;font-family:'DM Sans',sans-serif;font-style:normal}
+.wf-info:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.wf-info .wf-tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);right:0;background:#1a1a1a;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:.76rem;font-weight:400;line-height:1.5;width:280px;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.5);text-align:left;transition:opacity .15s;pointer-events:none;font-style:normal}
+.wf-info:hover .wf-tip,.wf-info:focus .wf-tip,.wf-info.tip-open .wf-tip{visibility:visible;opacity:1}
+.wf-info .wf-tip::after{content:'';position:absolute;top:100%;right:5px;border:5px solid transparent;border-top-color:#1a1a1a}
+.wf-toggle{cursor:pointer;color:var(--text3);font-size:.7rem;padding:0 2px;user-select:none;transition:transform .2s,color .2s;font-style:normal;font-weight:600}
+.wf-toggle:hover{color:var(--accent2)}
+.wf-toggle.open{transform:rotate(90deg);color:var(--accent2)}
+.wf-bar-row{display:flex;align-items:center;font-size:.82rem}
+.wf-detail{display:none;margin:6px 0 10px 190px;padding:10px 14px;background:rgba(52,152,219,.05);border-left:2px solid var(--blue);border-radius:0 6px 6px 0;font-size:.76rem;color:var(--text2);line-height:1.55}
+.wf-detail.open{display:block}
+.wf-detail strong{color:var(--text)}
+.wf-detail code{font-family:'JetBrains Mono',monospace;background:var(--bg);padding:1px 5px;border-radius:3px;font-size:.72rem;color:var(--accent2)}
+.wf-intro{background:rgba(52,152,219,.04);border:1px solid rgba(52,152,219,.15);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;color:var(--text2);line-height:1.55}
+.wf-intro strong{color:var(--blue)}
+.wf-intro .wf-intro-title{color:var(--text);font-weight:600;font-size:.82rem;margin-bottom:6px;display:block}
+@media(max-width:600px){
+  .wf-label-wrap{width:130px}
+  .wf-detail{margin-left:0}
+  .wf-info .wf-tip{width:220px;right:-10px}
+}
 .breakdown{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
 .breakdown th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
 .breakdown td{padding:8px 6px;border-bottom:1px solid rgba(51,51,51,.5)}
@@ -382,8 +411,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-04-02';
-  var buildId='v4.9.0';
+  var buildDate='2026-04-18';
+  var buildId='v4.9.1';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -520,7 +549,17 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <div id="verdict" class="verdict"></div>
   <div id="dashboardHeader"></div>
   <div id="metricsGrid" class="metrics"></div>
-  <div class="card"><h2>📉 Profit Waterfall</h2><p style="font-size:.78rem;color:var(--text3);margin-bottom:8px">Each subtraction is analyzed in detail below. Click any deep-dive section to expand.</p><div id="waterfall" class="waterfall"></div></div>
+  <div class="card"><h2>📉 Profit Waterfall</h2>
+    <div class="wf-intro">
+      <span class="wf-intro-title">How REPA calculates Real Economic Profit</span>
+      Starting from cash generated (<strong>CFO</strong>), we subtract real costs that GAAP understates or obscures: stock-based compensation at grant value, maintenance capital needed to keep existing assets productive, and recurring "one-time" charges. We add back investment income earned on cash reserves.<br><br>
+      The trickiest adjustment is <strong>maintenance CapEx</strong> — GAAP reports total CapEx as one number and does not split it between maintenance (keeping current assets productive) and growth (expanding capacity). We show two bookends:<br>
+      • <strong>Full D&amp;A view</strong> (conservative floor): treats all depreciation + amortization × 1.05 as real replacement cost<br>
+      • <strong>100% Amortization Add-Back view</strong> (ceiling): treats amortization as pure accounting fiction, uses Depreciation × 1.05 only<br>
+      The slider lower in the app lets you dial in any point between. Hover <span class="wf-info" style="cursor:default">i</span> for quick context; click <span class="wf-toggle" style="display:inline-block">▸</span> for deep-dive.
+    </div>
+    <div id="waterfall" class="waterfall"></div>
+  </div>
   <div id="sbcDeepDive" style="display:none"></div>
   <div id="capexDeepDive" style="display:none"></div>
   <div id="amortDeepDive" style="display:none"></div>
@@ -7259,22 +7298,58 @@ function calculate(){
     return '<div class="metric'+(m.hl?' highlight':'')+'"><div class="val" '+style+'>'+m.value+'</div><div class="lbl">'+m.label+(m.sub?' · '+m.sub:'')+'</div></div>';
   }).join('');
 
-  // Waterfall
-  var wfItems=[{label:'CFO',value:cfo,type:'positive'},{label:'− Real SBC',value:-realSBC,type:'negative'},{label:'− Maint CapEx (Full Cost)',value:-maintCapex,type:'negative'},{label:'− Restructuring',value:-restructuring,type:'negative'}];
-  if(onetimeAdj>0)wfItems.push({label:'− One-Time Adj',value:-onetimeAdj,type:'negative'});
-  if(investmentIncome>0)wfItems.push({label:'+ Invest. Income',value:investmentIncome,type:'invest'});
-  wfItems.push({label:'= Real Profit (Full Cost)',value:realProfit,type:'result'});
+  // Waterfall — v4.9.1: descriptive labels, hover tooltips, click-to-expand dropdowns
+  // Add-back row now shown as a blue delta (+$X), not a red subtraction (flips Option 1)
+  var wfItems=[
+    {label:'CFO',value:cfo,type:'positive',
+      why:'Cash Flow from Operations from the Cash Flow Statement. Starting point for real earnings — actual cash generated before any investment decisions.',
+      detail:'<strong>Source:</strong> 10-K Cash Flow Statement, line "Net cash provided by operating activities." Already reflects working capital changes, non-cash adjustments, and cash taxes paid. Unlike GAAP Net Income (which is an accrual measure with many judgment calls), CFO is money that actually moved in or out of the business during the period.'},
+    {label:'− Real SBC',value:-realSBC,type:'negative',
+      why:'Stock-based compensation, valued at the MAX of grant-date fair value vs. P&L expense. Corrects for companies under-expensing SBC by amortizing grants over multi-year vesting periods.',
+      detail:'<strong>Why it matters:</strong> SBC is real compensation — the company pays employees with shares instead of cash, which dilutes owners. GAAP lets companies spread grant value over 3–4 year vesting periods, so the income statement expense lags actual grants during growth years. We use <code>MAX(grant value, P&L expense)</code> to capture the true economic cost. See the SBC Analysis section below for the detailed breakdown and dilution math.'},
+    {label:'− Maint CapEx (Full D&A)',value:-maintCapex,type:'negative',formula:'(D&A) × 1.05 = '+fmtM(maintCapex),
+      why:'Proxy for maintenance capital needed to keep existing assets productive. Uses full Depreciation & Amortization with a 5% inflation bump. This is the conservative (highest) estimate — treats ALL amortization as real economic cost.',
+      detail:'<strong>Why a proxy?</strong> GAAP does not split CapEx into maintenance vs. growth — you get one total CapEx number on the cash flow statement. We use D&A as a proxy because it represents the accounting consumption of prior capital investments. The <code>× 1.05</code> multiplier accounts for replacement-cost inflation — a machine bought 10 years ago costs more to replace today.<br><br><strong>When this view is too conservative:</strong> Companies with heavy <em>acquired intangible</em> amortization (ORCL, AVGO, ABBV) often have amortization that is pure purchase-price accounting — not a real replacement need. For those, the 100% Add-Back view below is more realistic. See the Add-Back row and the amortization slider lower in the app.'},
+    {label:'− Restructuring',value:-restructuring,type:'negative',
+      why:'One-time restructuring charges treated as real ongoing costs. If a company restructures every year, it is not really "one-time" — it is a real cost of doing business.',
+      detail:'Companies frequently label costs as "restructuring" or "non-recurring" to push them below the line of adjusted earnings. REPA treats recurring restructuring as operating cost. If the value here is $0, either the company had no restructuring charges this period or they were judged to be genuinely one-time and excluded from the ongoing cost base.'}
+  ];
+  if(onetimeAdj>0)wfItems.push({label:'− One-Time Adj',value:-onetimeAdj,type:'negative',
+    why:'Other one-time adjustments applied to normalize earnings (e.g., legal settlements, impairments judged non-recurring, acquisition costs).',
+    detail:'Custom one-time adjustments entered for this period. Unlike restructuring (which is often recurring despite the label), these are items specifically judged to be non-repeating and stripped from the ongoing cost base.'});
+  if(investmentIncome>0)wfItems.push({label:'+ Invest. Income',value:investmentIncome,type:'invest',
+    why:'Interest and investment income earned on the company\'s cash and securities portfolio. Real cash flow to owners that may not flow through CFO depending on accounting classification.',
+    detail:'<strong>Why add this back?</strong> Many companies hold large cash and securities portfolios that generate real interest income for shareholders. Accounting treatment varies — sometimes investment income shows in CFO, sometimes in CFI (investing activities), sometimes it is embedded in operating earnings. We add it explicitly here to ensure it is counted once and fully visible. <strong>Source:</strong> Investment income line from the income statement, net of related expenses.'});
+  wfItems.push({label:'= Real Profit (Full D&A)',value:realProfit,type:'result',
+    why:'Conservative floor estimate of real economic profit. Assumes every dollar of D&A represents an asset that truly needs replacing at 1.05× the historical cost.',
+    detail:'<strong>This is the "capital-intensity-assumed" view.</strong> For companies like Colgate, Union Pacific, or most utilities — real physical assets wearing out — this is close to economic truth. For companies with heavy <em>acquired intangible</em> amortization (software rolled up via M&A, pharma with acquired drug rights, acquisition-heavy businesses), this view is overly punitive because purchase-price allocation amortization is not a real replacement cost. See the 100% Add-Back view below for the ceiling estimate, and the amortization slider for middle-ground assumptions.'});
   if(hasLightView){
-    wfItems.push({label:'',value:0,type:'positive'});
-    wfItems.push({label:'− Maint CapEx (Add-Back Amort)',value:-maintCapexLight,type:'negative'});
-    wfItems.push({label:'= Real Profit (Add-Back Amort)',value:realProfitLight,type:'result'});
+    // Delta between Full D&A maint capex and Depreciation-only maint capex
+    // Positive = amount added back to real profit when switching from Full D&A to 100% Add-Back view
+    var amortAddBack=maintCapex-maintCapexLight;
+    wfItems.push({label:'',value:0,type:'separator'});
+    wfItems.push({label:'+ Amortization Add-Back (100%)',value:amortAddBack,type:'delta',formula:'Swap (D+A)×1.05 → D×1.05',
+      why:'Adds back 100% of amortization, treating it as purely non-economic (purchase-price accounting, not real replacement need). Swaps Maint CapEx from (D+A)×1.05 to D×1.05.',
+      detail:'<strong>Why add amortization back?</strong> When a company acquires another, the premium paid gets allocated to "intangibles" (customer lists, developed technology, trade names) which then amortize over 5–15 years. This amortization is an <em>accounting artifact</em> — the company is not actually spending money to maintain these intangibles. They may retain economic value indefinitely even as they amortize to zero on the books.<br><br><strong>The math:</strong> Full D&A maint capex = <code>'+fmtM(maintCapex)+'</code>. Switching to Depreciation-only × 1.05 = <code>'+fmtM(maintCapexLight)+'</code>. Difference = <code>+'+fmtM(amortAddBack)+'</code> added back to Real Profit.<br><br><strong>This is the ceiling view.</strong> For a middle-ground assumption (e.g., 50% of amortization is real), use the amortization slider in the Profit Adjustment Flow section lower in the app.'});
+    wfItems.push({label:'= Real Profit (100% Add-Back)',value:realProfitLight,type:'result',
+      why:'Aggressive ceiling estimate of real economic profit. Assumes all amortization is accounting fiction and only physical asset depreciation represents a real maintenance need.',
+      detail:'<strong>This is the "intangibles-are-free" view.</strong> Appropriate for pure software companies with few physical assets, or for unwinding accounting distortions in acquisition-heavy businesses (ORCL, AVGO, ABBV). The gap between Full D&A Real Profit (<code>'+fmtM(realProfit)+'</code>) and this view (<code>'+fmtM(realProfitLight)+'</code>) tells you how much amortization matters for this specific company.<br><br><strong>Rule of thumb:</strong> Large gap → acquisition-heavy business, amortization is likely overstated as a real cost. Small gap → amortization is modest, the two views largely agree. Use the slider below to pick any point between the floor and ceiling.'});
   }
   var maxVal=Math.max.apply(null,wfItems.map(function(w){return Math.abs(w.value)}).concat([1]));
-  document.getElementById('waterfall').innerHTML=wfItems.map(function(w){
-    if(w.label===''&&w.value===0)return '<div style="height:8px;border-top:1px dashed #444;margin:8px 0"></div>';
+  // Build HTML with tooltips and dropdowns
+  var wfHTML=wfItems.map(function(w,i){
+    if(w.type==='separator')return '<div class="wf-separator"></div>';
     var width=Math.max(Math.abs(w.value)/maxVal*100,8);
-    return '<div class="wf-bar"><span class="wf-label">'+w.label+'</span><div class="wf-track"><div class="wf-fill '+w.type+'" style="width:'+width+'%">'+fmtM(Math.abs(w.value))+'</div></div></div>';
+    var rowId='wfrow-'+i;
+    var tipHTML=w.why?'<span class="wf-info" tabindex="0" onclick="this.classList.toggle(\'tip-open\');event.stopPropagation()">i<span class="wf-tip">'+w.why+'</span></span>':'';
+    var toggleHTML=w.detail?'<span class="wf-toggle" onclick="document.getElementById(\''+rowId+'\').classList.toggle(\'open\');this.classList.toggle(\'open\')">▸</span>':'';
+    var formulaHTML=w.formula?'<div class="wf-label-formula">'+w.formula+'</div>':'';
+    var labelHTML='<div class="wf-label-wrap"><div class="wf-label-main"><span>'+w.label+'</span>'+tipHTML+toggleHTML+'</div>'+formulaHTML+'</div>';
+    var barHTML='<div class="wf-track"><div class="wf-fill '+w.type+'" style="width:'+width+'%">'+(w.value>=0&&(w.type==='delta'||w.type==='invest')?'+':'')+fmtM(Math.abs(w.value))+'</div></div>';
+    var detailHTML=w.detail?'<div class="wf-detail" id="'+rowId+'">'+w.detail+'</div>':'';
+    return '<div class="wf-row"><div class="wf-bar-row">'+labelHTML+barHTML+'</div>'+detailHTML+'</div>';
   }).join('');
+  document.getElementById('waterfall').innerHTML=wfHTML;
 
   // ===== Dashboard Header — At-a-Glance =====
   var dashRdExpense=null;
