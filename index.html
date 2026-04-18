@@ -413,7 +413,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-18';
-  var buildId='v4.9.2';
+  var buildId='v4.9.4';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -442,9 +442,11 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
 <button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()" title="View the raw JSON data loaded for each year of the current company">🔍 View Loaded JSON <span class="ji-count" id="jiCount"></span></button>
 
+<div id="yearPillsCaption" style="display:none;font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin:10px 0 4px">Active Year <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;opacity:.75">— drives waterfall & deep-dives</span></div>
 <div id="yearPills" class="year-pills" style="display:none"></div>
+<div id="yearSelectorCaption" style="display:none;font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin:10px 0 4px">Trend Analysis Range <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;opacity:.75">— years included in PCBA, ROIIC, historical charts</span></div>
 <div id="yearSelector" class="year-selector" style="display:none">
-  <span class="ys-label">Analyze years:</span>
+  <span class="ys-label">Selected:</span>
   <div id="yearSelectorChips"></div>
   <span id="yearSelectorCount" class="ys-count"></span>
   <button onclick="selectAllYears()" style="padding:3px 8px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:5px;color:var(--text3);cursor:pointer" title="Select all stored years">All</button>
@@ -1140,7 +1142,29 @@ function loadFromPortfolio(){
       yr.formData.buyback_cost_m=yr.formData.share_repurchases;
     }
   }
-  currentYearKey=entry.currentYearKey||Object.keys(yearStore)[0]||null;
+  // v4.9.3: Always default to the latest pill (chronologically latest year).
+  // Prefer the latest annual 10-K over interim/TTM/Q filings when both exist.
+  // Ignore any stale saved currentYearKey — it caused confusing defaults for tickers
+  // that were saved mid-analysis while viewing an older year.
+  (function(){
+    var keys=Object.keys(yearStore);
+    if(keys.length===0){currentYearKey=null;return;}
+    // Sort chronologically by fiscal_year_end (falls back to key if missing)
+    keys.sort(function(a,b){
+      var da=yearStore[a].fiscal_year_end||a;
+      var db=yearStore[b].fiscal_year_end||b;
+      return da<db?-1:da>db?1:0;
+    });
+    // Pass 1: find the latest annual (non-interim, non-TTM, non-Q) year
+    for(var i=keys.length-1;i>=0;i--){
+      var yr=yearStore[keys[i]];
+      var lbl=(yr.fiscal_year_label||'').toUpperCase();
+      var isInterim=yr.isInterim||lbl.indexOf('TTM')===0||lbl.indexOf('Q')===0;
+      if(!isInterim){currentYearKey=keys[i];return;}
+    }
+    // Pass 2: no annual found — fall back to latest of any type
+    currentYearKey=keys[keys.length-1];
+  })();
   document.getElementById('ticker').value=entry.ticker||ticker;
   if(entry.price)document.getElementById('price').value=entry.price;
   if(currentYearKey&&yearStore[currentYearKey]){
@@ -2011,15 +2035,18 @@ function getActiveYearKeys(){
 // Feature 4: Render year selector when 2+ years loaded
 function renderYearSelector(){
   var container=document.getElementById('yearSelector');
+  var cap=document.getElementById('yearSelectorCaption');
   var chipsEl=document.getElementById('yearSelectorChips');
   var countEl=document.getElementById('yearSelectorCount');
   var allKeys=getSortedYearKeys();
   if(allKeys.length<2){
     container.style.display='none';
+    if(cap)cap.style.display='none';
     selectedYears=[];
     return;
   }
   container.style.display='flex';
+  if(cap)cap.style.display='block';
   // Default selection: all years (up to 3 most recent) if no selection yet
   if(selectedYears.length===0){
     selectedYears=allKeys.length<=3?allKeys.slice():allKeys.slice(-3);
@@ -3687,9 +3714,11 @@ function calcMaintCapex(capex,da,mcOverride){
 
 function renderPills(){
   var c=document.getElementById('yearPills');
+  var cap=document.getElementById('yearPillsCaption');
   var keys=getSortedYearKeys();
-  if(keys.length===0){c.style.display='none';renderYearSelector();updateJsonInspectorBtn();return;}
+  if(keys.length===0){c.style.display='none';if(cap)cap.style.display='none';renderYearSelector();updateJsonInspectorBtn();return;}
   c.style.display='flex';
+  if(cap)cap.style.display='block';
   c.innerHTML=keys.map(function(k){
     var yr=yearStore[k];
     var label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
