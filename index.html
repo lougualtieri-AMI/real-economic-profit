@@ -413,7 +413,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-18';
-  var buildId='v4.9.5';
+  var buildId='v4.9.7';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -578,10 +578,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   </div>
   <div id="adjustmentFlow" style="display:none">
     <div class="deep-dive" id="ddAdjFlow">
-      <div class="dd-header open" onclick="toggleDD('ddAdjFlow')"><h3>🎯 Profit Adjustment Flow <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— customize the Best Guess</span></h3><span class="dd-arrow">▶</span></div>
+      <div class="dd-header open" onclick="toggleDD('ddAdjFlow')"><h3>🎯 Best Guess Controls <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— amort % and R&D growth % sliders</span></h3><span class="dd-arrow">▶</span></div>
       <div class="dd-summary">Adjust amortization and R&D assumptions. Changes update the yield ladder above in real time.</div>
       <div class="dd-body open">
-        <p style="font-size:.8rem;color:var(--text2);margin-bottom:14px;line-height:1.5">Start with Full D&amp;A REP, then progressively add back costs that may not be real economic expenses. Each segment shows how much profit and yield you recover.</p>
+        <p style="font-size:.8rem;color:var(--text2);margin-bottom:14px;line-height:1.5">These sliders drive the <strong style="color:var(--accent)">Best Guess ★</strong> panel above. Panel 1 (Full D&amp;A, floor) and Panel 2 (All Amort Added Back, ceiling) are fixed — they show the defensible bookends. Use these controls to tune the view that represents your thesis.</p>
     <div id="adjBar" style="display:flex;height:44px;border-radius:8px;overflow:hidden;margin-bottom:4px"></div>
     <div id="adjYieldRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px"></div>
     <div style="display:flex;gap:12px;font-size:.68rem;color:var(--text3);margin-bottom:14px;flex-wrap:wrap">
@@ -1142,27 +1142,17 @@ function loadFromPortfolio(){
       yr.formData.buyback_cost_m=yr.formData.share_repurchases;
     }
   }
-  // v4.9.3: Always default to the latest pill (chronologically latest year).
-  // Prefer the latest annual 10-K over interim/TTM/Q filings when both exist.
-  // Ignore any stale saved currentYearKey — it caused confusing defaults for tickers
-  // that were saved mid-analysis while viewing an older year.
+  // v4.9.7: Always default to the chronologically latest pill — period.
+  // TTM/interim wins over older annual. If you uploaded it, you probably want it as default.
+  // Ignore any stale saved currentYearKey.
   (function(){
     var keys=Object.keys(yearStore);
     if(keys.length===0){currentYearKey=null;return;}
-    // Sort chronologically by fiscal_year_end (falls back to key if missing)
     keys.sort(function(a,b){
       var da=yearStore[a].fiscal_year_end||a;
       var db=yearStore[b].fiscal_year_end||b;
       return da<db?-1:da>db?1:0;
     });
-    // Pass 1: find the latest annual (non-interim, non-TTM, non-Q) year
-    for(var i=keys.length-1;i>=0;i--){
-      var yr=yearStore[keys[i]];
-      var lbl=(yr.fiscal_year_label||'').toUpperCase();
-      var isInterim=yr.isInterim||lbl.indexOf('TTM')===0||lbl.indexOf('Q')===0;
-      if(!isInterim){currentYearKey=keys[i];return;}
-    }
-    // Pass 2: no annual found — fall back to latest of any type
     currentYearKey=keys[keys.length-1];
   })();
   document.getElementById('ticker').value=entry.ticker||ticker;
@@ -5214,11 +5204,13 @@ function exportBrief(){
   var deprOnly=latest.deprOnly||0;
   var hasLightView=latest.realProfitLight!==null;
   var amort=hasLightView?(latest.da-deprOnly):0;
-  var adjAmortPct=100; // default full add-back
+  // v4.9.6: Panel 2 is locked at 100% amort (ceiling); slider drives Best Guess only
+  var adjAmortPct=70; // default Best Guess amort %
   var adjAmortEl=document.getElementById('adjAmortSlider');
-  if(adjAmortEl)adjAmortPct=parseInt(adjAmortEl.value)||100;
-  var amortAddback=amort*(adjAmortPct/100);
+  if(adjAmortEl)adjAmortPct=parseInt(adjAmortEl.value)||70;
+  var amortAddback=amort*(adjAmortPct/100); // Best Guess amort contribution
   var yieldFull=ev>0?latest.realProfit/ev:0;
+  // Panel 2 (ceiling): always 100% amort added back
   var repAddBack=hasLightView?latest.realProfitLight:latest.realProfit;
   var yieldLight=ev>0?repAddBack/ev:0;
   var rdSectorBrief=getRdSectorPreset();
@@ -5229,7 +5221,8 @@ function exportBrief(){
   var hasRdBrief=rdExpBrief>0;
   var rdGrowthPctBrief=100-rdMaintPctBrief;
   var rdGrowthBrief=hasRdBrief?(rdExpBrief*rdGrowthPctBrief/100*0.79):0;
-  var repBestGuess=repAddBack+rdGrowthBrief;
+  // Panel 3 (Best Guess): Full D&A + slider%amort + slider%R&D
+  var repBestGuess=latest.realProfit+amortAddback+rdGrowthBrief;
   var yieldBestGuess=ev>0?repBestGuess/ev:0;
   var wsNetIncome=latest.net_income||null;
   var wsEPS=wsNetIncome!==null&&shares>0?wsNetIncome/shares:null;
@@ -5275,8 +5268,8 @@ function exportBrief(){
   if(hasLightView&&amort>0.5){
     h+='<div style="margin-top:8px;padding:14px 16px;background:#fff;border:2px solid #8e44ad;border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
-    h+='<div><div style="font-size:.72rem;color:#8e44ad;text-transform:uppercase;font-weight:700;letter-spacing:.4px">② All Amort Added Back — Likely</div>';
-    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span> <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amortAddback)+'</span> <span style="color:#aaa">('+adjAmortPct+'% of '+fmtM(amort)+' amort)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repAddBack)+'</strong></div>';
+    h+='<div><div style="font-size:.72rem;color:#8e44ad;text-transform:uppercase;font-weight:700;letter-spacing:.4px">② All Amort Added Back — Ceiling</div>';
+    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span> <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amort)+'</span> <span style="color:#aaa">(100% of '+fmtM(amort)+' amort)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repAddBack)+'</strong></div>';
     if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp2)+'">'+pct(mExp2,1)+'</strong> <span style="color:'+briefMCol(mExp2)+'">· '+briefMRating(mExp2)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(repAddBack)+' / '+fmtM(_expRev)+' rev)</span></div>';
     h+='</div>';
     h+='<div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:'+briefYCol(yieldLight)+'">'+pct(yieldLight)+'</div>';
@@ -5284,12 +5277,17 @@ function exportBrief(){
     h+='</div></div>';
   }
 
-  // Panel 3: Best Guess
-  if(hasRdBrief&&rdGrowthBrief>0.5){
+  // Panel 3: Best Guess — Full D&A + slider%amort + slider%R&D
+  var _p3HasAmortExp=amortAddback>0.5;
+  var _p3HasRdExp=hasRdBrief&&rdGrowthBrief>0.5;
+  if(_p3HasAmortExp||_p3HasRdExp){
     h+='<div style="margin-top:8px;padding:14px 16px;background:#fff;border:2px solid #b8860b;border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<div><div style="font-size:.72rem;color:#b8860b;text-transform:uppercase;font-weight:700;letter-spacing:.4px">③ Best Guess ★ — Subjective</div>';
-    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(repAddBack)+'</span> <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% of '+fmtM(rdExpBrief)+' R&amp;D × 79%)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repBestGuess)+'</strong></div>';
+    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span>';
+    if(_p3HasAmortExp) h+=' <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amortAddback)+'</span> <span style="color:#aaa">('+adjAmortPct+'% amort)</span>';
+    if(_p3HasRdExp) h+=' <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% R&amp;D × 79%)</span>';
+    h+=' = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repBestGuess)+'</strong></div>';
     if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp3)+'">'+pct(mExp3,1)+'</strong> <span style="color:'+briefMCol(mExp3)+'">· '+briefMRating(mExp3)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(repBestGuess)+' / '+fmtM(_expRev)+' rev)</span></div>';
     h+='</div>';
     h+='<div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:'+briefYCol(yieldBestGuess)+'">'+pct(yieldBestGuess)+'</div>';
@@ -6365,6 +6363,10 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
   var rdGrowth=rdGrowthPre*(1-rdTaxRate);
   var finalRep=repAmort+rdGrowth;
 
+  // v4.9.6: Panel 2 is now a locked ceiling (100% amort added back, no R&D)
+  var repCeiling=rep+amort; // 100% amort, no R&D
+  var yCeiling=ev>0?repCeiling/ev*100:0;
+
   var yC=ev>0?rep/ev*100:0;
   var yA=ev>0?repAmort/ev*100:0;
   var yF=ev>0?finalRep/ev*100:0;
@@ -6438,37 +6440,39 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
     var panels=ladder.children;
     if(panels.length>=3){
       function ycol(y){return y>=0.07?'var(--green)':y>=0.04?'var(--blue)':y>=0.02?'var(--orange)':'var(--red)';}
-      // Panel 2
-      var p2y=yA/100;var p2r=yieldRating(p2y);var p2m=repAmort>0?ev/repAmort:null;
-      var p2h='<div style="font-size:.72rem;color:var(--purple);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">All Amort Added Back'+(adjAmortPresetId==='custom'?' <span style="color:var(--orange);font-size:.65rem">customized</span>':'')+'</div>';
+      // Panel 2 — locked ceiling (100% amort, no R&D)
+      var p2y=yCeiling/100;var p2r=yieldRating(p2y);var p2m=repCeiling>0?ev/repCeiling:null;
+      var p2h='<div style="font-size:.72rem;color:var(--purple);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">All Amort Added Back</div>';
       p2h+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+ycol(p2y)+'">'+pct(p2y)+'</div>';
       p2h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p2r.bg+';color:'+p2r.cssColor+'">'+p2r.text+'</div>';
       p2h+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p2m?p2m.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
-      if(amortAdd>0.5)p2h+='<div style="font-size:.78rem;color:var(--purple);margin-top:6px">+'+fmtM(amortAdd)+' from amort add-back ('+adjAmortPct+'% of '+fmtM(amort)+')</div>';
+      if(amort>0.5)p2h+='<div style="font-size:.78rem;color:var(--purple);margin-top:6px">+'+fmtM(amort)+' from amort add-back (100% of '+fmtM(amort)+')</div>';
       else p2h+='<div style="font-size:.78rem;color:var(--text3);margin-top:6px">Amort only '+fmtM(amort)+' — negligible impact</div>';
       p2h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:.78rem">';
-      p2h+='<div style="color:var(--text2);margin-bottom:4px;font-weight:600">REP: '+fmtM(repAmort)+'</div>';
-      p2h+='<div style="color:var(--text3);font-size:.72rem">Full D&A REP '+fmtM(rep)+'<br><span style="color:var(--purple)">+ '+adjAmortPct+'% of amort: +'+fmtM(amortAdd)+'</span></div>';
-      p2h+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">'+adjAmortPct+'% of acquisition amortization ('+fmtM(amort)+') treated as non-real.</div></div>';
+      p2h+='<div style="color:var(--text2);margin-bottom:4px;font-weight:600">REP: '+fmtM(repCeiling)+'</div>';
+      p2h+='<div style="color:var(--text3);font-size:.72rem">Full D&A REP '+fmtM(rep)+'<br><span style="color:var(--purple)">+ all amort: +'+fmtM(amort)+'</span></div>';
+      p2h+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Ceiling view — 100% of amortization ('+fmtM(amort)+') treated as non-real.</div></div>';
       panels[1].innerHTML=p2h;
       panels[1].style.borderColor=amort>0?'rgba(155,89,182,.3)':'var(--border)';
 
-      // Panel 3
-      var p3y=hasRd?(yF/100):(yA/100);var p3r=yieldRating(p3y);var p3rep=finalRep;var p3m=p3rep>0?ev/p3rep:null;
+      // Panel 3 — Best Guess: Full D&A + slider%amort + slider%R&D
+      var p3y=yF/100;var p3r=yieldRating(p3y);var p3rep=finalRep;var p3m=p3rep>0?ev/p3rep:null;
       var rdGPct=hasRd?(100-rdMaintPct):0;var rdIsC=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
       var rdPLabel=getRdSectorPreset().label;
       var p3h='<div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Best Guess ★'+(rdIsC||adjAmortPresetId==='custom'?' <span style="color:var(--orange);font-size:.65rem">customized</span>':'')+'</div>';
       p3h+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+ycol(p3y)+'">'+pct(p3y)+'</div>';
       p3h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p3r.bg+';color:'+p3r.cssColor+'">'+p3r.text+'</div>';
       p3h+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p3m?p3m.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
-      if(hasRd&&rdGrowth>0.5)p3h+='<div style="font-size:.78rem;color:var(--green);margin-top:6px">+'+fmtM(rdGrowth)+' from R&D ('+rdGPct+'% of '+fmtM(rdExpense)+' × 79%)</div>';
-      else if(!hasRd)p3h+='<div style="font-size:.78rem;color:var(--text3);margin-top:6px">No R&D data — same as All Amort Added Back</div>';
+      if(amortAdd>0.5)p3h+='<div style="font-size:.78rem;color:var(--purple);margin-top:6px">+'+fmtM(amortAdd)+' amort ('+adjAmortPct+'%)</div>';
+      if(hasRd&&rdGrowth>0.5)p3h+='<div style="font-size:.78rem;color:var(--green);margin-top:4px">+'+fmtM(rdGrowth)+' R&D ('+rdGPct+'%)</div>';
+      else if(!hasRd&&amortAdd<0.5)p3h+='<div style="font-size:.78rem;color:var(--text3);margin-top:6px">No adjustments active — same as Full D&A</div>';
       p3h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:.78rem">';
       p3h+='<div style="color:var(--accent2);margin-bottom:4px;font-weight:600">REP: '+fmtM(p3rep)+'</div>';
-      p3h+='<div style="color:var(--text3);font-size:.72rem">Add-Back REP '+fmtM(repAmort)+'<br>';
-      if(hasRd)p3h+='<span style="color:var(--green)">+ R&D growth ('+rdGPct+'%): +'+fmtM(rdGrowth)+'</span><br><span style="font-size:.68rem;color:var(--text3)">'+rdPLabel+' default</span>';
+      p3h+='<div style="color:var(--text3);font-size:.72rem">Full D&A REP '+fmtM(rep);
+      if(amortAdd>0.5)p3h+='<br><span style="color:var(--purple)">+ amort ('+adjAmortPct+'%): +'+fmtM(amortAdd)+'</span>';
+      if(hasRd)p3h+='<br><span style="color:var(--green)">+ R&D growth ('+rdGPct+'%): +'+fmtM(rdGrowth)+'</span><br><span style="font-size:.68rem;color:var(--text3)">'+rdPLabel+' default</span>';
       p3h+='</div>';
-      p3h+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Adjust in Profit Adjustment Flow above.</div></div>';
+      p3h+='<div style="font-size:.7rem;color:var(--text3);margin-top:4px;font-style:italic">Tune via sliders above.</div></div>';
       panels[2].innerHTML=p3h;
     }
   }
@@ -7105,17 +7109,18 @@ function calculate(){
   var p1Mult=p1REP>0?ev/p1REP:null;
   var p1Rating=yieldRating(p1Yield);
 
-  // Panel 2: All Amortization Added Back (100% of amortization)
-  var p2AmortPct=adjAmortPct;
-  var p2AmortAdd=amort*p2AmortPct/100;
+  // Panel 2: All Amortization Added Back — ALWAYS 100% (ceiling view, independent of slider)
+  var p2AmortPct=100;
+  var p2AmortAdd=amort*1.0;
   var p2REP=p1REP+p2AmortAdd;
   var p2Yield=ev>0?p2REP/ev:0;
   var p2Mult=p2REP>0?ev/p2REP:null;
   var p2Rating=yieldRating(p2Yield);
   var p2Delta=p2REP-p1REP;
-  var amortIsCustom=(adjAmortPresetId==='custom');
 
-  // Panel 3: Best Guess (amort + R&D growth addback, after-tax)
+  // Panel 3: Best Guess — slider-driven (amort % from Profit Adjustment Flow + R&D growth %)
+  var p3AmortPct=adjAmortPct;
+  var p3AmortAdd=amort*p3AmortPct/100;
   var rdExpVZ=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra)
     rdExpVZ=yearStore[currentYearKey].extra.rd_expense||null;
@@ -7123,13 +7128,16 @@ function calculate(){
   var rdGrowthPctVZ=hasRdVZ?(100-rdMaintPct):0;
   var rdGrowthDollarVZ=hasRdVZ?rdExpVZ*rdGrowthPctVZ/100:0;
   var rdAddbackVZ=rdGrowthDollarVZ*0.79;
-  var p3REP=p2REP+rdAddbackVZ;
+  var p3REP=p1REP+p3AmortAdd+rdAddbackVZ;
   var p3Yield=ev>0?p3REP/ev:0;
   var p3Mult=p3REP>0?ev/p3REP:null;
   var p3Rating=yieldRating(p3Yield);
-  var p3DeltaFromP2=p3REP-p2REP;
+  var p3DeltaFromP1=p3REP-p1REP;
+  var p3AmortContrib=p3AmortAdd;
+  var p3RdContrib=rdAddbackVZ;
   var rdPresetLabel=getRdSectorPreset().label;
   var rdIsCustom=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
+  var amortIsCustom=(adjAmortPresetId==='custom');
 
   // --- REP Margin (REP / Revenue) — values computed here, displayed inside each Yield Ladder panel below ---
   var _repRevenue=null;
@@ -7174,9 +7182,9 @@ function calculate(){
   verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Most conservative. All D&A treated as real maintenance cost.</div>';
   verdictHTML+='</div>';
 
-  // --- Panel 2: All Amortization Added Back ---
+  // --- Panel 2: All Amortization Added Back (ceiling, always 100%) ---
   verdictHTML+='<div style="background:var(--card);border:1px solid '+(amort>0?'rgba(155,89,182,.35)':'var(--border)')+';border-radius:12px;padding:18px">';
-  verdictHTML+='<div style="font-size:.78rem;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">All Amort Added Back'+(amortIsCustom?' <span style="color:var(--orange);font-size:.7rem;text-transform:none">· customized</span>':'')+'</div>';
+  verdictHTML+='<div style="font-size:.78rem;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">All Amort Added Back</div>';
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p2Yield)+';line-height:1">'+pct(p2Yield)+'</div>';
   verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p2Rating.bg+';color:'+p2Rating.cssColor+'">'+p2Rating.text+'</div>';
   verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p2Mult?p2Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
@@ -7188,7 +7196,7 @@ function calculate(){
   // Delta
   if(p2Delta>0.5){
     verdictHTML+='<div style="font-size:.82rem;color:var(--purple);margin-top:8px;font-weight:600">+'+fmtM(p2Delta)+' added back</div>';
-    verdictHTML+='<div style="font-size:.78rem;color:var(--text3)">'+p2AmortPct+'% of '+fmtM(amort)+' amortization</div>';
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text3)">100% of '+fmtM(amort)+' amortization</div>';
   }else{
     verdictHTML+='<div style="font-size:.82rem;color:var(--text3);margin-top:8px">Amort '+fmtM(amort)+' — negligible impact</div>';
   }
@@ -7197,9 +7205,9 @@ function calculate(){
   verdictHTML+='<div style="font-size:.82rem;color:var(--text);font-weight:700;margin-bottom:6px">REP: '+fmtM(p2REP)+'</div>';
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.6">';
   verdictHTML+='Full D&A REP '+fmtM(p1REP)+'<br>';
-  verdictHTML+='<span style="color:var(--purple)">+ amort add-back: +'+fmtM(p2AmortAdd)+'</span>';
+  verdictHTML+='<span style="color:var(--purple)">+ all amort: +'+fmtM(p2AmortAdd)+'</span>';
   verdictHTML+='</div></div>';
-  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Acquisition amortization may not be a real cash cost — assets often retain value even as they amortize to zero on the books.</div>';
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Ceiling view. Assumes all acquisition amortization is non-cash accounting — not a real maintenance cost.</div>';
   verdictHTML+='</div>';
 
   // --- Panel 3: Best Guess ---
@@ -7213,24 +7221,35 @@ function calculate(){
     verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:4px">Margin <strong style="color:'+mColor(m3)+'">'+pct(m3,1)+'</strong> <span style="color:'+mColor(m3)+'">· '+mRating(m3)+'</span></div>';
     verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:2px;font-family:JetBrains Mono,monospace">'+fmtM(p3REP)+' / '+fmtM(_repRevenue)+' rev</div>';
   }
-  // Delta
-  if(hasRdVZ&&p3DeltaFromP2>0.5){
-    verdictHTML+='<div style="font-size:.82rem;color:var(--green);margin-top:8px;font-weight:600">+'+fmtM(p3DeltaFromP2)+' R&D add-back</div>';
-    verdictHTML+='<div style="font-size:.78rem;color:var(--text3)">'+rdGrowthPctVZ+'% of R&D '+fmtM(rdExpVZ)+' × 79% tax adj</div>';
-  }else if(!hasRdVZ){
-    verdictHTML+='<div style="font-size:.82rem;color:var(--text3);margin-top:8px">No R&D data — same as All Amort Added Back</div>';
+  // Delta — show both amort and R&D contributions from Full D&A baseline
+  var _p3HasAmort=p3AmortContrib>0.5;
+  var _p3HasRd=hasRdVZ&&p3RdContrib>0.5;
+  if(_p3HasAmort||_p3HasRd){
+    verdictHTML+='<div style="margin-top:8px">';
+    if(_p3HasAmort){
+      verdictHTML+='<div style="font-size:.82rem;color:var(--purple);font-weight:600">+'+fmtM(p3AmortContrib)+' amort ('+p3AmortPct+'%)</div>';
+    }
+    if(_p3HasRd){
+      verdictHTML+='<div style="font-size:.82rem;color:var(--green);font-weight:600'+(_p3HasAmort?';margin-top:2px':'')+'">+'+fmtM(p3RdContrib)+' R&D ('+rdGrowthPctVZ+'%)</div>';
+    }
+    verdictHTML+='</div>';
+  }else if(!hasRdVZ&&!_p3HasAmort){
+    verdictHTML+='<div style="font-size:.82rem;color:var(--text3);margin-top:8px">No adjustments active — same as Full D&A</div>';
   }
   // REP detail box
   verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
   verdictHTML+='<div style="font-size:.82rem;color:var(--accent2);font-weight:700;margin-bottom:6px">REP: '+fmtM(p3REP)+'</div>';
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--text2);line-height:1.6">';
-  verdictHTML+='Add-Back REP '+fmtM(p2REP);
+  verdictHTML+='Full D&A REP '+fmtM(p1REP);
+  if(_p3HasAmort){
+    verdictHTML+='<br><span style="color:var(--purple)">+ amort ('+p3AmortPct+'%): +'+fmtM(p3AmortContrib)+'</span>';
+  }
   if(hasRdVZ){
-    verdictHTML+='<br><span style="color:var(--green)">+ R&D growth ('+rdGrowthPctVZ+'%): +'+fmtM(rdAddbackVZ)+'</span>';
+    verdictHTML+='<br><span style="color:var(--green)">+ R&D growth ('+rdGrowthPctVZ+'%): +'+fmtM(p3RdContrib)+'</span>';
     verdictHTML+='<br><span style="font-size:.75rem;color:var(--text3)">'+rdPresetLabel+' preset</span>';
   }
   verdictHTML+='</div></div>';
-  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Growth R&D creates future value. Adding it back treats R&D like growth CapEx. Adjust in Profit Adjustment Flow below.</div>';
+  verdictHTML+='<div style="font-size:.75rem;color:var(--text3);margin-top:8px">Your thesis view. Slider-driven: amort % from Profit Adjustment Flow + R&D growth % from ROIIC section.</div>';
   verdictHTML+='</div>';
 
   verdictHTML+='</div>'; // end yield ladder
