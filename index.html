@@ -413,7 +413,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-18';
-  var buildId='v4.9.7';
+  var buildId='v4.9.8-diag';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -7141,8 +7141,20 @@ function calculate(){
 
   // --- REP Margin (REP / Revenue) — values computed here, displayed inside each Yield Ladder panel below ---
   var _repRevenue=null;
+  var _repRevenueDiag='';
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
-    _repRevenue=yearStore[currentYearKey].extra.revenue||yearStore[currentYearKey].extra.total_revenue||yearStore[currentYearKey].extra.net_revenue||null;
+    var _ex=yearStore[currentYearKey].extra;
+    _repRevenue=_ex.revenue||_ex.total_revenue||_ex.net_revenue||null;
+    if(!_repRevenue){
+      var _keys=Object.keys(_ex);
+      _repRevenueDiag='no revenue in extra ('+(_keys.length?_keys.join(', '):'extra is empty')+')';
+    }
+  }else if(!currentYearKey){
+    _repRevenueDiag='no currentYearKey';
+  }else if(!yearStore[currentYearKey]){
+    _repRevenueDiag='currentYearKey not in yearStore';
+  }else{
+    _repRevenueDiag='no .extra on year record';
   }
   var hasRevenueData=_repRevenue&&_repRevenue>0;
   var m1=hasRevenueData?p1REP/_repRevenue:null;
@@ -7164,6 +7176,8 @@ function calculate(){
   if(hasRevenueData){
     verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:4px">Margin <strong style="color:'+mColor(m1)+'">'+pct(m1,1)+'</strong> <span style="color:'+mColor(m1)+'">· '+mRating(m1)+'</span></div>';
     verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:2px;font-family:JetBrains Mono,monospace">'+fmtM(p1REP)+' / '+fmtM(_repRevenue)+' rev</div>';
+  }else if(_repRevenueDiag){
+    verdictHTML+='<div style="font-size:.68rem;color:var(--orange);margin-top:4px;font-style:italic">⚠ '+_repRevenueDiag+'</div>';
   }
   // REP detail box
   verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
