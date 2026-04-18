@@ -413,7 +413,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-04-18';
-  var buildId='v4.9.4';
+  var buildId='v4.9.5';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -4941,6 +4941,16 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
     var mdViewsDiverge=(latest.realProfit<0&&latest.realProfitLight>0)||(latest.realProfit>0&&latest.realProfitLight<0)||Math.abs(latest.realProfitLight-latest.realProfit)>(Math.abs(latest.cfo)*0.3);
     if(mdViewsDiverge)d+='\n> ⚠ **VIEWS DIVERGE** — The Full D&A and All Amortization Added Back views tell materially different stories. The gap is acquisition amortization — a non-cash accounting charge, may not be a real cost of running the business. See Capital & ROIC section for details.\n';
   }
+  // v4.9.5: REP Margin (Real Profit ÷ Revenue)
+  if(latest.revenue>0){
+    function _mdMRating(m){return m>=0.20?'Exceptional':m>=0.12?'Strong':m>=0.05?'Moderate':'Thin';}
+    var _mdM1=latest.realProfit/latest.revenue;
+    d+='\nREP Margin — Real Profit ÷ Revenue (Full D&A): '+pct(_mdM1,1)+' — '+_mdMRating(_mdM1)+' ('+fmtM(latest.realProfit)+' / '+fmtM(latest.revenue)+')\n';
+    if(latest.realProfitLight!==null){
+      var _mdM2=latest.realProfitLight/latest.revenue;
+      d+='REP Margin (All Amortization Added Back): '+pct(_mdM2,1)+' — '+_mdMRating(_mdM2)+' ('+fmtM(latest.realProfitLight)+' / '+fmtM(latest.revenue)+')\n';
+    }
+  }
   d+='\n';
   // Feature 1: Three-Tier Yield
   var mdREP=(latest.realProfitLight!==null)?latest.realProfitLight:latest.realProfit;
@@ -5229,6 +5239,14 @@ function exportBrief(){
 
   function briefYCol(y){return y>=0.07?'#1a8a4a':y>=0.04?'#2471a3':y>=0.02?'#c0712b':'#b03a2e';}
   function briefYBg(y){return y>=0.07?'#e8f5e9':y>=0.04?'#e3f2fd':y>=0.02?'#fef3e6':'#fde8e8';}
+  // v4.9.5: margin helpers (light-theme hex)
+  function briefMCol(m){return m>=0.20?'#1a8a4a':m>=0.12?'#2471a3':m>=0.05?'#c0712b':'#b03a2e';}
+  function briefMRating(m){return m>=0.20?'Exceptional':m>=0.12?'Strong':m>=0.05?'Moderate':'Thin';}
+  var _expRev=latest.revenue||null;
+  var _expHasRev=_expRev&&_expRev>0;
+  var mExp1=_expHasRev?latest.realProfit/_expRev:null;
+  var mExp2=_expHasRev?repAddBack/_expRev:null;
+  var mExp3=_expHasRev?repBestGuess/_expRev:null;
 
   // === Compact Waterfall ===
   h+='<div style="background:#f5f5f0;border:2px solid #333;border-radius:10px;padding:20px 24px;margin:0 0 20px;page-break-inside:avoid">';
@@ -5246,7 +5264,9 @@ function exportBrief(){
   h+='<div style="margin-top:14px;padding:14px 16px;background:#fff;border:2px solid #2471a3;border-radius:8px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center">';
   h+='<div><div style="font-size:.72rem;color:#2471a3;text-transform:uppercase;font-weight:700;letter-spacing:.4px">① Full D&amp;A — Defensible</div>';
-  h+='<div style="font-size:.88rem;color:#333;margin-top:2px"><strong style="font-family:monospace;font-size:1.1rem">'+fmtM(latest.realProfit)+'</strong> REP</div></div>';
+  h+='<div style="font-size:.88rem;color:#333;margin-top:2px"><strong style="font-family:monospace;font-size:1.1rem">'+fmtM(latest.realProfit)+'</strong> REP</div>';
+  if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp1)+'">'+pct(mExp1,1)+'</strong> <span style="color:'+briefMCol(mExp1)+'">· '+briefMRating(mExp1)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(latest.realProfit)+' / '+fmtM(_expRev)+' rev)</span></div>';
+  h+='</div>';
   h+='<div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:'+briefYCol(yieldFull)+'">'+pct(yieldFull)+'</div>';
   h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;background:'+briefYBg(yieldFull)+';color:'+briefYCol(yieldFull)+'">'+yieldRating(yieldFull).text+'</div></div>';
   h+='</div></div>';
@@ -5256,7 +5276,9 @@ function exportBrief(){
     h+='<div style="margin-top:8px;padding:14px 16px;background:#fff;border:2px solid #8e44ad;border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<div><div style="font-size:.72rem;color:#8e44ad;text-transform:uppercase;font-weight:700;letter-spacing:.4px">② All Amort Added Back — Likely</div>';
-    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span> <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amortAddback)+'</span> <span style="color:#aaa">('+adjAmortPct+'% of '+fmtM(amort)+' amort)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repAddBack)+'</strong></div></div>';
+    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span> <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amortAddback)+'</span> <span style="color:#aaa">('+adjAmortPct+'% of '+fmtM(amort)+' amort)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repAddBack)+'</strong></div>';
+    if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp2)+'">'+pct(mExp2,1)+'</strong> <span style="color:'+briefMCol(mExp2)+'">· '+briefMRating(mExp2)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(repAddBack)+' / '+fmtM(_expRev)+' rev)</span></div>';
+    h+='</div>';
     h+='<div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:'+briefYCol(yieldLight)+'">'+pct(yieldLight)+'</div>';
     h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;background:'+briefYBg(yieldLight)+';color:'+briefYCol(yieldLight)+'">'+yieldRating(yieldLight).text+'</div></div>';
     h+='</div></div>';
@@ -5267,7 +5289,9 @@ function exportBrief(){
     h+='<div style="margin-top:8px;padding:14px 16px;background:#fff;border:2px solid #b8860b;border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<div><div style="font-size:.72rem;color:#b8860b;text-transform:uppercase;font-weight:700;letter-spacing:.4px">③ Best Guess ★ — Subjective</div>';
-    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(repAddBack)+'</span> <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% of '+fmtM(rdExpBrief)+' R&amp;D × 79%)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repBestGuess)+'</strong></div></div>';
+    h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(repAddBack)+'</span> <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% of '+fmtM(rdExpBrief)+' R&amp;D × 79%)</span> = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repBestGuess)+'</strong></div>';
+    if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp3)+'">'+pct(mExp3,1)+'</strong> <span style="color:'+briefMCol(mExp3)+'">· '+briefMRating(mExp3)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(repBestGuess)+' / '+fmtM(_expRev)+' rev)</span></div>';
+    h+='</div>';
     h+='<div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:'+briefYCol(yieldBestGuess)+'">'+pct(yieldBestGuess)+'</div>';
     h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;background:'+briefYBg(yieldBestGuess)+';color:'+briefYCol(yieldBestGuess)+'">'+yieldRating(yieldBestGuess).text+'</div></div>';
     h+='</div></div>';
@@ -7107,57 +7131,15 @@ function calculate(){
   var rdPresetLabel=getRdSectorPreset().label;
   var rdIsCustom=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
 
-  // --- REP Margin (REP / Revenue) — three boxes matching the yield ladder ---
+  // --- REP Margin (REP / Revenue) — values computed here, displayed inside each Yield Ladder panel below ---
   var _repRevenue=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
     _repRevenue=yearStore[currentYearKey].extra.revenue||yearStore[currentYearKey].extra.total_revenue||yearStore[currentYearKey].extra.net_revenue||null;
   }
-  if(_repRevenue&&_repRevenue>0){
-    var m1=p1REP/_repRevenue;
-    var m2=p2REP/_repRevenue;
-    var m3=p3REP/_repRevenue;
-    var amortMeaningful=p2Delta>0.5;
-    var rdMeaningful=hasRdVZ&&p3DeltaFromP2>0.5;
-
-    verdictHTML+='<div style="font-size:.82rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">REP Margin — Real Profit ÷ Revenue</div>';
-    verdictHTML+='<div class="rep-margin-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">';
-
-    // Box 1: Full D&A
-    verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px">';
-    verdictHTML+='<div style="font-size:.7rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Full D&amp;A</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.5rem;font-weight:700;color:'+mColor(m1)+';line-height:1">'+pct(m1,1)+'</div>';
-    verdictHTML+='<div style="font-size:.7rem;color:'+mColor(m1)+';font-weight:600;margin-top:2px">'+mRating(m1)+'</div>';
-    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-family:JetBrains Mono,monospace">'+fmtM(p1REP)+' / '+fmtM(_repRevenue)+'</div>';
-    verdictHTML+='</div>';
-
-    // Box 2: All Amortization Added Back
-    verdictHTML+='<div style="background:var(--bg);border:1px solid '+(amortMeaningful?'rgba(155,89,182,.25)':'var(--border)')+';border-radius:10px;padding:12px 14px">';
-    verdictHTML+='<div style="font-size:.7rem;color:'+(amortMeaningful?'var(--purple)':'var(--text3)')+';font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">All Amort Added Back</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.5rem;font-weight:700;color:'+mColor(m2)+';line-height:1">'+pct(m2,1)+'</div>';
-    verdictHTML+='<div style="font-size:.7rem;color:'+mColor(m2)+';font-weight:600;margin-top:2px">'+mRating(m2)+'</div>';
-    if(amortMeaningful){
-      verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-family:JetBrains Mono,monospace">'+fmtM(p2REP)+' / '+fmtM(_repRevenue)+'</div>';
-    }else{
-      verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-style:italic">Negligible amort — same as Full D&amp;A</div>';
-    }
-    verdictHTML+='</div>';
-
-    // Box 3: Best Guess
-    verdictHTML+='<div style="background:var(--bg);border:1px solid '+(rdMeaningful?'rgba(212,160,37,.25)':'var(--border)')+';border-radius:10px;padding:12px 14px">';
-    verdictHTML+='<div style="font-size:.7rem;color:'+(rdMeaningful?'var(--accent)':'var(--text3)')+';font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Best Guess ★</div>';
-    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:1.5rem;font-weight:700;color:'+mColor(m3)+';line-height:1">'+pct(m3,1)+'</div>';
-    verdictHTML+='<div style="font-size:.7rem;color:'+mColor(m3)+';font-weight:600;margin-top:2px">'+mRating(m3)+'</div>';
-    if(rdMeaningful){
-      verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-family:JetBrains Mono,monospace">'+fmtM(p3REP)+' / '+fmtM(_repRevenue)+'</div>';
-    }else if(!hasRdVZ){
-      verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-style:italic">No R&amp;D data</div>';
-    }else{
-      verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:6px;font-style:italic">Negligible R&amp;D adj</div>';
-    }
-    verdictHTML+='</div>';
-
-    verdictHTML+='</div>'; // end grid
-  }
+  var hasRevenueData=_repRevenue&&_repRevenue>0;
+  var m1=hasRevenueData?p1REP/_repRevenue:null;
+  var m2=hasRevenueData?p2REP/_repRevenue:null;
+  var m3=hasRevenueData?p3REP/_repRevenue:null;
 
   // ===== THREE REP PANELS (the hero) =====
 
@@ -7170,6 +7152,11 @@ function calculate(){
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p1Yield)+';line-height:1">'+pct(p1Yield)+'</div>';
   verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p1Rating.bg+';color:'+p1Rating.cssColor+'">'+p1Rating.text+'</div>';
   verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p1Mult?p1Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // Margin line (REP / Revenue)
+  if(hasRevenueData){
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:4px">Margin <strong style="color:'+mColor(m1)+'">'+pct(m1,1)+'</strong> <span style="color:'+mColor(m1)+'">· '+mRating(m1)+'</span></div>';
+    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:2px;font-family:JetBrains Mono,monospace">'+fmtM(p1REP)+' / '+fmtM(_repRevenue)+' rev</div>';
+  }
   // REP detail box
   verdictHTML+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">';
   verdictHTML+='<div style="font-size:.82rem;color:var(--text);font-weight:700;margin-bottom:6px">REP: '+fmtM(p1REP)+'</div>';
@@ -7193,6 +7180,11 @@ function calculate(){
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p2Yield)+';line-height:1">'+pct(p2Yield)+'</div>';
   verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p2Rating.bg+';color:'+p2Rating.cssColor+'">'+p2Rating.text+'</div>';
   verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p2Mult?p2Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // Margin line (REP / Revenue)
+  if(hasRevenueData){
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:4px">Margin <strong style="color:'+mColor(m2)+'">'+pct(m2,1)+'</strong> <span style="color:'+mColor(m2)+'">· '+mRating(m2)+'</span></div>';
+    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:2px;font-family:JetBrains Mono,monospace">'+fmtM(p2REP)+' / '+fmtM(_repRevenue)+' rev</div>';
+  }
   // Delta
   if(p2Delta>0.5){
     verdictHTML+='<div style="font-size:.82rem;color:var(--purple);margin-top:8px;font-weight:600">+'+fmtM(p2Delta)+' added back</div>';
@@ -7216,6 +7208,11 @@ function calculate(){
   verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:2.2rem;font-weight:700;color:'+yColor(p3Yield)+';line-height:1">'+pct(p3Yield)+'</div>';
   verdictHTML+='<div style="display:inline-block;padding:3px 12px;border-radius:14px;font-size:.75rem;font-weight:600;margin-top:6px;background:'+p3Rating.bg+';color:'+p3Rating.cssColor+'">'+p3Rating.text+'</div>';
   verdictHTML+='<div style="font-size:.82rem;color:var(--text2);margin-top:10px">Paying <strong style="color:var(--text)">'+(p3Mult?p3Mult.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
+  // Margin line (REP / Revenue)
+  if(hasRevenueData){
+    verdictHTML+='<div style="font-size:.78rem;color:var(--text2);margin-top:4px">Margin <strong style="color:'+mColor(m3)+'">'+pct(m3,1)+'</strong> <span style="color:'+mColor(m3)+'">· '+mRating(m3)+'</span></div>';
+    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:2px;font-family:JetBrains Mono,monospace">'+fmtM(p3REP)+' / '+fmtM(_repRevenue)+' rev</div>';
+  }
   // Delta
   if(hasRdVZ&&p3DeltaFromP2>0.5){
     verdictHTML+='<div style="font-size:.82rem;color:var(--green);margin-top:8px;font-weight:600">+'+fmtM(p3DeltaFromP2)+' R&D add-back</div>';
