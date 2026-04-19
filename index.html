@@ -1178,7 +1178,7 @@ function clearForNewCompany(){
   selectedYears=[];
   var _rs=document.getElementById('roiicRdGrowth');if(_rs)_rs.dataset.initialized='';
   var _gcrs=document.getElementById('gcReinvestSlider');if(_gcrs)_gcrs.dataset.initialized='';
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
@@ -3503,13 +3503,35 @@ function doImport(){
 }
 
 // ============ Year Management ============
+// v4.7 (B4 refactor, Apr 19 2026): Inverted capture logic.
+// OLD behavior: form is the truth. Empty form input -> field becomes null.
+//   Side effect: any JSON-imported field whose form input was empty at capture
+//   time was silently nulled. Affected restructuring, sbc_grant, share_repurchases,
+//   dividends_paid, buyback_shares, per-year price, and any future schema field
+//   not added to the small "preserve" list.
+// NEW behavior: yearStore[currentYearKey].formData is the source of truth.
+//   The form can OVERRIDE a value (any non-empty input wins), but it cannot NULL
+//   a value (empty input is ignored, prior value is preserved).
+// Behavior trade-off: a user can no longer clear a field by deleting the cell
+//   contents. Use Clear All / company switch to reset. Acceptable for this workflow.
 function captureForm(){
-  var fd={cfo:v('cfo'),sbc_expense:v('sbc_expense'),sbc_grant:v('sbc_grant'),capex:v('capex'),da:v('da'),maint_capex:v('maint_capex'),depr_only:v('depr_only'),restructuring:v('restructuring'),onetime_adj:v('onetime_adj'),inv_change:v('inv_change'),recv_change:v('recv_change'),ap_change:v('ap_change'),interest:v('interest'),tax_paid:v('tax_paid'),debt:v('debt'),cash:v('cash'),sti:v('sti'),shares:v('shares'),share_repurchases:v('share_repurchases'),dividends_paid:v('dividends_paid'),buyback_cost_m:v('buyback_cost_m'),buyback_shares:v('buyback_shares'),lt_investments:v('lt_investments'),inv_return_rate:v('inv_return_rate'),equity:v('equity'),total_assets:v('total_assets'),goodwill:v('goodwill'),intangibles:v('intangibles'),ticker:document.getElementById('ticker').value,price:v('price')};
-  // Preserve JSON-only fields from current yearStore entry
-  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
-    var prev=yearStore[currentYearKey].formData;
-    ['avg_buyback_price','look_through_rep','revenue','net_income','operating_income','r_and_d_expense'].forEach(function(k){if(prev[k]!==undefined)fd[k]=prev[k];});
-  }
+  // 1. Start from existing yearStore data (the truth)
+  var fd = (currentYearKey && yearStore[currentYearKey] && yearStore[currentYearKey].formData)
+           ? Object.assign({}, yearStore[currentYearKey].formData)
+           : {};
+  // 2. Form fields that may override (numeric inputs read via parseFloat)
+  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','price'];
+  numericFields.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && el.value !== ''){
+      var parsed = parseFloat(el.value);
+      if(!isNaN(parsed)) fd[id] = parsed;
+    }
+    // If form input is empty: keep whatever was already in fd from yearStore.
+  });
+  // 3. Ticker is a string, always overwrite from form
+  var tickerEl = document.getElementById('ticker');
+  if(tickerEl) fd.ticker = tickerEl.value;
   return fd;
 }
 
