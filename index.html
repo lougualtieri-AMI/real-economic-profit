@@ -1,4 +1,37 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  PRICE-FIX 2026-04-30 v3.2 — Tooltips on every key button
+  ============================================================================
+  Adds detailed hover tooltips to every workflow-critical button, so the
+  user (and any future LLM session reading this file) can re-derive what
+  each button does without referencing external docs.
+
+  Buttons enriched in v3.2:
+    💾 Save             - "Commit pill data to localStorage..."
+    🗑                  - "Remove ticker — cannot be undone, back up first..."
+    ⬇ Backup            - "Download portfolio as hard backup..."
+    ⬆ Restore           - "Load portfolio JSON from disk..."
+    📊 Compare          - "Cross-ticker view; uses saved current prices..."
+    🏆 Scorecard        - "Like Compare; uses saved current prices..."
+    ⚡ Analyze          - "Runs REPA on active pill; price source depends on
+                          pill type — latest uses right box, older uses left..."
+    📡 Live             - "Fetches today's quote to right box; click Save
+                          current to persist..."
+    Save current        - "Persists right box as ticker's current price;
+                          ticker must already be saved..."
+    🔍 Inspect Pill Data- "Toggle live state vs original imported JSON..."
+    Period-End Anchor   - "Read-only; to change, re-import or edit master..."
+    Current Market Price- "Editable; what-if values affect only latest pill..."
+    Active pill context - "Explains the TTM / 10-K Annual / latest badges..."
+
+  No behavior changes from v3.1. UI logic is identical. Same migrated JSON.
+  ============================================================================
+
+  All earlier v3.1, v3, v2, v1 changes still in effect. See git history of
+  this file or the PRICE_FIX_DIFF_v3.md document for details.
+  ============================================================================
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -425,22 +458,22 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <select id="portfolioSelect" onchange="onPortfolioSelect()">
     <option value="">— New Company —</option>
   </select>
-  <button class="pb-btn save" onclick="saveToPortfolio()" title="Save the current company and all its year data to your local portfolio">💾 Save</button>
+  <button class="pb-btn save" onclick="saveToPortfolio()" title="Commit all current pill data to localStorage. Run after every import, after every audit correction, and after any change to financial fields. Does NOT save the right-box value as the ticker's current price (use 'Save current' for that). Does NOT modify any pill anchor.">💾 Save</button>
   <button class="pb-btn" onclick="shareCompany()" title="Download this company's data as a JSON file">📤 Share</button>
-  <button class="pb-btn danger" onclick="deleteFromPortfolio()" title="Remove this company from portfolio">🗑</button>
+  <button class="pb-btn danger" onclick="deleteFromPortfolio()" title="Remove this ticker (all pills + saved current price) from your local portfolio. Cannot be undone — back up first via the Backup button.">🗑</button>
   <span class="pb-sep"></span>
-  <button class="pb-btn" onclick="downloadPortfolio()" title="Download entire portfolio as JSON backup">⬇ Backup</button>
-  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Import shared company or restore backup">⬆ Restore</button>
+  <button class="pb-btn" onclick="downloadPortfolio()" title="Download the entire portfolio (every ticker, every pill, every saved current price) as a JSON file. Use periodically as a hard backup; localStorage can be wiped by browser cleanups.">⬇ Backup</button>
+  <button class="pb-btn" onclick="document.getElementById('portfolioFileInput').click()" title="Load a portfolio JSON file from disk into localStorage. Use after editing the master JSON externally, after a fresh device, or to import a shared portfolio. The migration helper auto-fills any missing pill anchors during load.">⬆ Restore</button>
   <input type="file" id="portfolioFileInput" accept=".json" style="display:none" onchange="restorePortfolio(event)">
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 12px;padding:0 14px">
-  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side comparison of portfolio companies">📊 Compare</button>
-  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank companies across REPA metrics">🏆 Scorecard</button>
+  <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side cross-ticker comparison. Reads each ticker's saved current price (set via 'Save current'). For freshest comparison, run 'Save current' on each ticker after a Live Price fetch.">📊 Compare</button>
+  <button class="pb-btn" onclick="scorecardPortfolio()" title="Rank portfolio companies across REPA metrics. Like Compare, uses each ticker's saved current price.">🏆 Scorecard</button>
   <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics">📖 Glossary</button>
 </div>
 
 <button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
-<button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()" title="View the raw JSON data loaded for each year of the current company">🔍 View Loaded JSON <span class="ji-count" id="jiCount"></span></button>
+<button class="json-inspector-btn" id="jsonInspectorBtn" onclick="openJsonInspector()" title="View each pill's data. Toggle 'As app sees it' (live formData + extra + resolved anchor — what the app uses to compute) vs 'As imported' (the original raw JSON, frozen at import time). Use 'As app sees it' to grab a pill's current state for audit. Use 'As imported' to verify the original extraction.">🔍 Inspect Pill Data <span class="ji-count" id="jiCount"></span></button>
 
 <div id="yearPillsCaption" style="display:none;font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin:10px 0 4px">Active Year <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;opacity:.75">— drives waterfall & deep-dives</span></div>
 <div id="yearPills" class="year-pills" style="display:none"></div>
@@ -453,7 +486,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <button onclick="selectLast3Years()" style="padding:3px 8px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:5px;color:var(--text3);cursor:pointer" title="Select 3 most recent years">Last 3</button>
 </div>
 
-<button class="calc" onclick="calculate()" id="calcBtn">⚡ Analyze Real Economic Profit</button>
+<button class="calc" onclick="calculate()" id="calcBtn" title="Run the full REPA analysis on the active pill. The price used depends on which pill is active: most recent pill uses the right box (Current Market Price); older fiscal years use the left box (Period-End Anchor). Generates the brief, scenarios, yields, and signal pills below.">⚡ Analyze Real Economic Profit</button>
 <button class="secondary" id="exportBtn" onclick="exportBrief()" style="display:none" title="Copy a formatted analysis summary to clipboard for pasting into Google Docs or NotebookLM">📤 Export Analysis Brief (Google Docs / NotebookLM)</button>
 
 <!-- Collapsed summary bar (hidden until Calculate is hit) -->
@@ -473,10 +506,35 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
 <div class="card">
   <h2>📊 Phase 1 — Cash Flow <span class="source-badge annual">from 10-K annual</span></h2>
+  <!-- PRICE-FIX 2026-04-30 v3: two-box price layout. -->
+  <!-- Left box (#anchor_price): read-only, shows the ACTIVE PILL's period-end anchor. -->
+  <!-- Right box (#price): editable, shows ticker's CURRENT MARKET PRICE. -->
+  <!-- The right box keeps the id "price" so all existing v('price') readers work. -->
+  <!-- Math routing: closed fiscal-year pills compute yields with the anchor; -->
+  <!-- TTM/interim pills compute with the current price (editable in the right box). -->
   <div class="row" style="margin-bottom:12px">
     <div class="field"><label>Company / Ticker</label><input type="text" id="ticker" placeholder="e.g. AAPL"></div>
-    <div class="field"><label>Current Share Price ($)</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="price" step="0.01" placeholder="Look up live price" style="flex:1"><button id="livePriceBtn" onclick="fetchLivePrice()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--blue);border:1px solid var(--blue);border-radius:6px;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .2s" title="Fetch real-time price from Finnhub">📡 Live</button><button onclick="applyPriceAllYears()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Write this price to all stored year entries">All years</button></div><div id="livePriceInfo" style="font-size:.7rem;color:var(--text3);margin-top:4px;display:none"></div></div>
+    <div class="field"><label id="pillContextLabel" style="color:var(--text3);font-size:.78rem" title="Shows which pill is currently active and what type it is. The orange 'TTM' badge means an interim pill (10-Q based). The grey '10-K Annual' badge means a full annual pill. The green 'latest' badge means this is the most recent pill across all loaded data — the only pill whose math uses the right box.">Active pill context</label>
+      <div id="activePillContext" style="font-size:.85rem;color:var(--text2);padding:8px 0">—</div>
+    </div>
   </div>
+  <div class="row" style="margin-bottom:12px">
+    <div class="field">
+      <label>Period-End Anchor ($) <span style="color:var(--text3);font-size:.7rem;font-weight:400">· read-only · period-end · changes per pill</span></label>
+      <input type="number" id="anchor_price" step="0.01" readonly style="background:var(--card2);color:var(--text2);cursor:not-allowed" title="The active pill's period-end share price. Set at extraction time (from JSON) or filled by the migration script. Cannot be edited from the UI. Drives yield/EV math when an older pill is active. To change: re-import the pill's JSON with a corrected end_of_period_price field, or edit the master portfolio JSON and click Restore.">
+    </div>
+    <div class="field">
+      <label>Current Market Price ($) <span style="color:var(--text3);font-size:.7rem;font-weight:400">· editable · per ticker · drives latest-pill math</span></label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="number" id="price" step="0.01" placeholder="Today's price" style="flex:1" title="The ticker's current market price. Type any value to do what-if math (only affects the most recent pill's yields). Click 📡 Live to fetch today's quote. Click 'Save current' to persist for next session. Older pills ignore this box entirely.">
+        <button id="livePriceBtn" onclick="fetchLivePrice()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--blue);border:1px solid var(--blue);border-radius:6px;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .2s" title="Fetch today's price from Finnhub and write it to the right box. Affects the most recent pill's math instantly. Does NOT persist across reloads on its own — click 'Save current' to remember the value. Does NOT modify any pill anchor.">📡 Live</button>
+        <button onclick="applyPriceAllYears()" style="padding:6px 10px;font-size:.68rem;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Persist the right box value as this ticker's saved current price. Used by Compare and Brief views, and shown when you re-load this ticker. Run after Live Price if you want today's quote remembered. Ticker must already be saved (click 💾 Save first if new). Does NOT modify any pill anchor.">Save current</button>
+      </div>
+      <div id="livePriceInfo" style="font-size:.7rem;color:var(--text3);margin-top:4px;display:none"></div>
+    </div>
+  </div>
+  <!-- PRICE-FIX 2026-04-30 v3: anchor display narrative now reduced to a one-line note explaining which box drives the math. -->
+  <div id="pillAnchorDisplay" style="display:none;font-size:.75rem;color:var(--text3);margin:-4px 0 12px 0;padding:6px 10px;background:var(--card2);border-left:3px solid var(--blue);border-radius:4px"></div>
   <h3>Operating Cash Flow</h3>
   <div class="field"><label>Cash From Operations ($M)</label><input type="number" id="cfo" step="1"></div>
   <div class="row">
@@ -1097,9 +1155,17 @@ function saveToPortfolio(){
   // Sync current form to yearStore
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
   var p=getPortfolio();
+  // PRICE-FIX 2026-04-30 v2: in the session-override model, v('price') is
+  // the SCENARIO value (defaults to active pill's anchor, can be overridden
+  // by user). We must NOT save it as the top-level "current price" because
+  // that would mistake a what-if for the real current price. Preserve the
+  // existing top-level price unless one doesn't exist yet — in which case
+  // we have nothing better to use, so we fall back to the box value.
+  var existingPrice = (p[ticker] && p[ticker].price) ? p[ticker].price : null;
+  var savedPrice = (existingPrice && existingPrice > 0) ? existingPrice : v('price');
   p[ticker]={
     ticker:ticker,
-    price:v('price'),
+    price:savedPrice,
     years:JSON.parse(JSON.stringify(yearStore)),
     currentYearKey:currentYearKey,
     savedAt:new Date().toISOString()
@@ -1142,6 +1208,9 @@ function loadFromPortfolio(){
       yr.formData.buyback_cost_m=yr.formData.share_repurchases;
     }
   }
+  // PRICE-FIX 2026-04-30: migrate any pill that doesn't yet have
+  // formData.end_of_period_price, using the priority chain. Idempotent.
+  migratePillAnchors(ticker);
   // v4.9.7: Always default to the chronologically latest pill — period.
   // TTM/interim wins over older annual. If you uploaded it, you probably want it as default.
   // Ignore any stale saved currentYearKey.
@@ -1156,9 +1225,18 @@ function loadFromPortfolio(){
     currentYearKey=keys[keys.length-1];
   })();
   document.getElementById('ticker').value=entry.ticker||ticker;
-  if(entry.price)document.getElementById('price').value=entry.price;
   if(currentYearKey&&yearStore[currentYearKey]){
     restoreForm(yearStore[currentYearKey].formData);
+  }
+  // PRICE-FIX 2026-04-30 v3: in the two-box model, the RIGHT box (#price)
+  // holds the per-ticker current market price. Set it once on ticker load
+  // from portfolio[ticker].price. It does NOT change when the user clicks
+  // pills; restoreForm only updates the LEFT box (#anchor_price).
+  // If no current price is saved yet, leave the box blank — user can click
+  // Live or type one.
+  var priceEl = document.getElementById('price');
+  if(priceEl){
+    priceEl.value = (entry.price && entry.price > 0) ? entry.price : '';
   }
   renderPills();
   document.getElementById('results').style.display='none';
@@ -1183,7 +1261,11 @@ function clearForNewCompany(){
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
   document.getElementById('price').value='';
+  // PRICE-FIX 2026-04-30 v3: also clear the anchor box (left box).
+  var _aprice = document.getElementById('anchor_price'); if(_aprice) _aprice.value='';
   document.getElementById('inv_return_rate').value='4';
+  // PRICE-FIX 2026-04-30: hide anchor display when starting fresh.
+  var _anch = document.getElementById('pillAnchorDisplay'); if(_anch) _anch.style.display='none';
   renderPills();
   document.getElementById('results').style.display='none';
   document.getElementById('exportBtn').style.display='none';
@@ -1193,6 +1275,10 @@ function clearForNewCompany(){
 // Auto-calc amortization when depreciation or D&A changes
 document.getElementById('depr_only').addEventListener('input',calcAmort);
 document.getElementById('da').addEventListener('input',calcAmort);
+// PRICE-FIX 2026-04-30 v2: when user types into the price input,
+// refresh the anchor display so the "session override" indicator
+// appears/disappears in real time.
+document.getElementById('price').addEventListener('input', renderAnchorDisplay);
 function calcAmort(){
   var da=v('da'),depr=v('depr_only');
   var el=document.getElementById('amort_only');
@@ -2117,7 +2203,11 @@ function renderCashDeploy(){
   var yr=yearStore[latestKey];
   if(!yr){el.innerHTML='';return;}
   var d=yr.formData;
-  var price=d.price||0,shares=d.shares||0;
+  // PRICE-FIX 2026-04-30 v3: getEffectivePrice picks the right price for this
+  // pill type. Closed FY -> the pill's anchor (left box). TTM -> the current
+  // market price (right box, editable by user / Live Price). The user's
+  // what-if typing only affects TTM yields, never historical pills.
+  var price=getEffectivePrice(yr),shares=d.shares||0;
   var cash=d.cash||0,sti=d.sti||0;
   var debt=d.debt||0,equity=d.equity||0;
   var cfo=d.cfo||0;
@@ -2289,7 +2379,8 @@ function renderGrowthCompounder(){
   var yr=yearStore[latestKey];
   if(!yr){el.innerHTML='';return;}
   var d=yr.formData;
-  var price=d.price||0,shares=d.shares||0;
+  // PRICE-FIX 2026-04-30 v3: see site 1 above for rationale.
+  var price=getEffectivePrice(yr),shares=d.shares||0;
   var cash=d.cash||0,sti=d.sti||0;
   var debt=d.debt||0,equity=d.equity||0;
   var cfo=d.cfo||0;
@@ -3102,15 +3193,27 @@ function closeImport(){document.getElementById('importModal').classList.remove('
 // ============ JSON Inspector ============
 function updateJsonInspectorBtn(){
   var keys=getSortedYearKeys();
-  var hasJson=keys.some(function(k){return yearStore[k].rawJson;});
+  // PRICE-FIX 2026-04-30: button shows whenever any pill exists, since the
+  // "As app sees it" view works with formData/extra even without rawJson.
   var btn=document.getElementById('jsonInspectorBtn');
-  if(hasJson){
-    var count=keys.filter(function(k){return yearStore[k].rawJson;}).length;
+  if(keys.length>0){
+    var rawCount=keys.filter(function(k){return yearStore[k].rawJson;}).length;
     btn.style.display='block';
-    document.getElementById('jiCount').textContent='('+count+' filing'+(count>1?'s':'')+' loaded)';
+    document.getElementById('jiCount').textContent='('+keys.length+' pill'+(keys.length>1?'s':'')+(rawCount<keys.length?', '+rawCount+' with raw':'')+')';
   }else{
     btn.style.display='none';
   }
+}
+
+// PRICE-FIX 2026-04-30: inspector view mode. 'app' = formData + extra
+// (what the app actually uses to compute). 'raw' = rawJson (audit trail,
+// frozen at import). Defaults to 'app' because that's what the user wants
+// to see 95% of the time.
+var jsonInspectorMode = 'app';
+
+function setJsonInspectorMode(mode){
+  jsonInspectorMode = mode;
+  openJsonInspector(); // re-render
 }
 
 function openJsonInspector(){
@@ -3119,9 +3222,19 @@ function openJsonInspector(){
   var html='';
   var hasAny=false;
 
+  // PRICE-FIX 2026-04-30: toggle bar at top of inspector.
+  var appActive = jsonInspectorMode === 'app';
+  html += '<div style="display:flex;gap:8px;margin-bottom:14px;padding:10px;background:var(--card2);border-radius:6px;align-items:center;flex-wrap:wrap">';
+  html += '<span style="font-size:.78rem;color:var(--text2);font-weight:600">View:</span>';
+  html += '<button onclick="setJsonInspectorMode(\'app\')" style="padding:5px 10px;font-size:.72rem;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid '+(appActive?'var(--blue)':'var(--border)')+';background:'+(appActive?'var(--blue)':'transparent')+';color:'+(appActive?'#fff':'var(--text2)')+'">As app sees it</button>';
+  html += '<button onclick="setJsonInspectorMode(\'raw\')" style="padding:5px 10px;font-size:.72rem;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid '+(!appActive?'var(--blue)':'var(--border)')+';background:'+(!appActive?'var(--blue)':'transparent')+';color:'+(!appActive?'#fff':'var(--text2)')+'">As imported (audit trail)</button>';
+  html += '<span style="font-size:.7rem;color:var(--text3);margin-left:auto">'+(appActive?'Live formData + extra. Reflects current app state.':'Raw JSON from import. Frozen at extraction time.')+'</span>';
+  html += '</div>';
+
   keys.forEach(function(k,idx){
     var yr=yearStore[k];
-    if(!yr.rawJson)return;
+    // In 'app' mode, show every pill. In 'raw' mode, only those with rawJson.
+    if(jsonInspectorMode === 'raw' && !yr.rawJson) return;
     hasAny=true;
     var label=yr.fiscal_year_label||(yr.fiscal_year_end?'FY'+new Date(yr.fiscal_year_end).getFullYear():k);
     var typeClass=yr.isInterim?'interim':'annual';
@@ -3139,20 +3252,43 @@ function openJsonInspector(){
     html+='</div>';
     html+='<div class="json-entry-body" id="'+entryId+'_body">';
 
-    // Summary line
-    var jsonSummary=getJsonSummary(yr.rawJson);
-    html+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">'+jsonSummary+'</div>';
-
-    html+='<pre id="'+entryId+'_pre">'+escapeHtml(yr.rawJson)+'</pre>';
+    // PRICE-FIX 2026-04-30: build the displayed JSON based on view mode.
+    var displayJson, summary, pillAnchor = getPillAnchor(yr);
+    if(jsonInspectorMode === 'app'){
+      // Build a clean app-state object showing what the app actually reads.
+      var appState = {
+        _note: 'This is the live app state (formData + extra). Updates with every action.',
+        pill_anchor_price: pillAnchor > 0 ? pillAnchor : null,
+        formData: yr.formData || {},
+        extra: yr.extra || {},
+        fiscal_year_end: yr.fiscal_year_end || null,
+        fiscal_year_label: yr.fiscal_year_label || null,
+        isInterim: yr.isInterim || false
+      };
+      if(yr.isInterim){
+        appState.interimLabel = yr.interimLabel;
+        appState.quarter = yr.quarter;
+        appState.annualizationFactor = yr.annualizationFactor;
+      }
+      displayJson = JSON.stringify(appState, null, 2);
+      var fieldCount = 0;
+      for(var fk in (yr.formData||{})){ if(yr.formData[fk]!==null && yr.formData[fk]!==undefined && yr.formData[fk]!=='') fieldCount++; }
+      summary = fieldCount + ' formData fields populated • Pill anchor: $'+(pillAnchor>0?pillAnchor.toFixed(2):'NONE');
+    } else {
+      displayJson = yr.rawJson || '(no raw JSON stored)';
+      summary = getJsonSummary(yr.rawJson);
+    }
+    html+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">'+summary+'</div>';
+    html+='<pre id="'+entryId+'_pre">'+escapeHtml(displayJson)+'</pre>';
     html+='<div style="display:flex;gap:6px;margin-top:8px">';
-    html+='<button class="json-copy-btn" onclick="copyJsonEntry(\''+entryId+'_pre\')">📋 Copy JSON</button>';
-    html+='<button class="json-copy-btn" onclick="downloadJsonEntry(\''+entryId+'_pre\',\''+escapeHtml(ticker||'company')+'_'+escapeHtml(label)+'\')">⬇ Download JSON</button>';
+    html+='<button class="json-copy-btn" onclick="copyJsonEntry(\''+entryId+'_pre\')">📋 Copy</button>';
+    html+='<button class="json-copy-btn" onclick="downloadJsonEntry(\''+entryId+'_pre\',\''+escapeHtml(ticker||'company')+'_'+escapeHtml(label)+(jsonInspectorMode==='app'?'_appstate':'_raw')+'\')">⬇ Download</button>';
     html+='</div>';
     html+='</div></div>';
   });
 
   if(!hasAny){
-    html='<p style="color:var(--text3);font-size:.85rem;padding:20px 0;text-align:center">No JSON data stored yet. Import a filing to see it here.</p>';
+    html+='<p style="color:var(--text3);font-size:.85rem;padding:20px 0;text-align:center">'+(jsonInspectorMode==='raw'?'No raw JSON data stored. Switch to "As app sees it" to view live state.':'No data loaded yet.')+'</p>';
   }
 
   body.innerHTML=html;
@@ -3328,7 +3464,11 @@ function doImport(){
       'total assets':'total_assets','total_assets':'total_assets',
       'goodwill':'goodwill','goodwill_net':'goodwill',
       'intangible assets':'intangibles','intangible_assets':'intangibles','intangibles':'intangibles','net intangible assets':'intangibles','net_intangible_assets':'intangibles','intangible assets net':'intangibles','other intangible assets':'intangibles','other_intangible_assets':'intangibles',
-      'ticker':'ticker','company':'ticker','share price':'price','current share price':'price','share_price':'price','end_of_year_price':'price','end_of_year_share_price':'price','eoy_price':'price','eoy_share_price':'price','end_of_period_price':'price','end of period price':'price',
+      'ticker':'ticker','company':'ticker','share price':'price','current share price':'price','share_price':'price',
+      // PRICE-FIX 2026-04-30: end_of_period_price keys NO LONGER alias to the
+      // #price input. They are captured into a separate variable below and
+      // written to formData.end_of_period_price (the pill anchor), not to
+      // the current-price input. See "Post-import EOP price handling" below.
       'share repurchases':'share_repurchases','share_repurchases':'share_repurchases','stock repurchases':'share_repurchases','buybacks':'share_repurchases','share buybacks':'share_repurchases','repurchase of common stock':'share_repurchases','common stock repurchased':'share_repurchases','treasury stock acquired':'share_repurchases','stock_repurchases':'share_repurchases','share_buybacks':'share_repurchases','repurchase_of_common_stock':'share_repurchases','common_stock_repurchased':'share_repurchases','treasury_stock_acquired':'share_repurchases',
       'dividends paid':'dividends_paid','dividends_paid':'dividends_paid','cash dividends paid':'dividends_paid','cash_dividends_paid':'dividends_paid',
       'buyback cost':'buyback_cost_m','buyback_cost':'buyback_cost_m','buyback_cost_m':'buyback_cost_m','buyback cost m':'buyback_cost_m','repurchase cost':'buyback_cost_m',
@@ -3348,6 +3488,15 @@ function doImport(){
       'short_term_debt':1,'short term debt':1,'long_term_debt':1,'long term debt':1,'total_liabilities':1,'total liabilities':1,
       'amortization':1,'investment_income':1,'investment income':1};
 
+    // PRICE-FIX 2026-04-30: EOP price keys captured separately so they
+    // route to formData.end_of_period_price (pill anchor) rather than
+    // contaminating the #price input which is reserved for current price.
+    var eopPriceKeys = {
+      'end_of_year_price':1,'end_of_year_share_price':1,'eoy_price':1,'eoy_share_price':1,
+      'end_of_period_price':1,'end of period price':1,'end of year price':1,'end of year share price':1
+    };
+    var capturedEopPrice = null;
+
     var filled=0,warnings=[],fyEnd=null,fyLabel=null,extra={};
     var rawAmortization=null; // Track separate amortization for D&A computation
     for(var key in flat){
@@ -3357,6 +3506,14 @@ function doImport(){
       // Capture raw amortization before skip check
       if(lk==='amortization'&&typeof val==='number'){
         rawAmortization=val;
+        continue;
+      }
+      // PRICE-FIX 2026-04-30: capture EOP price into a variable, do not
+      // route to the #price form input. We attach it to yearStore[].formData
+      // .end_of_period_price after the year row is created.
+      if(eopPriceKeys[lk] && val !== null && val !== undefined){
+        var eopNum = (typeof val === 'number') ? val : parseFloat(val);
+        if(!isNaN(eopNum) && eopNum > 0) capturedEopPrice = eopNum;
         continue;
       }
       if(skipKeys[lk]||skipKeys[lk.replace(/[_ ]/g,'')])continue;
@@ -3457,6 +3614,11 @@ function doImport(){
         if(extra.avg_buyback_price)yearStore[yearKey].formData.avg_buyback_price=extra.avg_buyback_price;
         if(extra.look_through_rep)yearStore[yearKey].formData.look_through_rep=extra.look_through_rep;
       }
+      // PRICE-FIX 2026-04-30: attach EOP price (if any) to formData.end_of_period_price.
+      // This is the canonical pill anchor field. The #price input is NOT touched.
+      if(yearStore[yearKey] && yearStore[yearKey].formData && capturedEopPrice !== null){
+        yearStore[yearKey].formData.end_of_period_price = capturedEopPrice;
+      }
       // Auto-copy share_repurchases → buyback_cost_m if buyback_cost_m not separately provided
       if(yearStore[yearKey]&&yearStore[yearKey].formData){
         var _fd=yearStore[yearKey].formData;
@@ -3479,10 +3641,11 @@ function doImport(){
     if(fyLabel||fyEnd)msg+=' 📅 '+(fyLabel||'')+' '+(fyEnd?'(ended '+fyEnd+')':'');
     if(warnings.length>0)msg+=' ⚠ Null: '+warnings.join(', ')+'.';
     if(!fyEnd&&!fyLabel)msg+=' ⚠ No fiscal year detected — add fiscal_year_end & fiscal_year_label to prompt.';
-    msg+=' Enter ticker & share price, then analyze!';
-    // If price was loaded from JSON, note it
-    var priceLoaded=document.getElementById('price').value&&parseFloat(document.getElementById('price').value)>0;
-    if(priceLoaded)msg=msg.replace('Enter ticker & share price, then analyze!','Enter ticker, then analyze! (price loaded from JSON)');
+    // PRICE-FIX 2026-04-30: status message updated. Period-end price is now
+    // stored at the pill level (formData.end_of_period_price); current
+    // share price is a separate concern entered at top.
+    msg+=' Enter ticker & current share price, then analyze!';
+    if(capturedEopPrice !== null) msg += ' (Period-end anchor $'+capturedEopPrice.toFixed(2)+' captured for this pill.)';
     statusEl.className='import-status success';
     statusEl.textContent=msg;
 
@@ -3503,6 +3666,169 @@ function doImport(){
 }
 
 // ============ Year Management ============
+// PRICE-FIX 2026-04-30: New helpers for unified price architecture.
+// getPillAnchor: single accessor returning a pill's period-end anchor price.
+// Priority: formData.end_of_period_price -> extra.end_of_period_price ->
+//           rawJson["End of Period Price"] -> formData.price (legacy).
+// All callers that compute per-year EV / market cap / yield should use this,
+// NEVER d.price directly.
+function getPillAnchor(yr){
+  if(!yr) return 0;
+  var fd = yr.formData || {};
+  if(fd.end_of_period_price && fd.end_of_period_price > 0) return fd.end_of_period_price;
+  var extra = yr.extra || {};
+  if(extra.end_of_period_price && extra.end_of_period_price > 0) return extra.end_of_period_price;
+  if(yr.rawJson){
+    try{
+      var rj = (typeof yr.rawJson === 'string') ? JSON.parse(yr.rawJson.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g,function(m,g){return g||''})) : yr.rawJson;
+      if(rj && rj['End of Period Price'] && rj['End of Period Price'] > 0) return rj['End of Period Price'];
+    }catch(e){}
+  }
+  if(fd.price && fd.price > 0) return fd.price; // legacy fallback only
+  return 0;
+}
+
+// PRICE-FIX 2026-04-30 v3: getEffectivePrice — single source of truth for
+// "which price does the math use for this pill?"
+//
+// PRICE-FIX 2026-04-30 v3.1: rule changed from "isInterim" to "latest pill
+// by fiscal_year_end". Reason: between a 10-K drop and the next 10-Q,
+// there is no interim pill, but the user still wants to evaluate the
+// company at today's price. With the new rule, the most recent pill
+// (whatever type) uses the right box. Older pills use their anchors.
+//
+// Rule:
+//   - Most recent pill (latest fiscal_year_end): uses the right box
+//     (Current Market Price). User typing, Live Price, and Save current
+//     all flow into this pill's math.
+//   - All other pills: use their own period-end anchor. Right box is
+//     ignored for these pills.
+//
+// All EV / yield / market-cap callers should use this helper.
+function getLatestPillKey(){
+  var keys = Object.keys(yearStore);
+  if(keys.length === 0) return null;
+  var latest = keys[0];
+  var latestDate = yearStore[latest].fiscal_year_end || latest;
+  for(var i=1; i<keys.length; i++){
+    var k = keys[i];
+    var d = yearStore[k].fiscal_year_end || k;
+    if(d > latestDate){ latest = k; latestDate = d; }
+  }
+  return latest;
+}
+
+function isLatestPill(yr){
+  if(!yr) return false;
+  var latestKey = getLatestPillKey();
+  if(!latestKey) return false;
+  // Compare by fiscal_year_end (the unique identifier across pills).
+  var yrDate = yr.fiscal_year_end;
+  var latestDate = yearStore[latestKey].fiscal_year_end;
+  return yrDate === latestDate && yrDate !== undefined;
+}
+
+function getEffectivePrice(yr){
+  if(!yr) return 0;
+  if(isLatestPill(yr)){
+    // Latest pill: prefer the right box (live, possibly user-edited). Fall
+    // back to top-level saved current price. Final fallback is the anchor.
+    var inputVal = parseFloat(document.getElementById('price').value);
+    if(!isNaN(inputVal) && inputVal > 0) return inputVal;
+    var ticker = (yr.formData && yr.formData.ticker) ? yr.formData.ticker.toUpperCase() : '';
+    if(ticker){
+      var portfolio = getPortfolio();
+      if(portfolio[ticker] && portfolio[ticker].price > 0) return portfolio[ticker].price;
+    }
+    return getPillAnchor(yr);
+  }
+  // Older pill: anchor wins. Always.
+  return getPillAnchor(yr);
+}
+
+
+// PRICE-FIX 2026-04-30 v3: anchor display is now a contextual note
+// explaining which box drives the math for the active pill. The boxes
+// themselves carry the values; this line just disambiguates.
+//
+// Also fills the "Active pill context" display so the user sees, at a
+// glance, which pill is loaded (TTM vs closed FY) and what type it is.
+function renderAnchorDisplay(){
+  var el = document.getElementById('pillAnchorDisplay');
+  var ctxEl = document.getElementById('activePillContext');
+  if(!el) return;
+  if(!currentYearKey || !yearStore[currentYearKey]){
+    el.style.display='none';
+    if(ctxEl) ctxEl.textContent='—';
+    return;
+  }
+  var yr = yearStore[currentYearKey];
+  var label = yr.fiscal_year_label || (yr.fiscal_year_end ? 'FY'+new Date(yr.fiscal_year_end).getFullYear() : currentYearKey);
+  var endD = yr.fiscal_year_end || '';
+  var typeLabel = yr.isInterim ? (yr.interimLabel || 'TTM') : '10-K Annual';
+  // PRICE-FIX 2026-04-30 v3.1: also flag whether this is the latest pill,
+  // since that's the one that uses the right box for math.
+  var isLatest = isLatestPill(yr);
+
+  if(ctxEl){
+    var ctxLine = '<strong>'+label+'</strong>';
+    if(endD) ctxLine += ' <span style="color:var(--text3);font-size:.78rem">('+endD+')</span>';
+    ctxLine += ' <span style="font-size:.7rem;background:'+(yr.isInterim?'var(--orange)':'var(--card2)')+';color:'+(yr.isInterim?'#000':'var(--text2)')+';padding:2px 6px;border-radius:3px;margin-left:4px">'+typeLabel+'</span>';
+    if(isLatest){
+      ctxLine += ' <span style="font-size:.7rem;background:var(--green,#3cb371);color:#000;padding:2px 6px;border-radius:3px;margin-left:4px" title="Latest pill — uses Current Market Price for math">latest</span>';
+    }
+    ctxEl.innerHTML = ctxLine;
+  }
+
+  var anchor = getPillAnchor(yr);
+  var note = '';
+  // PRICE-FIX 2026-04-30 v3.1: rule is now "latest pill" (by fiscal_year_end),
+  // not "isInterim". Older pills always use the anchor; the latest pill uses
+  // the right box.
+  var isLatest = isLatestPill(yr);
+  if(isLatest){
+    note = '<strong>Most recent pill loaded.</strong> Yields and EV use the <strong>Current Market Price</strong> (right box). The Period-End Anchor (left box, $'+(anchor>0?anchor.toFixed(2):'—')+') is shown for reference only and does not drive math while this is the active pill.';
+  } else {
+    note = '<strong>Older fiscal year loaded.</strong> Yields and EV use the <strong>Period-End Anchor</strong> (left box, $'+(anchor>0?anchor.toFixed(2):'—')+'). The Current Market Price (right box) is the ticker\'s persistent value, used by the Compare and Brief views, and does not affect this pill\'s math.';
+  }
+  if(anchor === 0 && !isLatest){
+    note = '<span style="color:var(--orange)"><strong>'+label+': no period-end anchor stored.</strong></span> Re-import this filing or run the migration script to populate.';
+  }
+  el.innerHTML = note;
+  el.style.display = 'block';
+}
+
+// PRICE-FIX 2026-04-30: in-app safety net for portfolios loaded from
+// pre-migration JSONs. Walks every pill and if formData.end_of_period_price
+// is missing, populates it from the priority chain (extra -> rawJson ->
+// formData.price). Idempotent. Logs to console only — non-destructive to
+// the original fields. Runs automatically once per loadFromPortfolio.
+function migratePillAnchors(ticker){
+  var migrated = 0, skipped = 0, missing = 0;
+  Object.keys(yearStore).forEach(function(k){
+    var yr = yearStore[k];
+    if(!yr || !yr.formData) return;
+    var fd = yr.formData;
+    if(fd.end_of_period_price && fd.end_of_period_price > 0){ skipped++; return; }
+    var anchor = 0;
+    var extra = yr.extra || {};
+    if(extra.end_of_period_price && extra.end_of_period_price > 0) anchor = extra.end_of_period_price;
+    else if(yr.rawJson){
+      try{
+        var rj = (typeof yr.rawJson === 'string') ? JSON.parse(yr.rawJson.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g,function(m,g){return g||''})) : yr.rawJson;
+        if(rj && rj['End of Period Price'] && rj['End of Period Price'] > 0) anchor = rj['End of Period Price'];
+      }catch(e){}
+    }
+    if(!anchor && fd.price && fd.price > 0) anchor = fd.price; // legacy fallback
+    if(anchor > 0){ fd.end_of_period_price = anchor; migrated++; }
+    else missing++;
+  });
+  if(migrated > 0 || missing > 0){
+    console.log('[PRICE-FIX migration] '+(ticker||'')+' — anchors set: '+migrated+', already clean: '+skipped+', no anchor available: '+missing);
+  }
+}
+
+
 // v4.7 (B4 refactor, Apr 19 2026): Inverted capture logic.
 // OLD behavior: form is the truth. Empty form input -> field becomes null.
 //   Side effect: any JSON-imported field whose form input was empty at capture
@@ -3520,7 +3846,11 @@ function captureForm(){
            ? Object.assign({}, yearStore[currentYearKey].formData)
            : {};
   // 2. Form fields that may override (numeric inputs read via parseFloat)
-  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','price'];
+  // PRICE-FIX 2026-04-30: 'price' REMOVED from this list. The #price input is
+  // now reserved for current price (per-ticker top-level), and no longer
+  // contaminates per-pill formData. Per-pill anchor is formData.end_of_period_price,
+  // set at extraction time and migration only — never via the form.
+  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   numericFields.forEach(function(id){
     var el = document.getElementById(id);
     if(el && el.value !== ''){
@@ -3539,30 +3869,46 @@ function restoreForm(d){
   var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
-  // Price: always restore from year data so each year carries its own price (critical for historical backfills)
-  var priceEl=document.getElementById('price');
-  if(d.price){priceEl.value=d.price;}else{priceEl.value='';}
+  // PRICE-FIX 2026-04-30 v3: TWO-BOX MODEL.
+  // Left box (#anchor_price): always set to the active pill's period-end anchor.
+  // Right box (#price): NOT touched here. It holds the per-ticker current
+  // market price across pill clicks. It is set ONCE on ticker load by
+  // loadFromPortfolio (from portfolio[ticker].price), and updated only
+  // by user typing, Live Price, or Save current.
+  var anchorEl = document.getElementById('anchor_price');
+  if(anchorEl){
+    var anchor = 0;
+    if(d.end_of_period_price && d.end_of_period_price > 0) anchor = d.end_of_period_price;
+    else if(d.price && d.price > 0) anchor = d.price; // legacy fallback
+    anchorEl.value = (anchor > 0) ? anchor.toFixed(2) : '';
+  }
+  renderAnchorDisplay();
   calcAmort();
 }
 
 function applyPriceAllYears(){
+  // PRICE-FIX 2026-04-30 v2: REPURPOSED. In the session-override model,
+  // the #price input shows the active pill's anchor by default (so the
+  // math makes sense for that pill). When the user wants to update the
+  // ticker's "current price" (used by the cross-ticker brief / compare
+  // table), they type today's price and click this button. It writes to
+  // portfolio[ticker].price ONLY — never to any pill's stored anchor.
   var p=v('price');
-  if(!p||p<=0){alert('Enter a share price first.');return;}
-  // Save current year's form first
+  if(!p||p<=0){alert('Enter a current share price first.');return;}
+  var ticker=document.getElementById('ticker').value.trim().toUpperCase();
+  if(!ticker){alert('Enter a ticker first.');return;}
+  // Save current year's form first (does not touch price field anymore)
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
-  // Check if any years have distinct prices
-  var distinctPrices=[];
-  Object.keys(yearStore).forEach(function(k){
-    if(yearStore[k].formData&&yearStore[k].formData.price&&yearStore[k].formData.price!==p)distinctPrices.push(k);
-  });
-  if(distinctPrices.length>0){
-    if(!confirm(distinctPrices.length+' year(s) have different prices stored. Overwrite all with $'+p.toFixed(2)+'?'))return;
+  // Update top-level current price for this ticker in localStorage
+  var portfolio=getPortfolio();
+  if(!portfolio[ticker]){
+    alert('Ticker '+ticker+' not yet saved to portfolio. Click "Save" first.');
+    return;
   }
-  var count=0;
-  Object.keys(yearStore).forEach(function(k){
-    if(yearStore[k].formData){yearStore[k].formData.price=p;count++;}
-  });
-  alert('Price $'+p.toFixed(2)+' applied to '+count+' year'+(count!==1?'s':'')+'.');
+  portfolio[ticker].price=p;
+  portfolio[ticker].savedAt=new Date().toISOString();
+  putPortfolio(portfolio);
+  alert('Top-level current price for '+ticker+' set to $'+p.toFixed(2)+'. Pill anchors are unchanged.');
 }
 
 // ============ Live Price Fetch (Finnhub) ============
@@ -3745,7 +4091,12 @@ function renderPills(){
 function loadYear(k){
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
   var yr=yearStore[k];
-  if(yr){restoreForm(yr.formData);currentYearKey=k;renderPills();}
+  // PRICE-FIX 2026-04-30 v2.1: set currentYearKey BEFORE restoreForm.
+  // restoreForm reads yearStore[currentYearKey] to look up the pill anchor,
+  // so currentYearKey must point to the new pill before that lookup runs.
+  // The previous order (restoreForm first, then currentYearKey=k) caused
+  // the anchor display and price input to stay stuck on the previous pill.
+  if(yr){currentYearKey=k;restoreForm(yr.formData);renderPills();}
 }
 
 function removeYear(k){
@@ -4408,12 +4759,14 @@ function renderLongRun(){
   }
 
   years.forEach(function(y){
-    // We need EV for each year — use current EV since historical price isn't stored per-year
+    // PRICE-FIX 2026-04-30: per-year EV uses the pill's period-end anchor
+    // (formData.end_of_period_price) via getPillAnchor. The stale comment
+    // about "historical price isn't stored per-year" is removed; it is.
     var ev=0;
     var yk=allKeys[years.indexOf(y)];
     var yr=yearStore[yk];
     var fd=yr.formData||{};
-    var price=fd.price||0,shares=fd.shares||0;
+    var price=getPillAnchor(yr),shares=fd.shares||0;
     var marketCap=price*shares;
     var debt=fd.debt||0,cash=fd.cash||0,sti=fd.sti||0;
     ev=marketCap+debt-cash-sti;
@@ -6978,7 +7331,12 @@ function renderDashboardHeader(opts){
 
 function calculate(){
   var ticker=document.getElementById('ticker').value||'Company';
-  var price=v('price');
+  // PRICE-FIX 2026-04-30 v3: route price through getEffectivePrice. For TTM
+  // pills this returns v('price') (right box, current). For closed FY pills
+  // this returns the pill's anchor (left box). Keeps the math correct
+  // regardless of what the user has typed in the right box.
+  var activeYr = (currentYearKey && yearStore[currentYearKey]) ? yearStore[currentYearKey] : null;
+  var price = activeYr ? getEffectivePrice(activeYr) : v('price');
   var cfo=v('cfo');
   var sbcExp=v('sbc_expense')||0;
   var sbcGrant=v('sbc_grant')||0;
