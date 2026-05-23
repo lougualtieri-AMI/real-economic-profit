@@ -411,7 +411,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-05-21';
-  var buildId='v4.10.0';
+  var buildId='v4.11.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -665,6 +665,10 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <div class="dd-summary">Adjust amortization and R&D assumptions. Changes update the yield ladder above in real time.</div>
       <div class="dd-body open">
         <p style="font-size:.8rem;color:var(--text2);margin-bottom:14px;line-height:1.5">These sliders drive the <strong style="color:var(--accent)">Best Guess ★</strong> panel above. Panel 1 (Full D&amp;A) and Panel 2 (100% Amort / 0% R&D Added Back) are fixed reference points. Use these controls to tune the view that represents your thesis.</p>
+        <!-- index30 (B4 2a) → index31 (B4): top status line is computed (Saved / Default / Unsaved) by renderBgAttention from getBgState; the three-state table + actions live at the bottom of this panel. -->
+        <div id="bgAttentionBar" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;border-radius:8px;flex-wrap:wrap;background:rgba(150,150,150,.08);border:1px solid var(--border)">
+          <span id="bgAttentionStatus" style="font-size:.76rem;font-weight:600;color:var(--text2);flex:1;min-width:200px;line-height:1.4">○ Factory default — not yet addressed.</span>
+        </div>
     <div id="adjBar" style="display:flex;height:44px;border-radius:8px;overflow:hidden;margin-bottom:4px"></div>
     <div id="adjYieldRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px"></div>
     <div style="display:flex;gap:12px;font-size:.68rem;color:var(--text3);margin-bottom:14px;flex-wrap:wrap">
@@ -672,6 +676,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--purple);vertical-align:middle;margin-right:4px"></span>Amortization addback</span>
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);vertical-align:middle;margin-right:4px;opacity:.6;border:1px dashed var(--green)"></span>Growth R&D addback</span>
     </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:.74rem;color:var(--text2);flex-wrap:wrap"><label for="taxRateInput" style="font-weight:700;color:var(--green)">Tax rate (statutory):</label><input type="number" id="taxRateInput" min="0" max="60" step="1" value="21" onchange="var v=parseFloat(this.value);if(isNaN(v)||v<0)v=0;if(v>60)v=60;this.value=v;TAX_RATE=v/100;calculate({noScroll:true});" style="width:56px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.8rem;text-align:right"><span style="color:var(--text3)">% — sets the after-tax value of the growth-R&D addback; applied app-wide. Inert for companies with no R&D.</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="adjCards">
       <!-- Amort adjustment card -->
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px">
@@ -693,7 +698,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px">
         <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green)"></span>R&D Growth Addback</div>
         <div style="font-size:.72rem;color:var(--text3);margin-bottom:8px"><strong style="color:var(--green)" id="adjRdAmt">$0</strong> in R&D expense</div>
-        <div style="background:rgba(46,204,113,.08);border-left:3px solid var(--green);padding:8px 10px;border-radius:0 6px 6px 0;font-size:.7rem;color:var(--text2);line-height:1.5;margin-bottom:10px"><strong style="color:var(--green)">What this adds back:</strong> The after-tax value of discretionary growth R&D — spending on new products, new markets, and new capabilities that isn't required to keep the business running. Applied at 79% (1 − 21% statutory tax rate) because expensing R&D generates an immediate tax shield that would be lost if capitalized. <em style="opacity:.75">Note: Capitalizing growth R&D would also increase the asset base for ROIC. This is omitted because it requires assumptions about R&D asset life that vary by industry. For R&D-intensive, low capital intensity companies, this omission may modestly overstate returns on capital.</em></div>
+        <div id="adjRdBody"><!-- index37 (CC11): wrapper so the interactive R&D controls can be toggled off for no-R&D companies WITHOUT hiding the whole card; the card stays visible and shows the adjRdNone note instead -->
+        <div style="background:rgba(46,204,113,.08);border-left:3px solid var(--green);padding:8px 10px;border-radius:0 6px 6px 0;font-size:.7rem;color:var(--text2);line-height:1.5;margin-bottom:10px"><strong style="color:var(--green)">What this adds back:</strong> The after-tax value of discretionary growth R&D — spending on new products, new markets, and new capabilities that isn't required to keep the business running. Applied at <span id="taxNoteAfter">79</span>% (1 − <span id="taxNoteRate">21</span>% statutory tax rate) because expensing R&D generates an immediate tax shield that would be lost if capitalized. <em style="opacity:.75">Note: Capitalizing growth R&D would also increase the asset base for ROIC. This is omitted because it requires assumptions about R&D asset life that vary by industry. For R&D-intensive, low capital intensity companies, this omission may modestly overstate returns on capital.</em></div>
         <div id="adjRdPresets" style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <input type="range" id="adjRdSlider" min="0" max="100" value="30" style="flex:1;accent-color:var(--green);cursor:pointer">
@@ -704,6 +710,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
           <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.7rem;color:var(--text3)">Growth R&D Added Back (after-tax)</div><div id="adjRdAdd" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--green)">+$0</div></div>
           <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-size:.7rem;color:var(--text3)">Fully Adjusted Yield</div><div id="adjRdYield" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;color:var(--accent2)">0%</div></div>
         </div>
+        </div><!-- /adjRdBody -->
+        <div id="adjRdNone" style="display:none;background:rgba(150,150,150,.07);border:1px dashed var(--border);border-left:3px solid var(--text3);border-radius:0 6px 6px 0;padding:10px 12px;font-size:.72rem;color:var(--text2);line-height:1.5">No R&amp;D reported for this company — there is no discretionary growth-R&amp;D to add back, so the Best Guess view equals the 100% Amortization view above.</div>
       </div>
     </div>
     <!-- Summary waterfall table -->
@@ -712,6 +720,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <tbody></tbody>
     </table>
     <div id="adjSummaryNote" style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5;font-style:italic"></div>
+    <!-- index31 (B4): three-state subpanel (Real-time / Saved / Default) + actions, rendered by renderBgAttention -->
+    <div id="bgStateTable" style="margin-top:16px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px"></div>
       </div>
     </div>
   </div>
@@ -1192,12 +1202,15 @@ function saveToPortfolio(){
 }
 
 function loadFromPortfolio(){
+  resetTaxRate();resetBestGuessDefaults();
   var sel=document.getElementById('portfolioSelect');
   var ticker=sel.value;
   if(!ticker){clearForNewCompany();return;}
   var p=getPortfolio();
   var entry=p[ticker];
   if(!entry)return;
+  _currentSavedSettings = entry.settings || null; // index31 (B4): cache this company's saved assumptions for getBgState
+  if(entry.settings) applyBestGuessSettings(entry.settings); // index30 (B4 2a): restore this company's saved assumptions (flag clears). resetBestGuessDefaults() above already raised the flag for the no-settings case.
   // Clear current state
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
@@ -1268,6 +1281,7 @@ function onPortfolioSelect(){
 }
 
 function clearForNewCompany(){
+  resetTaxRate();resetBestGuessDefaults();_currentSavedSettings=null; // index31 (B4): a brand-new company has no saved assumptions
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
   selectedYears=[];
@@ -1502,8 +1516,7 @@ function runCompare(selectedTickers){
       reportedFCF:m.reportedFCF,gap:m.realProfit-m.reportedFCF,
       roicFirst:roicFirst,roicLast:roicLast,
       da:m.da,equity:m.equity,debt:debt,
-      reinvestRate:m.investedCapital>0?m.growthCapex/m.investedCapital:0,
-      impliedGrowth:m.investedCapital>0?(m.growthCapex/m.investedCapital)*m.realROIC:0,
+      reinvestRate:canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,m.realProfit).rate,
       organicBase:keys.length>=2?computeMetrics(ys[keys[0]]).realProfit:m.realProfit,
       reinvestLayer:keys.length>=2?m.realProfit-computeMetrics(ys[keys[0]]).realProfit:0,
       nta:m.nta,returnOnNTA:m.returnOnNTA,
@@ -1530,8 +1543,7 @@ function runCompare(selectedTickers){
     {label:'Real ROIC',f:function(c){return pct(c.realROIC)},hl:true},
     {label:'Return on NTA',f:function(c){return c.nta>0?pct(c.returnOnNTA):'—'},hl:true},
     {label:'Incremental Return',f:function(c){return c.incrementalReturn!==null?pct(c.incrementalReturn):'—'},hl:true},
-    {label:'Reinvestment Rate',f:function(c){return pct(c.reinvestRate,1)},hl:true},
-    {label:'Implied Profit Growth',f:function(c){return pct(c.impliedGrowth,1)},hl:true},
+    {label:'Reinvestment Rate',f:function(c){return c.reinvestRate!==null?pct(c.reinvestRate,1):'—'},hl:true},
     {label:'ROIC Trend',f:function(c){
       if(c.roicFirst===null)return '—';
       var ch=c.roicLast-c.roicFirst;
@@ -1611,8 +1623,6 @@ function runScorecard(selectedTickers){
     return {
       ticker:t,realYield:realYield,realPE:realPE,realROIC:m.realROIC,
       returnOnNTA:m.returnOnNTA,nta:m.nta,
-      reinvestRate:m.investedCapital>0?m.growthCapex/m.investedCapital:0,
-      impliedGrowth:m.investedCapital>0?(m.growthCapex/m.investedCapital)*m.realROIC:0,
       incrementalReturn:incReturn,
       sbcPctCFO:sbcPctCFO,realProfit:m.realProfit,ev:ev
     };
@@ -1624,8 +1634,6 @@ function runScorecard(selectedTickers){
     {label:'Real P/E',key:'realPE',f:function(v){return v>0?v.toFixed(1)+'x':'N/A'},higher:false,skipZero:true},
     {label:'Real ROIC',key:'realROIC',f:pct,higher:true},
     {label:'Return on NTA',key:'returnOnNTA',f:pct,higher:true,skipZero:true},
-    {label:'Reinvestment Rate',key:'reinvestRate',f:function(v){return pct(v,1)},higher:true},
-    {label:'Implied Growth',key:'impliedGrowth',f:function(v){return pct(v,1)},higher:true},
     {label:'Incremental Return',key:'incrementalReturn',f:function(v){return v!==null?pct(v):'—'},higher:true,skipNull:true},
     {label:'SBC % of CFO',key:'sbcPctCFO',f:function(v){return pct(v,1)},higher:false}
   ];
@@ -2202,8 +2210,9 @@ function renderGrowthCompounder(){
         var _rest=_d.restructuring||0;
         var _ltInv=_d.lt_investments||0,_invR=(_d.inv_return_rate||4)/100;
         var _rep=_cfo-_sbc-_mc-_rest+_ltInv*_invR;
-        if(_rep>0){
-          var _actRate=Math.round(_gc/_rep*100/5)*5; // round to nearest 5%
+        var _b=canonicalReinvestRate(_gc,getRD(_yr),(100-rdMaintPct)/100,_rep).rate; // index23: seed from canonical b (incl after-tax growth R&D), not CapEx-only
+        if(_b!==null){
+          var _actRate=Math.round(_b*100/5)*5; // round to nearest 5%
           _actRate=Math.max(0,Math.min(100,_actRate));
           reinvestSlider.value=_actRate;
         }
@@ -3822,6 +3831,28 @@ function saveCurrentYear(yearKey,fyEnd,fyLabel,extra){
   renderPills();
 }
 
+// index20: canonical reinvestment rate b = (Growth CapEx + after-tax Growth R&D) / REP.
+// Single shared source so every panel computes b identically. Denominator is REP (profit), NOT
+// Invested Capital — b must be a fraction of profit for the Gordon identity to be dimensionally valid.
+// growthFraction = share of R&D treated as growth investment (e.g. 0.30); tax shield via global TAX_RATE.
+// Computed at point of display (not inside computeMetrics) so multi-ticker Compare can pass each
+// ticker's own growthFraction. Returns null rate when REP <= 0 (guard).
+// index22: robust R&D sourcing — older extractions store R&D under extra.r_and_d, newer under
+// extra.rd_expense; formData.rd_expense is the fallback. extra.rd_expense first (truest TTM value),
+// then r_and_d, then formData. Single source so no panel silently drops a year's R&D.
+function getRD(entry){
+  var e=(entry&&entry.extra)||{};
+  var f=(entry&&entry.formData)||{};
+  return e.rd_expense||e.r_and_d||f.rd_expense||null;
+}
+
+function canonicalReinvestRate(growthCapex, rdExpense, growthFraction, rep){
+  var afterTaxGrowthRD=(rdExpense&&rdExpense>0&&growthFraction>0)?rdExpense*growthFraction*(1-TAX_RATE):0;
+  var numerator=(growthCapex||0)+afterTaxGrowthRD;
+  var rate=(rep>0)?numerator/rep:null;
+  return {rate:rate, numerator:numerator, afterTaxGrowthRD:afterTaxGrowthRD};
+}
+
 function computeMetrics(entry){
   var d=entry.formData;
   var cfo=d.cfo||0,sbcExp=d.sbc_expense||0,sbcGrant=d.sbc_grant||0;
@@ -3860,7 +3891,7 @@ function computeMetrics(entry){
   var impliedGrowth=reinvestRate*realROIC;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:(entry.extra||{}).rd_expense||null};
+  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,realROIC:realROIC,reinvestRate:reinvestRate,impliedGrowth:impliedGrowth,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
 }
 
 // Shared helper: build enriched years array from yearStore keys
@@ -3880,6 +3911,7 @@ function enrichYears(keys,opts){
       m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
     }
     m.sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:null;
+    m.canonReinvest=canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,m.realProfit).rate; // index21: canonical reinvestment rate b = (Growth CapEx + after-tax Growth R&D) / REP, per year
     if(opts.formData)m.formData=yr.formData;
     if(opts.extra)m.extra=yr.extra||{};
     return m;
@@ -4152,8 +4184,7 @@ function renderTrend(){
   trendRows.push({group:'CAPITAL & RETURNS'});
   trendRows.push({label:'Invested Capital',key:'investedCapital',f:fmtM});
   trendRows.push({label:'Real ROIC',key:'realROIC',f:function(v){return pct(v,1)}});
-  trendRows.push({label:'Reinvestment Rate',key:'reinvestRate',f:function(v){return pct(v,1)}});
-  trendRows.push({label:'Implied Profit Growth',key:'impliedGrowth',f:function(v){return pct(v,1)}});
+  trendRows.push({label:'Reinvestment Rate',key:'canonReinvest',f:function(v){return (v!==null&&v!==undefined)?pct(v,1):'—'}});
 
   // Ex-amort rows if applicable
   if(years.some(function(y){return y.maintCapexLight!==null})){
@@ -4482,13 +4513,14 @@ function renderPCBA(years){
       }
 
       var latestGrowthRd=latestRd.rd_expense*(rdGrowthPct3/100);
-      var rdAddback=latestGrowthRd*0.79;
+      var rdAddback=latestGrowthRd*(1-TAX_RATE);
       var stdIC=latestRd.investedCapital;
       var stdROIC=stdIC>0?latestRd.realProfit/stdIC:0;
       var adjIC=stdIC+rdAsset;
       var adjProfit=latestRd.realProfit+rdAddback;
       var adjROIC=adjIC>0?adjProfit/adjIC:0;
       var roicDrop=stdROIC-adjROIC;
+      var asymROIC=stdIC>0?adjProfit/stdIC:0; // index25 (C3): asymmetric ROIC — growth R&D added to profit but NOT capitalized in the denominator (the inflated/inconsistent reading)
 
       var rdEffId='pcbaRdEff'+Math.random().toString(36).substr(2,5);
       html+='<div style="margin:24px 0 0;padding-top:16px;border-top:1px solid #333">';
@@ -4521,7 +4553,7 @@ function renderPCBA(years){
       if(rdInvIncome>0){
         html+='<tr><td><span style="color:var(--text3);font-weight:700;margin-right:4px">+</span> Investment Income</td><td style="text-align:right">'+fmtM(rdInvIncome)+'</td><td style="text-align:right">'+fmtM(rdInvIncome)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
       }
-      html+='<tr style="background:rgba(46,204,113,.06)"><td><span style="color:var(--green);font-weight:700;margin-right:4px">+</span> Growth R&D addback (after-tax)</td><td style="text-align:right;color:var(--text3)">—</td><td style="text-align:right;color:var(--green);font-weight:600">+'+fmtM(rdAddback)+'</td><td style="font-size:.75rem;color:var(--green)">'+fmtM(latestGrowthRd)+' x 79%</td></tr>';
+      html+='<tr style="background:rgba(46,204,113,.06)"><td><span style="color:var(--green);font-weight:700;margin-right:4px">+</span> Growth R&D addback (after-tax)</td><td style="text-align:right;color:var(--text3)">—</td><td style="text-align:right;color:var(--green);font-weight:600">+'+fmtM(rdAddback)+'</td><td style="font-size:.75rem;color:var(--green)">'+fmtM(latestGrowthRd)+' x '+(100*(1-TAX_RATE)).toFixed(0)+'%</td></tr>';
       html+='<tr style="border-top:2px solid var(--accent-dim)"><td style="font-weight:700;color:var(--accent2)">= Real Economic Profit</td><td style="text-align:right;font-weight:700;color:var(--accent2)">'+fmtM(latestRd.realProfit)+'</td><td style="text-align:right;font-weight:700;color:var(--green)">'+fmtM(adjProfit)+'</td><td style="font-size:.75rem;color:var(--green)">+'+fmtM(rdAddback)+'</td></tr>';
       html+='<tr><td colspan="4" style="font-weight:700;color:var(--accent);padding-top:16px;border-bottom:none">DENOMINATOR: Invested Capital</td></tr>';
       html+='<tr><td>Equity + Debt - Cash - STI</td><td style="text-align:right">'+fmtM(stdIC)+'</td><td style="text-align:right">'+fmtM(stdIC)+'</td><td style="font-size:.75rem;color:var(--text3)">No change</td></tr>';
@@ -4550,19 +4582,23 @@ function renderPCBA(years){
       html+='<td style="font-weight:700;color:'+impactColor+'">'+(roicDrop>0?'-':'+')+Math.abs(roicDrop*100).toFixed(1)+'pp</td></tr>';
       html+='</tbody></table></div>';
 
+      // index25 (C3): three-way ROIC summary — Full D&A / Primary asymmetric / Symmetric
+      var asymDelta=asymROIC-adjROIC;
+      html+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
+      html+='<div style="flex:1;min-width:115px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Full D&A</div><div style="font-size:1.15rem;font-weight:700;color:'+stdColor+';font-family:JetBrains Mono,monospace">'+pct(stdROIC)+'</div><div style="font-size:.64rem;color:var(--text3);margin-top:2px">R&D expensed</div></div>';
+      html+='<div style="flex:1;min-width:115px;background:rgba(230,126,34,.06);border:1px solid var(--orange);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Primary asymmetric</div><div style="font-size:1.15rem;font-weight:700;color:var(--orange);font-family:JetBrains Mono,monospace">'+pct(asymROIC)+'</div><div style="font-size:.64rem;color:var(--orange);margin-top:2px">R&D in numerator (profit) only — overstated</div></div>';
+      html+='<div style="flex:1;min-width:115px;background:rgba(155,89,182,.08);border:1px solid var(--purple);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Symmetric</div><div style="font-size:1.15rem;font-weight:700;color:var(--purple);font-family:JetBrains Mono,monospace">'+pct(adjROIC)+'</div><div style="font-size:.64rem;color:var(--purple);margin-top:2px">R&D in numerator + denominator — consistent</div></div>';
+      html+='</div>';
+      html+='<p style="font-size:.74rem;color:var(--text3);margin-top:8px;line-height:1.55">The <span style="color:var(--orange)">asymmetric</span> reading adds growth R&D to profit (numerator) but not to the capital base (denominator) — overstating ROIC by '+(asymDelta*100).toFixed(1)+'pp versus the consistent <span style="color:var(--purple)">symmetric</span> figure. Growth R&D is capital withheld from owners, so a real return on it must show in both profit <em>and</em> capital. REPA headlines neither inflated number: its Real ROIC expenses R&D (Full D&A), and this panel shows the symmetric alternative.</p>';
+
       html+='<div style="margin-top:10px;font-size:.78rem;color:var(--text3);line-height:1.6">';
       html+='<strong style="color:var(--text2)">R&D Split ('+rdSectorLabel+' preset):</strong> Total R&D '+fmtM(latestRd.rd_expense)+' = '+rdMaintPct3+'% maintenance ('+fmtM(latestRd.rd_expense*rdMaintPct3/100)+') + '+rdGrowthPct3+'% growth ('+fmtM(latestGrowthRd)+'). ';
       html+='Only growth R&D is capitalized — maintenance R&D stays expensed.';
       html+='</div>';
 
       html+='<div class="pcba-context" style="margin-top:12px">';
-      if(adjROIC>=0.12){
-        html+='<strong>Still strong.</strong> Even capitalizing growth R&D, ROIC remains '+pct(adjROIC)+' — well above cost of capital.';
-      }else if(adjROIC>=0.06){
-        html+='<strong>Adequate but watch it.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' clears cost of capital, but the '+(roicDrop*100).toFixed(1)+'pp drop from standard ROIC ('+pct(stdROIC)+') means R&D capital base is material.';
-      }else{
-        html+='<strong>Below cost of capital.</strong> R&D-adjusted ROIC of '+pct(adjROIC)+' suggests the combined capital base is not generating adequate returns.';
-      }
+      var symVsFull=adjROIC-stdROIC; // index27: replaced the directional "even capitalizing... still strong" verdict (which wrongly assumed capitalizing always lowers ROIC) with a neutral, direction-aware note
+      html+='Capitalizing growth R&D on both sides of the ratio moves Real ROIC from '+pct(stdROIC)+' (Full D&A) to '+pct(adjROIC)+' (symmetric) — a '+Math.abs(symVsFull*100).toFixed(1)+'pp '+(symVsFull>=0?'rise':'decline')+'. The asymmetric reading ('+pct(asymROIC)+'), which counts R&D in profit only, is the inflated outlier REPA avoids.';
       html+='</div>';
 
       // Incremental R&D returns (#46 — migrated here as core analytical content)
@@ -4591,7 +4627,7 @@ function renderPCBA(years){
         html+='</div>';
       }
 
-      html+='<p class="section-note" style="margin-top:8px">'+rdSectorLabel+' preset: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth. Asset life: '+rdAssetLife+' years. Addback at 79% (1 - 21% tax).</p>';
+      html+='<p class="section-note" style="margin-top:8px">'+rdSectorLabel+' preset: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth. Asset life: '+rdAssetLife+' years. Addback at '+(100*(1-TAX_RATE)).toFixed(0)+'% (1 - '+(TAX_RATE*100).toFixed(0)+'% tax).</p>';
       html+='</div></div>'; // close rdEff collapsible + outer wrapper
     }
   }
@@ -4630,14 +4666,9 @@ function renderLongRun(){
   var mult=1.05;
   var multEl=document.getElementById('maintMultiplier');
   if(multEl)mult=parseFloat(multEl.value)||1.05;
-  var rdSector=getRdSectorPreset();
-  var rdMaintPct=rdSector.maintPct;
-  // Check if R&D slider has been customized
-  var rdSlider=document.getElementById('roiicRdGrowth');
-  if(rdSlider){
-    var rdGrowthSlider=parseInt(rdSlider.value);
-    if(!isNaN(rdGrowthSlider)&&rdGrowthSlider!==50) rdMaintPct=100-rdGrowthSlider;
-  }
+  // index40 (B1 single source of truth): the R&D maintenance/growth split is the analyst's canonical Best Guess slider (adjRdSlider) — NOT sector auto-detect, and NOT the ROIIC card's own slider. Resolves the Long-Run-vs-Best-Guess divergence (was: getRdSectorPreset().maintPct, conditionally overridden by roiicRdGrowth only when ≠50 — order-dependent and ignored the canonical slider).
+  var _aRd=document.getElementById('adjRdSlider');
+  var rdMaintPct=_aRd?(100-(parseInt(_aRd.value)||30)):70;
 
   years.forEach(function(y){
     // PRICE-FIX 2026-04-30: per-year EV uses the pill's period-end anchor
@@ -4669,7 +4700,7 @@ function renderLongRun(){
     // Best Guess yield (add-back amort + R&D growth addback)
     var rdExp=y.rd_expense||0;
     var rdGrowthPct=100-rdMaintPct;
-    var rdGrowth=rdExp>0?(rdExp*(rdGrowthPct/100)*0.79):0; // after-tax
+    var rdGrowth=rdExp>0?(rdExp*(rdGrowthPct/100)*(1-TAX_RATE)):0; // after-tax
     var baseForBG=(y.realProfitLight!==null)?y.realProfitLight:y.realProfit;
     y.repBestGuess=baseForBG+rdGrowth;
     y.yieldBestGuess=ev>0?y.repBestGuess/ev:0;
@@ -4839,7 +4870,7 @@ function renderLongRun(){
   // Explain which yield variant was chosen and why
   html+='<div style="font-size:.72rem;color:var(--text3);margin-top:10px;padding:8px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">';
   if(headlineKey==='yieldBestGuess'){
-    html+='<strong style="color:var(--accent)">Best Guess</strong> shown as headline — R&D is '+(latest.revenue>0?pct(latest.rdExp/latest.revenue,0):'significant')+' of revenue ('+rdSector.label+' preset: '+rdMaintPct+'% maintenance, '+(100-rdMaintPct)+'% growth, after-tax addback). ';
+    html+='<strong style="color:var(--accent)">Best Guess</strong> shown as headline — R&D is '+(latest.revenue>0?pct(latest.rdExp/latest.revenue,0):'significant')+' of revenue (Best Guess split: '+rdMaintPct+'% maintenance, '+(100-rdMaintPct)+'% growth, after-tax addback). ';
     html+='Dashed lines show Full D&A and All Amort Added Back reference yields.';
   } else if(headlineKey==='yieldAddBack'){
     html+='<strong style="color:#9b59b6">All Amort Added Back</strong> shown as headline — amortization spread is material ('+fmtM(Math.abs(latest.realProfitLight-latest.realProfit))+' impact on REP). ';
@@ -4891,11 +4922,11 @@ function renderRoiicAnalysis(){
   document.getElementById('roiicChartArea').innerHTML='';
   document.getElementById('roiicTable').innerHTML='';
 
-  var preset=getRdSectorPreset();
+  // index40 (B1 single source of truth): the ROIIC card seeds its R&D-growth slider from the canonical Best Guess slider (adjRdSlider). The sector auto-detect (getRdSectorPreset) is removed as a source; fall back to the canonical 30% growth default only if adjRdSlider is somehow absent.
   var slider=document.getElementById('roiicRdGrowth');
   if(!slider.dataset.initialized){
     var adjRdSlider=document.getElementById('adjRdSlider');
-    var growthPct=adjRdSlider?parseInt(adjRdSlider.value):(100-preset.maintPct);
+    var growthPct=adjRdSlider?parseInt(adjRdSlider.value):30;
     slider.value=growthPct;
     slider.dataset.initialized='1';
   }
@@ -4907,8 +4938,7 @@ function renderRoiicAnalysis(){
   document.getElementById('roiicNecessityLabel').textContent=necessityPct+'%';
 
   var hasRdData=allKeys.some(function(k){
-    var ex=yearStore[k].extra||{};
-    return ex.rd_expense&&ex.rd_expense>0;
+    return getRD(yearStore[k])>0;
   });
   var rdStatus=document.getElementById('roiicRdStatus');
   if(!hasRdData){
@@ -4941,7 +4971,7 @@ function renderRoiicAnalysis(){
     var maintenanceRD=rd*(rdMaintPct/100);
     var rawGrowthRD=rd*(rdGrowthPct/100);
     var nonDiscGrowthRD=rawGrowthRD*(necessityPct/100);
-    var trueGrowthRD=rawGrowthRD*(1-necessityPct/100);
+    var trueGrowthRD=rawGrowthRD*(1-necessityPct/100)*(1-TAX_RATE); // index23: after-tax, consistent with canonical b
     var growthCapex=y.growthCapex||0;
     var totalReinvestment=growthCapex+trueGrowthRD;
     var reinvestmentRate=y.realProfit>0?totalReinvestment/y.realProfit:0;
@@ -4976,8 +5006,6 @@ function renderRoiicAnalysis(){
   var avgReinvRate=roiicData.length>0?
     roiicData.reduce(function(s,d){return s+d.reinvestmentRate},0)/roiicData.length:0;
 
-  var impliedGrowth=(cumulRoiic!==null&&isFinite(cumulRoiic*avgReinvRate))?(cumulRoiic*avgReinvRate):null;
-
   var statsHtml='';
   function statCard(label,value,sub,color){
     return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">'+
@@ -4989,8 +5017,7 @@ function renderRoiicAnalysis(){
 
   var roiicColor=cumulRoiic===null?'var(--text3)':cumulRoiic>0.15?'var(--green)':cumulRoiic>0?'var(--orange)':'var(--red)';
   statsHtml+=statCard('CUMULATIVE ROIIC',cumulRoiic!==null?pct(cumulRoiic,1):'---',first.label+'\u2013'+last.label,roiicColor);
-  statsHtml+=statCard('AVG REINVEST RATE',pct(avgReinvRate,1),'Growth CapEx + True Growth R\u0026D / REP','var(--orange)');
-  statsHtml+=statCard('IMPLIED REP GROWTH',impliedGrowth!==null?pct(impliedGrowth,1):'---','Reinvest Rate \u00d7 ROIIC','var(--blue)');
+  statsHtml+=statCard('AVG REINVEST RATE',pct(avgReinvRate,1),'Growth CapEx + after-tax True Growth R\u0026D / REP','var(--orange)');
   statsHtml+=statCard('LATEST REP',fmtM(last.rep),last.label,'var(--accent2)');
   document.getElementById('roiicStats').innerHTML=statsHtml;
 
@@ -5521,7 +5548,7 @@ function exportBrief(){
   var rdExpBrief=latest.rd_expense||0;
   var hasRdBrief=rdExpBrief>0;
   var rdGrowthPctBrief=100-rdMaintPctBrief;
-  var rdGrowthBrief=hasRdBrief?(rdExpBrief*rdGrowthPctBrief/100*0.79):0;
+  var rdGrowthBrief=hasRdBrief?(rdExpBrief*rdGrowthPctBrief/100*(1-TAX_RATE)):0;
   // Panel 3 (Best Guess): Full D&A + slider%amort + slider%R&D
   var repBestGuess=latest.realProfit+amortAddback+rdGrowthBrief;
   var yieldBestGuess=ev>0?repBestGuess/ev:0;
@@ -5587,7 +5614,7 @@ function exportBrief(){
     h+='<div><div style="font-size:.72rem;color:#b8860b;text-transform:uppercase;font-weight:700;letter-spacing:.4px">③ Best Guess ★</div>';
     h+='<div style="font-size:.88rem;color:#999;margin-top:2px"><span style="font-family:monospace">'+fmtM(latest.realProfit)+'</span>';
     if(_p3HasAmortExp) h+=' <span style="color:#8e44ad;font-weight:700">+ '+fmtM(amortAddback)+'</span> <span style="color:#aaa">('+adjAmortPct+'% amort)</span>';
-    if(_p3HasRdExp) h+=' <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% R&amp;D × 79%)</span>';
+    if(_p3HasRdExp) h+=' <span style="color:#1a8a4a;font-weight:700">+ '+fmtM(rdGrowthBrief)+'</span> <span style="color:#aaa">('+rdGrowthPctBrief+'% R&amp;D × '+(100*(1-TAX_RATE)).toFixed(0)+'%)</span>';
     h+=' = <strong style="font-family:monospace;font-size:1.1rem;color:#333">'+fmtM(repBestGuess)+'</strong></div>';
     if(_expHasRev) h+='<div style="font-size:.74rem;color:#555;margin-top:3px">Margin <strong style="color:'+briefMCol(mExp3)+'">'+pct(mExp3,1)+'</strong> <span style="color:'+briefMCol(mExp3)+'">· '+briefMRating(mExp3)+'</span> <span style="color:#888;font-family:monospace">('+fmtM(repBestGuess)+' / '+fmtM(_expRev)+' rev)</span></div>';
     h+='</div>';
@@ -6545,7 +6572,7 @@ function renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,r
 
 // ============ Adjustment Flow Visualization ============
 var adjAmortPct=70;
-var adjAmortPresetId='serial';
+var adjAmortPresetId=null; // index39: was 'serial' (preset removed); null = no preset highlighted until clicked, consistent with resetBestGuessDefaults
 
 function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intangibles){
   var el=document.getElementById('adjustmentFlow');
@@ -6559,14 +6586,13 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
   var totalAcq=(goodwill||0)+(intangibles||0);
   var isSerialAcq=totalAcq>amort*5;
   var amortPresets=[
-    {id:'serial',label:'Serial Acquirer',val:70},
-    {id:'sw_acq',label:'Software/Tech',val:50},
-    {id:'organic',label:'Organic Grower',val:15},
+    {id:'default',label:'Default',val:70},
+    {id:'sw_acq',label:'Software-Tech',val:50},
     {id:'pharma',label:'Pharma',val:60},
     {id:'custom',label:'Custom',val:null}
-  ];
+  ]; // index39 (B4 build 3): simplified — dropped Serial Acquirer (70, now the neutral Default) and Organic Grower (15, use Custom). Default = the generalized 70% amort addback.
   // Auto-select based on company characteristics
-  if(isSerialAcq) adjAmortPresetId='serial';
+  // index28 (B4): amort preset auto-detect removed — sector judgment is the analyst's explicit preset choice, not auto-set on load
 
   var pc=document.getElementById('adjAmortPresets');
   pc.innerHTML='';
@@ -6575,7 +6601,7 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
     b.className='adj-preset'+(p.id===adjAmortPresetId?' act-a':'');
     b.textContent=p.label;
     b.onclick=function(){
-      adjAmortPresetId=p.id;
+      _bgMode='custom';adjAmortPresetId=p.id;
       if(p.val!==null){adjAmortPct=p.val;document.getElementById('adjAmortSlider').value=p.val;}
       pc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-a')});
       b.classList.add('act-a');
@@ -6586,12 +6612,12 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
 
   // R&D presets — use same presets as existing deep-dive
   var rdPresetDefs=[
-    {id:'software',label:'Software 70-20-10',val:70},
-    {id:'pharma',label:'Pharma (Patent)',val:60},
+    {id:'default',label:'Default',val:70},
+    {id:'software',label:'Software',val:70},
+    {id:'pharma',label:'Pharma',val:60},
     {id:'semicon',label:'Semiconductor',val:45},
-    {id:'medtech',label:'MedTech',val:65},
     {id:'custom',label:'Custom',val:null}
-  ];
+  ]; // index39 (B4 build 3): simplified — dropped MedTech (65), cleaned labels. Default (70/30) = the generalized default; it shares Software's 70/30 value but means "no sector claim" vs Software's explicit classification. val = maintenance %, growth = 100-val.
   var prc=document.getElementById('adjRdPresets');
   prc.innerHTML='';
   if(hasRd){
@@ -6600,7 +6626,7 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
       b.className='adj-preset'+(rdCurrentPreset===p.id?' act-r':'');
       b.textContent=p.label;
       b.onclick=function(){
-        rdCurrentPreset=p.id;
+        _bgMode='custom';rdCurrentPreset=p.id;
         if(p.val!==null){rdMaintPct=p.val;document.getElementById('adjRdSlider').value=100-p.val;}
         prc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-r')});
         b.classList.add('act-r');
@@ -6618,19 +6644,23 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
   document.getElementById('adjAmortAmt').textContent=fmtM(amort);
   if(hasRd) document.getElementById('adjRdAmt').textContent=fmtM(rdExpense);
 
-  // Hide R&D card if no R&D
+  // index37 (B4 / CC11 affirmative absence): never hide the R&D card. Show it on every company so the layout is constant; when there's no R&D, swap the interactive body (adjRdBody) for the muted "no R&D reported" note (adjRdNone) and show $0. Absence is shown, not implied by a missing card. Supersedes the index36 row-gate's silent-omission approach.
   var cards=document.getElementById('adjCards');
-  if(!hasRd){
-    cards.style.gridTemplateColumns='1fr';
-    cards.children[1].style.display='none';
+  cards.style.gridTemplateColumns='1fr 1fr';
+  cards.children[1].style.display='';
+  var _rdBody=document.getElementById('adjRdBody');var _rdNone=document.getElementById('adjRdNone');
+  if(hasRd){
+    if(_rdBody)_rdBody.style.display='';
+    if(_rdNone)_rdNone.style.display='none';
   }else{
-    cards.style.gridTemplateColumns='1fr 1fr';
-    cards.children[1].style.display='';
+    if(_rdBody)_rdBody.style.display='none';
+    if(_rdNone)_rdNone.style.display='';
+    var _ra=document.getElementById('adjRdAmt');if(_ra)_ra.textContent='$0';
   }
 
   // Wire sliders
   document.getElementById('adjAmortSlider').oninput=function(){
-    adjAmortPct=parseInt(this.value);
+    _bgMode='custom';adjAmortPct=parseInt(this.value);
     adjAmortPresetId='custom';
     pc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-a')});
     var cb=pc.querySelector('.adj-preset:last-child');if(cb)cb.classList.add('act-a');
@@ -6638,7 +6668,7 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
   };
   if(hasRd){
     document.getElementById('adjRdSlider').oninput=function(){
-      rdMaintPct=100-parseInt(this.value);
+      _bgMode='custom';rdMaintPct=100-parseInt(this.value);
       rdCurrentPreset='custom';
       prc.querySelectorAll('.adj-preset').forEach(function(x){x.classList.remove('act-r')});
       var cb=prc.querySelector('.adj-preset:last-child');if(cb)cb.classList.add('act-r');
@@ -6650,13 +6680,17 @@ function renderAdjustmentFlow(rep,amort,rdExpense,ev,deprOnly,da,goodwill,intang
 }
 
 function updateAdjustmentFlow(rep,amort,rdExpense,ev){
+  window._lastAdjArgs={rep:rep,amort:amort,rdExpense:rdExpense,ev:ev}; // index32 (B4): cache so Save can replay the live render and refresh the Yield Ladder badge immediately (Save changes no values, so replay is safe)
   var hasRd=rdExpense&&rdExpense>0;
   var amortAdd=amort*adjAmortPct/100;
   var repAmort=rep+amortAdd;
   var rdGrowthPre=hasRd?rdExpense*(1-rdMaintPct/100):0;
-  var rdTaxRate=0.21;
+  var rdTaxRate=TAX_RATE;
   var rdGrowth=rdGrowthPre*(1-rdTaxRate);
   var finalRep=repAmort+rdGrowth;
+  var _tin=document.getElementById('taxRateInput'); if(_tin&&document.activeElement!==_tin) _tin.value=(TAX_RATE*100).toFixed(0);
+  var _tna=document.getElementById('taxNoteAfter'); if(_tna) _tna.textContent=(100*(1-TAX_RATE)).toFixed(0);
+  var _tnr=document.getElementById('taxNoteRate'); if(_tnr) _tnr.textContent=(TAX_RATE*100).toFixed(0);
 
   // v4.9.6: Panel 2 is now a locked ceiling (100% amort added back, no R&D)
   var repCeiling=rep+amort; // 100% amort, no R&D
@@ -6726,6 +6760,7 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
   yhtml+='<span style="flex:1"></span>';
   yhtml+='<span style="font-size:.7rem;color:var(--text3)">Adjusted: <strong style="color:var(--text)">'+fmtM(finalRep)+'</strong></span>';
   yr.innerHTML=yhtml;
+  renderBgAttention(); // index30 (B4 2a): keep the Controls attention bar in sync on every interaction (slider/preset never clear it — Option B)
 
   // Surface best guess yield near verdict (#39) — update yield ladder panels live
   window._bestGuessYield=hasRd?(yF/100):(yA/100);
@@ -6754,7 +6789,8 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
       var p3y=yF/100;var p3r=yieldRating(p3y);var p3rep=finalRep;var p3m=p3rep>0?ev/p3rep:null;
       var rdGPct=hasRd?(100-rdMaintPct):0;var rdIsC=(typeof rdCurrentPreset!=='undefined'&&rdCurrentPreset==='custom');
       var rdPLabel=getRdSectorPreset().label;
-      var p3h='<div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Best Guess ★'+(rdIsC||adjAmortPresetId==='custom'?' <span style="color:var(--orange);font-size:.65rem">customized</span>':'')+'</div>';
+      var _bgS=getBgState();var _bgBadge=_bgS.status==='saved'?' <span style="color:var(--green);font-size:.62rem;font-weight:700">✓ SAVED</span>':(_bgS.status==='default'?' <span style="color:var(--red);font-size:.62rem;font-weight:700">○ DEFAULT</span>':' <span style="color:var(--orange);font-size:.62rem;font-weight:700">● UNSAVED</span>');
+      var p3h='<div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Best Guess ★'+_bgBadge+'</div>';
       p3h+='<div style="font-family:JetBrains Mono,monospace;font-size:2rem;font-weight:700;color:'+ycol(p3y)+'">'+pct(p3y)+'</div>';
       p3h+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:4px;background:'+p3r.bg+';color:'+p3r.cssColor+'">'+p3r.text+'</div>';
       p3h+='<div style="font-size:.78rem;color:var(--text3);margin-top:8px">Paying <strong style="color:var(--text)">'+(p3m?p3m.toFixed(1)+'x':'N/A')+'</strong> REP</div>';
@@ -6780,7 +6816,7 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
     ['','+ Amort Addback ('+adjAmortPct+'%)','+'+fmtM(amortAdd),pct(yA/100),adjAmortPct+'% of '+fmtM(amort)+' is false cost']
   ];
   if(hasRd){
-    rows.push(['','+ Growth R&D ('+(100-rdMaintPct)+'% × 0.79)','+'+fmtM(rdGrowth),pct(yF/100),rdMaintPct+'% maint, '+(100-rdMaintPct)+'% growth, after-tax']);
+    rows.push(['','+ Growth R&D ('+(100-rdMaintPct)+'% × '+(1-TAX_RATE).toFixed(2)+')','+'+fmtM(rdGrowth),pct(yF/100),rdMaintPct+'% maint, '+(100-rdMaintPct)+'% growth, after-tax']);
   }
   rows.push(['sub','Fully Adjusted',fmtM(finalRep),pct(yF/100),'Your best estimate']);
 
@@ -6803,14 +6839,113 @@ function updateAdjustmentFlow(rep,amort,rdExpense,ev){
   // Summary note
   document.getElementById('adjSummaryNote').textContent=
     'Starting from Full D&A REP of '+fmtM(rep)+' ('+pct(yC/100)+' yield), adding back '+adjAmortPct+'% of intangible amortization brings profit to '+fmtM(repAmort)+'.'+
-    (hasRd?' Adding the after-tax value (×0.79) of the '+(100-rdMaintPct)+'% of R&D classified as discretionary growth investment brings the fully adjusted owner earnings to '+fmtM(finalRep)+' ('+pct(yF/100)+' yield on EV).':'');
+    (hasRd?' Adding the after-tax value (×'+(1-TAX_RATE).toFixed(2)+') of the '+(100-rdMaintPct)+'% of R&D classified as discretionary growth investment brings the fully adjusted owner earnings to '+fmtM(finalRep)+' ('+pct(yF/100)+' yield on EV).':'');
 }
 
 // ============ R&D Deep-Dive with Decomposition ============
 var rdMaintPct=70; // default slider value
+var TAX_RATE=0.21; // index17: single source of truth for the statutory tax rate driving the after-tax growth-R&D addback; default 21%, set in Best Guess Controls, flows app-wide
+function resetTaxRate(){TAX_RATE=0.21;var _t=document.getElementById('taxRateInput');if(_t)_t.value='21';} // index19: tax rate is a per-view default — reset to 21% on every company load so a change never silently carries across companies
+var bestGuessNeedsAttention=true; // index30 (B4 2a): raised on every load; cleared ONLY by explicit saveBestGuessSettings() (Option B). Presets/sliders preview without clearing.
+var _currentSavedSettings=null; // index31 (B4): cached portfolio[ticker].settings for the current company so getBgState reads it without parsing localStorage every slider tick; set on load/save, cleared for a new company
+var _bgMode='default'; // index34 (B4): provenance of the live assumptions — 'saved' (loaded-saved / just-saved / reverted), 'default' (loaded-unsaved / reset to default), 'custom' (changed via slider/preset, not yet saved). The highlight follows this, NOT value coincidence.
+function resetBestGuessDefaults(){rdMaintPct=70;adjAmortPct=70;rdCurrentPreset=null;adjAmortPresetId=null;bestGuessNeedsAttention=true;_bgMode='default';var _r=document.getElementById('adjRdSlider');if(_r)_r.value=30;var _a=document.getElementById('adjAmortSlider');if(_a)_a.value=70;var _m=document.getElementById('maintMultiplier');if(_m)_m.value='1.05';} // index28 (B4): generalized default on every ticker load — 70% amortization addback, 30% R&D growth, no preset highlighted (= unconfirmed default). No auto-detect. index29: + D&A multiplier reset to 1.05 (assumption applied to the 10-K D&A; never touches the data). index30: + raise attention flag (unconfirmed until Save). A change never carries across companies.
+function applyBestGuessSettings(s){ // index30 (B4 2a): restore a company's SAVED assumptions on load; flag clears because the analyst decided them earlier
+  if(!s) return;
+  if(typeof s.rdMaintPct==='number'){rdMaintPct=s.rdMaintPct;var _r=document.getElementById('adjRdSlider');if(_r)_r.value=100-s.rdMaintPct;}
+  if(typeof s.adjAmortPct==='number'){adjAmortPct=s.adjAmortPct;var _a=document.getElementById('adjAmortSlider');if(_a)_a.value=s.adjAmortPct;}
+  if(s.maintMult){var _m=document.getElementById('maintMultiplier');if(_m)_m.value=String(s.maintMult);}
+  rdCurrentPreset=(s.rdPreset!==undefined)?s.rdPreset:'custom';
+  adjAmortPresetId=(s.amortPreset!==undefined)?s.amortPreset:'custom';
+  bestGuessNeedsAttention=false;_bgMode='saved';
+}
+function saveBestGuessSettings(){ // index30 (B4 2a): the ONLY action that clears the flag — persists all three assumptions to portfolio[ticker].settings
+  var ticker=(document.getElementById('ticker').value||'').trim().toUpperCase();
+  if(!ticker){alert('Enter or select a company first.');return;}
+  var p=getPortfolio();
+  if(!p[ticker]){alert('Save this company to your portfolio first (the 💾 Save button), then save its assumptions.');return;}
+  var multEl=document.getElementById('maintMultiplier');
+  p[ticker].settings={rdMaintPct:rdMaintPct,adjAmortPct:adjAmortPct,maintMult:multEl?multEl.value:'1.05',rdPreset:rdCurrentPreset,amortPreset:adjAmortPresetId,savedAt:new Date().toISOString()};
+  putPortfolio(p);
+  _currentSavedSettings=p[ticker].settings; // index31 (B4): refresh cache so the table reflects the new Saved state immediately
+  bestGuessNeedsAttention=false;_bgMode='saved'; // index34 (B4): just saved → live values now ARE the saved decision
+  if(window._lastAdjArgs){var _x=window._lastAdjArgs;updateAdjustmentFlow(_x.rep,_x.amort,_x.rdExpense,_x.ev);}else{renderBgAttention();} // index32 (B4): refresh BOTH the bottom subpanel AND the Yield Ladder badge on Save (updateAdjustmentFlow calls renderBgAttention internally), not just the subpanel
+  var btn=(typeof event!=='undefined'&&event&&event.target)?event.target:null;
+  if(btn){var t=btn.textContent;btn.textContent='✓ Saved!';setTimeout(function(){btn.textContent=t;},1200);}
+}
+function getBgState(){ // index31 (B4): the three states — Real-time(Active)/Saved/Default — plus which one Active matches, per variable and overall
+  var multEl=document.getElementById('maintMultiplier');
+  var aMult=multEl?(parseFloat(multEl.value)||1.05):1.05;
+  var active={mult:aMult,amort:adjAmortPct,rdGrowth:100-rdMaintPct};
+  var def={mult:1.05,amort:70,rdGrowth:30};
+  var s=_currentSavedSettings;
+  var saved=s?{mult:(parseFloat(s.maintMult)||1.05),amort:(typeof s.adjAmortPct==='number'?s.adjAmortPct:70),rdGrowth:(typeof s.rdMaintPct==='number'?(100-s.rdMaintPct):30)}:null;
+  // index34 (B4): highlight follows PROVENANCE (_bgMode), not value coincidence. Saved (green) only when the live set IS your decision (loaded-saved / just-saved / reverted). Default after Reset even if numbers coincide with Saved — that means "reconsidering, not decided yet". Custom = mid-change, unsaved.
+  var mode=_bgMode;
+  if(mode==='saved'&&!saved) mode='default'; // safety: cannot be in saved-mode with no saved set
+  function eq(a,b){return Math.abs(a-b)<0.001;}
+  function rowMatch(a,sv,d){ if(saved&&sv!==null&&eq(a,sv)) return 'saved'; if(eq(a,d)) return 'default'; return 'active'; }
+  // index35 (B4): 'default' mode forces every row to Default — so a value coinciding with Saved after Reset does NOT light Saved (the fix you asked for). In 'saved'/'custom' mode, each row reports its own match live: an untouched variable stays on its Saved cell (green), the one you move jumps to its Real-time cell (orange) — so you see exactly which variable changed.
+  var rows = (mode==='default')
+    ? {mult:'default',amort:'default',rdGrowth:'default'}
+    : {mult:rowMatch(active.mult,saved?saved.mult:null,def.mult),amort:rowMatch(active.amort,saved?saved.amort:null,def.amort),rdGrowth:rowMatch(active.rdGrowth,saved?saved.rdGrowth:null,def.rdGrowth)};
+  var status= mode==='custom' ? 'unsaved' : mode; // 'saved' | 'default' | 'unsaved' — overall provenance stays mode-based
+  return {active:active,saved:saved,def:def,savedExists:!!saved,rows:rows,status:status,mode:mode};
+}
+function renderBgAttention(){ // index31 (B4): paint the top status line + the bottom three-state table; called from updateAdjustmentFlow so it stays live on every interaction
+  var bar=document.getElementById('bgAttentionBar');var st=document.getElementById('bgAttentionStatus');
+  var ticker=(document.getElementById('ticker').value||'').trim().toUpperCase();
+  var S=getBgState();var forT=ticker?(' for '+ticker):'';
+  if(bar&&st){
+    if(S.status==='saved'){bar.style.background='rgba(46,204,113,.08)';bar.style.border='1px solid rgba(46,204,113,.4)';st.style.color='var(--green)';st.innerHTML='✓ Saved'+forT+' — these are your decided values.';}
+    else if(S.status==='default'){bar.style.background='rgba(231,76,60,.07)';bar.style.border='1px solid rgba(231,76,60,.45)';st.style.color='var(--red)';st.innerHTML=S.savedExists?('○ Factory default'+forT+' — not your saved set. Save to overwrite it, or Revert to Saved.'):('○ Not saved'+forT+' — factory default, not yet decided (70% amort / 30% R&D growth / 1.05× D&A). Review and Save.');}
+    else {bar.style.background='rgba(243,156,18,.10)';bar.style.border='1px solid rgba(243,156,18,.5)';st.style.color='var(--orange)';st.innerHTML='● Unsaved changes'+forT+' — Save to keep them, or revert below.';}
+  }
+  var tbl=document.getElementById('bgStateTable');
+  if(!tbl) return;
+  function cell(val,colKey,rowMatch){
+    var on=(rowMatch===colKey);
+    var bg=on?(colKey==='saved'?'rgba(46,204,113,.16)':colKey==='default'?'rgba(150,150,150,.16)':'rgba(243,156,18,.16)'):'transparent';
+    var col=on?(colKey==='saved'?'var(--green)':colKey==='default'?'var(--text2)':'var(--orange)'):'var(--text3)';
+    return '<td style="text-align:center;padding:5px 6px;background:'+bg+';color:'+col+';font-weight:'+(on?'700':'500')+';font-family:JetBrains Mono,monospace;border-radius:4px">'+val+'</td>';
+  }
+  var a=S.active,sv=S.saved,d=S.def;
+  // index36 (B4 / FN gate): drop the R&D-growth row for companies with no R&D (e.g. BRK), mirroring how the R&D card itself is gated on hasRd. Sourced from the cached render args — updateAdjustmentFlow sets _lastAdjArgs.rdExpense immediately before calling renderBgAttention, so it always reflects the current company.
+  var _adj=window._lastAdjArgs;var hasRd=!!(_adj&&_adj.rdExpense&&_adj.rdExpense>0);
+  function fmM(x){return x.toFixed(2)+'×';}function fmP(x){return Math.round(x)+'%';}
+  function sCell(val,m){return sv?cell(val,'saved',m):'<td style="text-align:center;padding:5px 6px;color:var(--text3)">—</td>';}
+  var html='<div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">Assumption states</div>';
+  html+='<table style="width:100%;border-collapse:separate;border-spacing:2px;font-size:.78rem"><thead><tr><th style="text-align:left;color:var(--text3);font-weight:600;padding:2px 6px"></th><th style="color:var(--text3);font-weight:600;padding:2px 6px">Real-time</th><th style="color:var(--text3);font-weight:600;padding:2px 6px">Saved</th><th style="color:var(--text3);font-weight:600;padding:2px 6px">Default</th></tr></thead><tbody>';
+  html+='<tr><td style="text-align:left;color:var(--text2);padding:2px 6px">D&amp;A multiplier</td>'+cell(fmM(a.mult),'active',S.rows.mult)+sCell(sv?fmM(sv.mult):'',S.rows.mult)+cell(fmM(d.mult),'default',S.rows.mult)+'</tr>';
+  html+='<tr><td style="text-align:left;color:var(--text2);padding:2px 6px">Amortization</td>'+cell(fmP(a.amort),'active',S.rows.amort)+sCell(sv?fmP(sv.amort):'',S.rows.amort)+cell(fmP(d.amort),'default',S.rows.amort)+'</tr>';
+  if(hasRd){
+    html+='<tr><td style="text-align:left;color:var(--text2);padding:2px 6px">R&amp;D growth</td>'+cell(fmP(a.rdGrowth),'active',S.rows.rdGrowth)+sCell(sv?fmP(sv.rdGrowth):'',S.rows.rdGrowth)+cell(fmP(d.rdGrowth),'default',S.rows.rdGrowth)+'</tr>';
+  }else{
+    // index37 (B4 / CC11 affirmative absence): keep the R&D-growth row on EVERY company so the table layout is constant. For a no-R&D name, render it muted with n/a cells — supersedes the index36 gate that hid the row (silent omission). The caption below states the absence explicitly so the reader never has to ask "is it missing or broken?".
+    html+='<tr style="opacity:.8"><td style="text-align:left;color:var(--text2);padding:2px 6px">R&amp;D growth</td><td style="text-align:center;padding:5px 6px;color:var(--text3)">n/a</td><td style="text-align:center;padding:5px 6px;color:var(--text3)">n/a</td><td style="text-align:center;padding:5px 6px;color:var(--text3)">n/a</td></tr>'; // index38: less transparent (.5->.8, label text2) so the affirmative-absence row is actually noticed
+  }
+  html+='</tbody></table>';
+  if(!hasRd)html+='<div style="font-size:.68rem;color:var(--text2);margin-top:6px;font-style:italic">R&amp;D growth shown as n/a — '+(ticker||'this company')+' reports no R&amp;D, so the growth-R&amp;D assumption does not apply.</div>'; // index37 (CC11): affirmative absence — state the absence, don't hide the row // index38: text3->text2 for legibility
+  html+='<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">';
+  html+='<button onclick="saveBestGuessSettings()" style="background:var(--accent);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:.78rem;font-weight:600;cursor:pointer">✓ Save (Real-time → Saved)</button>';
+  if(S.savedExists)html+='<button onclick="revertToSaved()" style="background:var(--card);color:var(--green);border:1px solid var(--green);border-radius:7px;padding:7px 13px;font-size:.78rem;font-weight:600;cursor:pointer">↩ Revert to Saved</button>';
+  html+='<button onclick="resetToDefaultAssumptions()" style="background:var(--card);color:var(--text2);border:1px solid var(--border);border-radius:7px;padding:7px 13px;font-size:.78rem;font-weight:600;cursor:pointer">↺ Reset to Default</button>';
+  html+='</div>';
+  html+='<div style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5;font-style:italic"><strong>Real-time</strong> is what the numbers use right now. <strong>Saved</strong> is what this ticker re-opens with. <strong>Default</strong> is the factory 70 / 30 / 1.05× set. The highlight shows which state each live value matches. Save promotes Real-time into Saved.</div>';
+  tbl.innerHTML=html;
+}
+function revertToSaved(){ // index31 (B4): load the Saved set back into Real-time (after playing), then recompute
+  if(!_currentSavedSettings) return;
+  applyBestGuessSettings(_currentSavedSettings);
+  if(typeof calculate==='function') calculate({noScroll:true});
+}
+function resetToDefaultAssumptions(){ // index31 (B4): load the factory Default into Real-time (a snap; the Saved set stays put), then recompute
+  resetBestGuessDefaults();
+  if(typeof calculate==='function') calculate({noScroll:true});
+}
 var rdCurrentPreset='software'; // default preset
 
-function calculate(){
+function calculate(opts){opts=opts||{};
   var ticker=document.getElementById('ticker').value||'Company';
   // PRICE-FIX 2026-04-30 v3: route price through getEffectivePrice. For TTM
   // pills this returns v('price') (right box, current). For closed FY pills
@@ -6984,11 +7119,11 @@ function calculate(){
   var p3AmortAdd=amort*p3AmortPct/100;
   var rdExpVZ=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra)
-    rdExpVZ=yearStore[currentYearKey].extra.rd_expense||null;
+    rdExpVZ=getRD(yearStore[currentYearKey]);
   var hasRdVZ=rdExpVZ&&rdExpVZ>0;
   var rdGrowthPctVZ=hasRdVZ?(100-rdMaintPct):0;
   var rdGrowthDollarVZ=hasRdVZ?rdExpVZ*rdGrowthPctVZ/100:0;
-  var rdAddbackVZ=rdGrowthDollarVZ*0.79;
+  var rdAddbackVZ=rdGrowthDollarVZ*(1-TAX_RATE);
   var p3REP=p1REP+p3AmortAdd+rdAddbackVZ;
   var p3Yield=ev>0?p3REP/ev:0;
   var p3Mult=p3REP>0?ev/p3REP:null;
@@ -7288,7 +7423,7 @@ function calculate(){
   var adjAmort=(deprOnly>0&&da>0)?da-deprOnly:0;
   var adjRdExp=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
-    adjRdExp=yearStore[currentYearKey].extra.rd_expense||null;
+    adjRdExp=getRD(yearStore[currentYearKey]);
   }
   renderAdjustmentFlow(realProfit,adjAmort,adjRdExp,ev,deprOnly,da,ddGoodwill,ddIntangibles);
 
@@ -7300,15 +7435,13 @@ function calculate(){
   var roicCard=document.getElementById('roicCard');
   if(equity>0&&growthCapex>0){
     roicCard.style.display='block';
-    var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
-    var impliedGrowth=reinvestRate*realROIC;
+    var _cr=canonicalReinvestRate(growthCapex,adjRdExp,(100-rdMaintPct)/100,realProfit);
     var roicItems=[
       {label:'Real ROIC (Full D&A)',value:pct(realROIC),sub:fmtM(realProfit)+' / '+fmtM(investedCapital)},
       {label:'Invested Capital',value:fmtM(investedCapital),sub:fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash'},
       {label:'Growth CapEx',value:fmtM(growthCapex),sub:fmtM(capex)+' total - '+fmtM(maintCapex)+' maint'},
       {label:'Maint CapEx (Full D&A)',value:fmtM(maintCapex),sub:maintMethod},
-      {label:'Reinvestment Rate',value:pct(reinvestRate,1),sub:fmtM(growthCapex)+' / '+fmtM(investedCapital)},
-      {label:'Implied Profit Growth',value:pct(impliedGrowth,1),sub:pct(reinvestRate,1)+' x '+pct(realROIC)}
+      {label:'Reinvestment Rate',value:_cr.rate!==null?pct(_cr.rate,1):'—',sub:fmtM(_cr.numerator)+' / '+fmtM(realProfit)+' REP'}
     ];
     if(hasLightView){
       var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
@@ -7354,7 +7487,7 @@ function calculate(){
   // R&D Intensity Card
   var rdExpense=null;
   if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].extra){
-    rdExpense=yearStore[currentYearKey].extra.rd_expense||null;
+    rdExpense=getRD(yearStore[currentYearKey]);
   }
   var rdCard=document.getElementById('rdCard');
   if(rdExpense&&rdExpense>0){
@@ -7434,8 +7567,8 @@ function calculate(){
     rows.push(['Invested Capital',fmtM(investedCapital),'Equity + Debt − Cash − STI']);
     rows.push(['Real ROIC',pct(realROIC),'Real Profit ÷ Invested Capital']);
     if(growthCapex>0){
-      rows.push(['Reinvestment Rate',pct(investedCapital>0?growthCapex/investedCapital:0,1),'Growth CapEx ÷ Invested Capital']);
-      rows.push(['Implied Profit Growth',pct(investedCapital>0?(growthCapex/investedCapital)*realROIC:0,1),'Reinvest Rate × ROIC']);
+      var _crDB=canonicalReinvestRate(growthCapex,adjRdExp,(100-rdMaintPct)/100,realProfit);
+      rows.push(['Reinvestment Rate',_crDB.rate!==null?pct(_crDB.rate,1):'—','(Growth CapEx + after-tax Growth R&D) ÷ REP']);
     }
     if(nta>0){
       rows.push(['Net Tangible Assets',fmtM(nta),'Assets − Goodwill − Intangibles − Cash − STI']);
@@ -7643,7 +7776,7 @@ function calculate(){
   // Feature 5: Render target price calculator
   try{renderTargetCalc();}catch(e){console.warn('Target calc error:',e);}
 
-  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+  if(!opts.noScroll) document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
 }
 </script>
 </body>
