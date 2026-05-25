@@ -410,8 +410,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-05-21';
-  var buildId='v4.11.0';
+  var buildDate='2026-05-24';
+  var buildId='v4.12.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -761,18 +761,12 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div id="longRunContent"></div>
   </div>
 
-  <div class="card" id="roicCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('roicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 ROIC & Growth CapEx Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
-    <div id="roicWrap">
-    <div id="roicMetrics" class="metrics" style="margin-bottom:16px;grid-template-columns:1fr 1fr 1fr"></div>
-    <div id="growthProjection"></div>
-    </div>
-  </div>
-
-  <!-- ROIIC Analysis -->
+  <!-- Capital Efficiency — merged ROIC metrics + growth projection + ROIIC trend/chart (index50) -->
   <div class="card" id="roiicCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('roiicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📊 ROIIC Analysis <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('roiicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📊 Capital Efficiency <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="roiicWrap">
+    <div id="roicMetrics" style="margin-bottom:16px"></div>
+    <div id="growthProjection" style="margin-bottom:16px"></div>
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:14px">Return on Incremental Invested Capital — measures how efficiently new capital generates Real Economic Profit growth.</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -802,7 +796,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div id="roiicStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
 
     <div id="roiicTabs" style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0">
-      <button class="roiic-tab active" data-tab="dual" onclick="switchRoiicTab('dual')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">REP vs IC</button>
+      <button class="roiic-tab active" data-tab="dual" onclick="switchRoiicTab('dual')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">REP · IC · NTA</button>
       <button class="roiic-tab" data-tab="roiic" onclick="switchRoiicTab('roiic')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Rolling ROIIC</button>
       <button class="roiic-tab" data-tab="buckets" onclick="switchRoiicTab('buckets')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Capital Buckets</button>
     </div>
@@ -813,6 +807,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div id="roiicDetailWrap" style="display:none;overflow-x:auto">
       <table id="roiicTable" class="trend-table" style="font-size:.78rem"></table>
     </div>
+    <div id="roiicRdCapEff" style="margin-top:18px"></div>
     </div>
   </div>
 
@@ -1080,15 +1075,6 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <p><strong style="color:var(--accent2)">Capital Change / Capital CAGR</strong> — Single-period change or Compound Annual Growth Rate of Invested Capital.</p>
       <p><strong style="color:var(--accent2)">Growth Intensity</strong> — Total CapEx / Maintenance CapEx. Measures how much spending exceeds what's needed to maintain the existing base. 1.5x+ = high growth investment.</p>
       <p><strong style="color:var(--accent2)">Five Patterns</strong> — Compounding (profit growing ≥ capital, green), Active Investment (profit growing but lagging capital, high intensity, blue), Investment Overhang (profit declining, high intensity, amber), Productivity Gap (profit growing but lagging capital, low intensity, amber), Deteriorating Base (profit declining, low intensity, red).</p>
-
-      <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Yield-on-Cost Trajectory</h4>
-
-      <p><strong style="color:var(--accent2)">Yield-on-Cost</strong> — Real Economic Profit ÷ Purchase Enterprise Value. Unlike current yield (which uses today's market price), this uses your actual cost basis as the fixed denominator. Shows how your real cash return grows over time as the business compounds.</p>
-      <p><strong style="color:var(--accent2)">ROIIC</strong> — Return on Incremental Invested Capital. The return each dollar of growth CapEx earns. Each year's growth CapEx is assumed to earn this rate, and returns accumulate (Year 1 CapEx keeps earning in Year 2, 3, etc.).</p>
-      <p><strong style="color:var(--accent2)">Organic Growth (decelerating)</strong> — Annual profit improvement from the existing asset base (pricing power, margin expansion, efficiency). Starts at a user-specified rate and decays toward a terminal rate, reflecting the reality that margins can't expand forever.</p>
-      <p><strong style="color:var(--accent2)">Decay Speed</strong> — How quickly organic growth decelerates from the initial rate to the terminal rate. Slow = gradual multi-year fade. Fast = organic gains compress quickly.</p>
-      <p><strong style="color:var(--accent2)">From Growth CapEx</strong> — Cumulative new profit generated by all prior years' growth investments earning the ROIIC rate.</p>
-      <p><strong style="color:var(--accent2)">Organic Gain</strong> — Cumulative profit growth from the existing base becoming more productive, net of deceleration.</p>
 
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Cash Deployment Scenario</h4>
 
@@ -1977,9 +1963,9 @@ function renderYearSelector(){
   }
   container.style.display='flex';
   if(cap)cap.style.display='block';
-  // Default selection: all years (up to 3 most recent) if no selection yet
+  // Default selection: all stored years (analyst narrows with the chips or the "Last 3" button)
   if(selectedYears.length===0){
-    selectedYears=allKeys.length<=3?allKeys.slice():allKeys.slice(-3);
+    selectedYears=allKeys.slice();
   }
   // Clean up: remove any selectedYears no longer in store
   selectedYears=selectedYears.filter(function(k){return allKeys.indexOf(k)!==-1;});
@@ -4351,7 +4337,7 @@ function renderPCBA(years){
   if(!years||years.length<2){pcbaCard.style.display='none';return;}
   pcbaCard.style.display='block';
   var html='';
-  html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">How is profit changing relative to the capital base? Where does this company fit?</p>';
+  html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:16px">How is profit changing relative to the capital base?</p>';
 
   // Compute transitions for each period pair
   var pcbaTransitions=[];
@@ -4409,31 +4395,7 @@ function renderPCBA(years){
   html+='<div class="pcba-metric"><div class="pm-val" style="color:'+capitalColor+'">'+pct(capitalRate,1)+'</div><div class="pm-lbl">'+capitalRateLabel+'</div></div>';
   html+='</div>';
 
-  var patterns=[
-    {name:'Compounding',profit:'\u2191 \u2265 Capital',intensity:'Any',meaning:'Capital deployed productively — or prior investments paying off',color:'green'},
-    {name:'Active Investment',profit:'\u2191 < Capital',intensity:'High (\u22651.5x)',meaning:'Investment cycle — spending running ahead of returns',color:'blue'},
-    {name:'Investment Overhang',profit:'\u2193',intensity:'High (\u22651.5x)',meaning:'Heavy investment pulling cash out. Watch for CFO recovery.',color:'amber'},
-    {name:'Productivity Gap',profit:'\u2191 < Capital',intensity:'Low (<1.5x)',meaning:'Capital expanding without clear growth thesis. Needs investigation.',color:'amber'},
-    {name:'Deteriorating Base',profit:'\u2193',intensity:'Low (<1.5x)',meaning:'Base getting less productive without growth investment to explain it. Most concerning.',color:'red'}
-  ];
-
-  html+='<table class="pcba-table"><thead><tr><th>Pattern</th><th>Profit</th><th>Growth Intensity</th><th>Typical Meaning</th></tr></thead><tbody>';
-  patterns.forEach(function(p){
-    var isActive=p.name===latest_t.pattern;
-    var cls=isActive?'pcba-active pcba-'+p.color:'pcba-muted';
-    html+='<tr class="'+cls+'">';
-    html+='<td>'+(isActive?'→ ':'')+p.name+'</td>';
-    if(isActive){
-      html+='<td>'+pct(latest_t.profitChg,1)+'</td>';
-      html+='<td>'+latest_t.growthIntensity.toFixed(1)+'x</td>';
-    }else{
-      html+='<td>'+p.profit+'</td>';
-      html+='<td>'+p.intensity+'</td>';
-    }
-    html+='<td>'+p.meaning+'</td>';
-    html+='</tr>';
-  });
-  html+='</tbody></table>';
+  // [Capital Efficiency restructure] 5-row categorical pattern table removed (PCBA Decision 1): it forced continuous variables into buckets with sharp thresholds and asserted a verdict larger than the evidence supports. Divergences are now read off the REP·IC·NTA chart.
 
   if(latest_t.capex>0){
     html+='<div class="pcba-context">';
@@ -4445,53 +4407,19 @@ function renderPCBA(years){
     html+='</div>';
   }
 
-  // Period decomposition — collapsible when many transitions
-  var decompId='pcbaDecomp'+Math.random().toString(36).substr(2,5);
-  var journeyId='pcbaJourney'+Math.random().toString(36).substr(2,5);
-  var manyPeriods=pcbaTransitions.length>4;
-  html+='<div style="margin-top:14px">';
-  html+='<div style="cursor:pointer;user-select:none;font-size:.82rem;font-weight:600;color:var(--text2);padding:6px 0" onclick="var el=document.getElementById(\''+decompId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'block\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">Period Decomposition ('+pcbaTransitions.length+' periods) <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">'+(manyPeriods?'▶':'▼')+'</span></div>';
-  html+='<div id="'+decompId+'" style="display:'+(manyPeriods?'none':'block')+'">';
-  pcbaTransitions.forEach(function(t){
-    var reinvestContrib=0;
-    var tidx=pcbaTransitions.indexOf(t);
-    if(tidx>=0&&tidx<years.length-1){
-      var prevY=years[tidx];
-      reinvestContrib=prevY.growthCapex*prevY.realROIC;
-    }
-    var baseChg=t.profitDelta-reinvestContrib;
-    var pillCol=t.patternColor==='green'?'var(--green)':t.patternColor==='blue'?'var(--blue)':t.patternColor==='amber'?'var(--orange)':'var(--red)';
-    html+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:3px;padding:4px 8px;border-left:3px solid '+pillCol+';border-radius:0 4px 4px 0">';
-    html+='<strong>'+t.from+' → '+t.to+'</strong> <span style="font-size:.72rem;color:'+pillCol+'">'+t.pattern+'</span> — Profit: <strong style="color:'+(t.profitDelta>=0?'var(--green)':'var(--red)')+'">'+fmtM(t.profitDelta)+'</strong>';
-    if(Math.abs(reinvestContrib)>0.5||Math.abs(baseChg)>0.5){
-      html+=' <span style="font-size:.72rem;color:var(--text3)">(reinvest: '+fmtM(reinvestContrib)+', base: '+fmtM(baseChg)+')</span>';
-    }
-    html+='</div>';
-  });
-  html+='</div>';
-  html+='</div>';
+  // [Capital Efficiency restructure] Period Decomposition (with the Reinvest column = prior Growth CapEx × prior Real ROIC) and the multi-period Pattern Journey removed (PCBA Decision 4): the Reinvest attribution reads $0 for R&D-led names and uses average-as-marginal ROIC; both were categorical-verdict surfaces now superseded by the chart.
 
-  // Multi-period pattern journey — collapsible when many
-  if(pcbaTransitions.length>=2){
-    html+='<div class="pcba-transition" style="margin-top:16px">';
-    html+='<div style="cursor:pointer;user-select:none;font-size:.78rem;color:var(--text3);margin-bottom:8px;font-weight:600" onclick="var el=document.getElementById(\''+journeyId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'flex\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">Pattern journey ('+pcbaTransitions.length+' transitions) <span class="ca" style="font-size:.72rem;margin-left:4px">'+(manyPeriods?'▶':'▼')+'</span></div>';
-    html+='<div id="'+journeyId+'" style="display:'+(manyPeriods?'none':'flex')+';align-items:center;gap:6px;flex-wrap:wrap">';
-    pcbaTransitions.forEach(function(t,idx){
-      var pillColor=t.patternColor==='green'?'green':t.patternColor==='blue'?'blue':t.patternColor==='amber'?'amber':'red';
-      html+='<span class="pcba-transition-pill '+pillColor+'">'+t.from+' → '+t.to+': '+t.pattern+'</span>';
-      if(idx<pcbaTransitions.length-1)html+='<span style="color:var(--text3)">→</span>';
-    });
-    html+='</div>';
-    html+='</div>';
-  }
+  html+='<p class="section-note" style="margin-top:10px">Growth Intensity = Total CapEx / Maintenance CapEx (D&A x 1.05); 1.5x separates high from low growth investment.</p>';
 
-  html+='<p class="section-note" style="margin-top:10px">Growth Intensity = Total CapEx / Maintenance CapEx (D&A x 1.05). Threshold: 1.5x separates high from low growth investment. The highlighted row is a suggestion based on the math — not a verdict.</p>';
+  // [Capital Efficiency restructure] pattern-conditioned Growth Compounder bridge removed (it fired only for certain categorical verdicts, which no longer exist).
+  // index53: R&D Capital Efficiency diagnostic relocated out of PCBA into the Capital Efficiency card (rendered by renderRoiicAnalysis). renderRdCapEff() is now called from there.
 
-  // Bridge to Growth Compounder (#45)
-  if(latest_t.pattern==='Active Investment'||latest_t.pattern==='Investment Overhang'){
-    html+='<div class="flag info" style="margin-top:12px"><strong>💡 Next step:</strong> The Growth Compounder below lets you model when these investments start paying off — set the ROIIC and payback lag to see the projected REP trajectory.</div>';
-  }
+  document.getElementById('pcbaContent').innerHTML=html;
+}
 
+// ============ R&D Capital Efficiency (extracted from PCBA — index52 staging; still rendered inside pcbaContent, behaviour unchanged) ============
+function renderRdCapEff(years){
+  var html='';
   // ============ R&D Capital Efficiency (inside PCBA) ============
   var rdYears=years.filter(function(y){return y.rd_expense&&y.rd_expense>0&&y.revenue&&y.revenue>0;});
   if(rdYears.length>=1){
@@ -4499,9 +4427,12 @@ function renderPCBA(years){
     var rdCapexRatio=latestRd.capex>0?latestRd.rd_expense/latestRd.capex:0;
     var rdRevPct=latestRd.revenue>0?latestRd.rd_expense/latestRd.revenue:0;
     if(rdCapexRatio>0.5||rdRevPct>0.03){
+      // index49 (B1 propagation / R&D Cap-Eff Decision 5): the maintenance/growth split now reads the analyst's canonical Best Guess slider (adjRdSlider), NOT sector auto-detect — so saving 70/30 (or moving the slider) flows straight into this panel. The sector preset is kept ONLY for the amortization asset life, a legitimate per-sector diagnostic parameter (not a split).
       var rdSector=getRdSectorPreset();
-      var rdMaintPct3=rdSector.maintPct,rdAssetLife=rdSector.assetLife,rdSectorLabel=rdSector.label;
-      var rdGrowthPct3=100-rdMaintPct3;
+      var rdAssetLife=rdSector.assetLife,rdSectorLabel=rdSector.label;
+      var _aRd3=document.getElementById('adjRdSlider');
+      var rdGrowthPct3=_aRd3?(parseInt(_aRd3.value)||30):30;
+      var rdMaintPct3=100-rdGrowthPct3;
 
       var rdAsset=0;
       var availYrs=Math.min(rdAssetLife,rdYears.length);
@@ -4527,6 +4458,7 @@ function renderPCBA(years){
       html+='<h3 style="color:var(--accent);font-size:.95rem;cursor:pointer;user-select:none;margin:0 0 8px" onclick="var el=document.getElementById(\''+rdEffId+'\');var arr=this.querySelector(\'.ca\');if(el.style.display===\'none\'){el.style.display=\'block\';arr.textContent=\'▼\';}else{el.style.display=\'none\';arr.textContent=\'▶\';}">🧪 R&D Capital Efficiency <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">▶</span></h3>';
       html+='<div id="'+rdEffId+'" style="display:none">';
       html+='<p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">Standard ROIC treats R&D as an expense. For R&D-intensive companies, this understates the capital base and inflates returns. Here\'s the full breakdown:</p>';
+      html+='<div style="font-size:.72rem;color:var(--text2);line-height:1.55;margin-bottom:12px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0"><strong style="color:var(--blue)">Reads the Best Guess split.</strong> This panel uses the Best Guess R&amp;D split (currently '+rdGrowthPct3+'% growth) set at the top of the page \u2014 not the R&amp;D Growth % slider in this card. They are independent for now; a later update will unify them.</div>';
 
       var rdInvIncome=0;
       var rdLtInv=0,rdInvRate=0.04;
@@ -4585,21 +4517,18 @@ function renderPCBA(years){
       // index25 (C3): three-way ROIC summary — Full D&A / Primary asymmetric / Symmetric
       var asymDelta=asymROIC-adjROIC;
       html+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
-      html+='<div style="flex:1;min-width:115px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Full D&A</div><div style="font-size:1.15rem;font-weight:700;color:'+stdColor+';font-family:JetBrains Mono,monospace">'+pct(stdROIC)+'</div><div style="font-size:.64rem;color:var(--text3);margin-top:2px">R&D expensed</div></div>';
-      html+='<div style="flex:1;min-width:115px;background:rgba(230,126,34,.06);border:1px solid var(--orange);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Primary asymmetric</div><div style="font-size:1.15rem;font-weight:700;color:var(--orange);font-family:JetBrains Mono,monospace">'+pct(asymROIC)+'</div><div style="font-size:.64rem;color:var(--orange);margin-top:2px">R&D in numerator (profit) only — overstated</div></div>';
-      html+='<div style="flex:1;min-width:115px;background:rgba(155,89,182,.08);border:1px solid var(--purple);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Symmetric</div><div style="font-size:1.15rem;font-weight:700;color:var(--purple);font-family:JetBrains Mono,monospace">'+pct(adjROIC)+'</div><div style="font-size:.64rem;color:var(--purple);margin-top:2px">R&D in numerator + denominator — consistent</div></div>';
+      html+='<div style="flex:1;min-width:115px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Full D&A</div><div style="font-size:.58rem;color:var(--green);font-weight:700;margin-top:2px;font-family:DM Sans">✓ Correct method</div><div style="font-size:1.15rem;font-weight:700;color:'+stdColor+';font-family:JetBrains Mono,monospace">'+pct(stdROIC)+'</div><div style="font-size:.64rem;color:var(--text3);margin-top:2px">R&D expensed</div></div>';
+      html+='<div style="flex:1;min-width:115px;background:rgba(230,126,34,.06);border:1px solid var(--orange);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Primary asymmetric</div><div style="font-size:.58rem;color:var(--red);font-weight:700;margin-top:2px;font-family:DM Sans">✗ Incorrect method</div><div style="font-size:1.15rem;font-weight:700;color:var(--orange);font-family:JetBrains Mono,monospace">'+pct(asymROIC)+'</div><div style="font-size:.64rem;color:var(--orange);margin-top:2px">R&D in numerator (profit) only — overstated</div></div>';
+      html+='<div style="flex:1;min-width:115px;background:rgba(155,89,182,.08);border:1px solid var(--purple);border-radius:8px;padding:10px 12px"><div style="font-size:.6rem;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;font-family:JetBrains Mono,monospace">Symmetric</div><div style="font-size:.58rem;color:var(--green);font-weight:700;margin-top:2px;font-family:DM Sans">✓ Correct method</div><div style="font-size:1.15rem;font-weight:700;color:var(--purple);font-family:JetBrains Mono,monospace">'+pct(adjROIC)+'</div><div style="font-size:.64rem;color:var(--purple);margin-top:2px">R&D in numerator + denominator — correct, consistent treatment</div></div>';
       html+='</div>';
-      html+='<p style="font-size:.74rem;color:var(--text3);margin-top:8px;line-height:1.55">The <span style="color:var(--orange)">asymmetric</span> reading adds growth R&D to profit (numerator) but not to the capital base (denominator) — overstating ROIC by '+(asymDelta*100).toFixed(1)+'pp versus the consistent <span style="color:var(--purple)">symmetric</span> figure. Growth R&D is capital withheld from owners, so a real return on it must show in both profit <em>and</em> capital. REPA headlines neither inflated number: its Real ROIC expenses R&D (Full D&A), and this panel shows the symmetric alternative.</p>';
+      html+='<p style="font-size:.76rem;color:var(--text2);margin-top:10px;line-height:1.6"><strong>How to read these.</strong> <span style="color:var(--green)">Full D&A</span> leaves R&D fully expensed, so R&D changes neither side of the ratio — nothing added to profit, nothing capitalized in the capital base. If instead you treat growth R&D as a capitalized investment and count it in Real Economic Profit, the correct, consistent approach reflects it on <strong>both</strong> sides: the higher profit in the numerator <em>and</em> the larger capital base in the denominator — that is the <span style="color:var(--purple)">Symmetric</span> column. The <span style="color:var(--orange)">Primary asymmetric</span> column is the incorrect shortcut — it adds growth R&D to profit but leaves it out of the capital base, overstating the return by '+(asymDelta*100).toFixed(1)+'pp. It is shown only to illustrate why REPA avoids it.</p>';
 
       html+='<div style="margin-top:10px;font-size:.78rem;color:var(--text3);line-height:1.6">';
-      html+='<strong style="color:var(--text2)">R&D Split ('+rdSectorLabel+' preset):</strong> Total R&D '+fmtM(latestRd.rd_expense)+' = '+rdMaintPct3+'% maintenance ('+fmtM(latestRd.rd_expense*rdMaintPct3/100)+') + '+rdGrowthPct3+'% growth ('+fmtM(latestGrowthRd)+'). ';
+      html+='<strong style="color:var(--text2)">R&D Split (Best Guess):</strong> Total R&D '+fmtM(latestRd.rd_expense)+' = '+rdMaintPct3+'% maintenance ('+fmtM(latestRd.rd_expense*rdMaintPct3/100)+') + '+rdGrowthPct3+'% growth ('+fmtM(latestGrowthRd)+'). ';
       html+='Only growth R&D is capitalized — maintenance R&D stays expensed.';
       html+='</div>';
 
-      html+='<div class="pcba-context" style="margin-top:12px">';
-      var symVsFull=adjROIC-stdROIC; // index27: replaced the directional "even capitalizing... still strong" verdict (which wrongly assumed capitalizing always lowers ROIC) with a neutral, direction-aware note
-      html+='Capitalizing growth R&D on both sides of the ratio moves Real ROIC from '+pct(stdROIC)+' (Full D&A) to '+pct(adjROIC)+' (symmetric) — a '+Math.abs(symVsFull*100).toFixed(1)+'pp '+(symVsFull>=0?'rise':'decline')+'. The asymmetric reading ('+pct(asymROIC)+'), which counts R&D in profit only, is the inflated outlier REPA avoids.';
-      html+='</div>';
+      // [Capital Efficiency restructure] redundant second R&D-asymmetry paragraph removed — folded into the simplified "How to read these" note above.
 
       // Incremental R&D returns (#46 — migrated here as core analytical content)
       if(rdYears.length>=2){
@@ -4627,12 +4556,11 @@ function renderPCBA(years){
         html+='</div>';
       }
 
-      html+='<p class="section-note" style="margin-top:8px">'+rdSectorLabel+' preset: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth. Asset life: '+rdAssetLife+' years. Addback at '+(100*(1-TAX_RATE)).toFixed(0)+'% (1 - '+(TAX_RATE*100).toFixed(0)+'% tax).</p>';
+      html+='<p class="section-note" style="margin-top:8px">Best Guess split: '+rdMaintPct3+'% maintenance R&D, '+rdGrowthPct3+'% growth (from the Best Guess slider). Asset life: '+rdAssetLife+' years ('+rdSectorLabel+' estimate). Addback at '+(100*(1-TAX_RATE)).toFixed(0)+'% (1 - '+(TAX_RATE*100).toFixed(0)+'% tax).</p>';
       html+='</div></div>'; // close rdEff collapsible + outer wrapper
     }
   }
-
-  document.getElementById('pcbaContent').innerHTML=html;
+  return html;
 }
 
 // ============ ROIIC Analysis Module ============
@@ -4976,7 +4904,7 @@ function renderRoiicAnalysis(){
     var totalReinvestment=growthCapex+trueGrowthRD;
     var reinvestmentRate=y.realProfit>0?totalReinvestment/y.realProfit:0;
     return {
-      label:y.label, endDate:y.endDate, rep:y.realProfit, ic:y.investedCapital,
+      label:y.label, endDate:y.endDate, rep:y.realProfit, ic:y.investedCapital, nta:y.nta,
       totalCapex:y.capex, da:y.da, maintCapex:y.maintCapex,
       growthCapex:growthCapex, rd:rd, maintenanceRD:maintenanceRD,
       nonDiscGrowthRD:nonDiscGrowthRD, trueGrowthRD:trueGrowthRD,
@@ -5021,16 +4949,28 @@ function renderRoiicAnalysis(){
   statsHtml+=statCard('LATEST REP',fmtM(last.rep),last.label,'var(--accent2)');
   document.getElementById('roiicStats').innerHTML=statsHtml;
 
+  // IC-floor annotation: when book equity is negative, computeMetrics floors Invested Capital to $0
+  // (Real ROIC isn't meaningful on negative capital). Explain the flat-zero IC line rather than leave it a mystery.
+  var _icNote='';
+  var _negEqYears=years.filter(function(y){return (y.equity||0)<=0;});
+  if(_negEqYears.length>0){
+    var _lastYr=years[years.length-1];
+    var _eqShow=(_lastYr.equity||0)<=0?_lastYr.equity:_negEqYears[_negEqYears.length-1].equity;
+    _icNote='<div style="font-size:.72rem;color:var(--text2);line-height:1.55;margin-top:8px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0">'+
+      '<strong style="color:var(--orange)">Invested Capital shown as $0.</strong> Book equity is negative ('+fmtM(_eqShow)+') because cumulative buybacks exceed retained earnings plus paid-in capital. Real ROIC isn\'t meaningful on a negative capital base, so IC is floored to $0 rather than shown as a misleading negative \u2014 in practice this is the signature of a business returning more than its book equity.'+
+      '</div>';
+  }
+
   var chartArea=document.getElementById('roiicChartArea');
   try{
-    if(roiicActiveTab==='dual') chartArea.innerHTML=renderRoiicDualChart(roiicData);
+    if(roiicActiveTab==='dual') chartArea.innerHTML=renderRoiicDualChart(roiicData)+_icNote;
     else if(roiicActiveTab==='roiic') chartArea.innerHTML=renderRoiicRollingChart(roiicData);
     else chartArea.innerHTML=renderRoiicBucketChart(roiicData);
   }catch(e){
     chartArea.innerHTML='<div style="color:var(--red);font-size:.8rem;padding:10px">Chart error: '+e.message+'</div>';
   }
 
-  var tbl='<tr><th style="text-align:left">Year</th><th>REP</th><th>IC</th><th>Maint CapEx</th><th>Growth CapEx</th>';
+  var tbl='<tr><th style="text-align:left">Year</th><th>REP</th><th>IC</th><th>NTA</th><th>Maint CapEx</th><th>Growth CapEx</th>';
   if(roiicData.some(function(d){return d.rd>0})){
     tbl+='<th>Maint R\u0026D</th><th>True Growth R\u0026D</th>';
   }
@@ -5039,6 +4979,7 @@ function renderRoiicAnalysis(){
     tbl+='<tr><td style="font-weight:600">'+d.label+'</td>';
     tbl+='<td style="color:var(--blue)">'+fmtM(d.rep)+'</td>';
     tbl+='<td style="color:var(--orange)">'+fmtM(d.ic)+'</td>';
+    tbl+='<td style="color:#16a085">'+fmtM(d.nta)+'</td>';
     tbl+='<td style="color:var(--red)">'+fmtM(d.maintCapex)+'</td>';
     tbl+='<td style="color:var(--orange)">'+fmtM(d.growthCapex)+'</td>';
     if(roiicData.some(function(dd){return dd.rd>0})){
@@ -5055,8 +4996,11 @@ function renderRoiicAnalysis(){
     tbl+='</tr>';
   });
   // Bridge note to Growth Compounder (#47)
-  tbl+='<tr><td colspan="'+(roiicData.some(function(d){return d.rd>0})?11:9)+'" style="font-size:.75rem;color:var(--text3);font-style:italic;padding:10px 6px;border-bottom:none;font-family:DM Sans,sans-serif">The ROIIC above is what actually happened (backward-looking). The Growth Compounder below lets you model what you expect going forward using those returns as a starting point.</td></tr>';
+  tbl+='<tr><td colspan="'+(roiicData.some(function(d){return d.rd>0})?12:10)+'" style="font-size:.75rem;color:var(--text3);font-style:italic;padding:10px 6px;border-bottom:none;font-family:DM Sans,sans-serif">The ROIIC above is what actually happened (backward-looking). The Growth Compounder below lets you model what you expect going forward using those returns as a starting point.</td></tr>';
   document.getElementById('roiicTable').innerHTML=tbl;
+
+  // index53: R&D Capital Efficiency diagnostic, folded in from PCBA. Renders into the roiicRdCapEff container at the bottom of this card. Uses THIS card's `years` (all stored years — same set the chart/table above use), so it stays consistent with its new home. The split still reads the canonical Best Guess slider (adjRdSlider), not this card's R&D Growth % slider (option a); the panel caption states this. Wrapped so a diagnostic error can't blank the whole card.
+  try{document.getElementById('roiicRdCapEff').innerHTML=renderRdCapEff(years);}catch(e){document.getElementById('roiicRdCapEff').innerHTML='';console.warn('R&D CapEff error:',e);}
 }
 
 function renderRoiicDualChart(data){
@@ -5065,14 +5009,21 @@ function renderRoiicDualChart(data){
   var n=data.length;
   var repVals=data.map(function(d){return d.rep||0});
   var icVals=data.map(function(d){return d.ic||0});
-  var allVals=repVals.concat(icVals).filter(function(v){return v!=null&&isFinite(v)});
-  if(allVals.length===0)return '<div style="color:var(--text3);font-size:.85rem;padding:20px">No valid data to chart.</div>';
-  var yMin=Math.min.apply(null,allVals)*1.1;
-  var yMax=Math.max.apply(null,allVals)*1.15;
+  var ntaVals=data.map(function(d){return d.nta||0});
+  // Left axis = capital stocks (IC, NTA); right axis = REP flow on its own scale (magnitudes differ ~10x)
+  var capVals=icVals.concat(ntaVals).filter(function(v){return v!=null&&isFinite(v)});
+  var repClean=repVals.filter(function(v){return v!=null&&isFinite(v)});
+  if(capVals.length===0&&repClean.length===0)return '<div style="color:var(--text3);font-size:.85rem;padding:20px">No valid data to chart.</div>';
+  var yMin=capVals.length?Math.min.apply(null,capVals)*1.1:0;
+  var yMax=capVals.length?Math.max.apply(null,capVals)*1.15:1;
   if(yMin>0)yMin=0;
   if(yMax-yMin<1){yMin-=100;yMax+=100;}
-  var yRange=yMax-yMin;
-  if(yRange===0)yRange=1;
+  var yRange=yMax-yMin; if(yRange===0)yRange=1;
+  var rMin=repClean.length?Math.min.apply(null,repClean):0;
+  var rMax=repClean.length?Math.max.apply(null,repClean)*1.15:1;
+  rMin=rMin>0?0:rMin*1.1;
+  if(rMax-rMin<1){rMax+=100;}
+  var rRange=rMax-rMin; if(rRange===0)rRange=1;
   // CC8: position points by actual period-end date (data already sorted chronologically).
   // Falls back to even index spacing for single-point or degenerate/missing-date sets.
   var xDates=data.map(function(d){return d.endDate?new Date(d.endDate).getTime():NaN});
@@ -5086,38 +5037,51 @@ function renderRoiicDualChart(data){
     return pL+((xDates[i]-dMin)/dSpan)*plotW;
   }
   function yP(val){return pT+plotH-((val-yMin)/yRange*plotH)}
+  function yPrep(val){return pT+plotH-((val-rMin)/rRange*plotH)}
   var svg='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
+  var axMidY=pT+plotH/2;
+  svg+='<text x="13" y="'+axMidY+'" fill="#999" font-size="9" text-anchor="middle" transform="rotate(-90,13,'+axMidY+')" font-family="DM Sans">Capital ($M)</text>';
+  svg+='<text x="'+(cW-11)+'" y="'+axMidY+'" fill="#3498db" font-size="9" text-anchor="middle" transform="rotate(-90,'+(cW-11)+','+axMidY+')" font-family="DM Sans">REP ($M)</text>';
   for(var g=0;g<=4;g++){
     var gy=pT+(plotH/4)*g;
     var gv=yMax-((yMax-yMin)/4)*g;
+    var rgv=rMax-((rMax-rMin)/4)*g;
     svg+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
     svg+='<text x="'+(pL-6)+'" y="'+(gy+4)+'" fill="#999" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+fmtM(gv)+'</text>';
+    svg+='<text x="'+(cW-pR+6)+'" y="'+(gy+4)+'" fill="#3498db" font-size="9" text-anchor="start" font-family="JetBrains Mono">'+fmtM(rgv)+'</text>';
   }
+  // REP as semi-transparent bars (a flow), drawn behind the IC/NTA lines (stocks)
+  var _gaps=[]; for(var _bi=1;_bi<n;_bi++){_gaps.push(xP(_bi)-xP(_bi-1));}
+  var _minGap=_gaps.length?Math.min.apply(null,_gaps):plotW;
+  var barW=Math.max(6,Math.min(_minGap*0.55,40));
+  var baseY=yPrep(0);
+  data.forEach(function(d,i){
+    var ry=yPrep(d.rep), by=Math.min(ry,baseY), bh=Math.max(Math.abs(ry-baseY),0.5);
+    svg+='<rect x="'+(xP(i)-barW/2).toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+bh.toFixed(1)+'" fill="rgba(52,152,219,.35)" stroke="#3498db" stroke-width="1"/>';
+  });
   if(n>1){
-    var repArea='M'+xP(0)+','+yP(data[0].rep);
-    data.forEach(function(d,i){if(i>0)repArea+=' L'+xP(i)+','+yP(d.rep)});
-    repArea+=' L'+xP(n-1)+','+(pT+plotH)+' L'+xP(0)+','+(pT+plotH)+' Z';
-    svg+='<path d="'+repArea+'" fill="rgba(52,152,219,.1)"/>';
     var icPath=data.map(function(d,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yP(d.ic).toFixed(1)}).join(' ');
     svg+='<path d="'+icPath+'" fill="none" stroke="#e67e22" stroke-width="2.5" stroke-dasharray="6 3" opacity=".8"/>';
-    var repPath=data.map(function(d,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yP(d.rep).toFixed(1)}).join(' ');
-    svg+='<path d="'+repPath+'" fill="none" stroke="#3498db" stroke-width="2.5"/>';
+    var ntaPath=data.map(function(d,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yP(d.nta).toFixed(1)}).join(' ');
+    svg+='<path d="'+ntaPath+'" fill="none" stroke="#16a085" stroke-width="2" stroke-dasharray="2 3" opacity=".85"/>';
   }
   // CC8 option (c): keep per-point labels, but when two would collide
   // (close in time, e.g. FY + TTM) drop the later one to a lower row.
   var lblBaseY=pT+plotH+18, lblRow2Y=pT+plotH+30, lblMinGap=42, lblLastBaseX=-1e9;
   data.forEach(function(d,i){
     var lx=xP(i);
-    svg+='<circle cx="'+lx+'" cy="'+yP(d.rep)+'" r="4" fill="#3498db" stroke="#0f0f0f" stroke-width="2"/>';
     svg+='<circle cx="'+lx+'" cy="'+yP(d.ic)+'" r="4" fill="#e67e22" stroke="#0f0f0f" stroke-width="2"/>';
+    svg+='<circle cx="'+lx+'" cy="'+yP(d.nta)+'" r="3.5" fill="#16a085" stroke="#0f0f0f" stroke-width="1.5"/>';
     var ly=lblBaseY;
     if(lx-lblLastBaseX<lblMinGap){ly=lblRow2Y;}else{lblLastBaseX=lx;}
     svg+='<text x="'+lx+'" y="'+ly+'" fill="#999" font-size="10" text-anchor="middle" font-family="DM Sans">'+d.label+'</text>';
   });
-  svg+='<line x1="'+(cW-pR-180)+'" y1="'+(pT-12)+'" x2="'+(cW-pR-160)+'" y2="'+(pT-12)+'" stroke="#3498db" stroke-width="2.5"/>';
-  svg+='<text x="'+(cW-pR-155)+'" y="'+(pT-8)+'" fill="#999" font-size="9">Real Economic Profit</text>';
-  svg+='<line x1="'+(cW-pR-180)+'" y1="'+(pT+2)+'" x2="'+(cW-pR-160)+'" y2="'+(pT+2)+'" stroke="#e67e22" stroke-width="2.5" stroke-dasharray="6 3"/>';
-  svg+='<text x="'+(cW-pR-155)+'" y="'+(pT+6)+'" fill="#999" font-size="9">Invested Capital</text>';
+  svg+='<rect x="'+(cW-pR-180)+'" y="'+(pT-25)+'" width="20" height="7" fill="rgba(52,152,219,.35)" stroke="#3498db" stroke-width="1"/>';
+  svg+='<text x="'+(cW-pR-155)+'" y="'+(pT-18)+'" fill="#999" font-size="9">Real Economic Profit (right axis)</text>';
+  svg+='<line x1="'+(cW-pR-180)+'" y1="'+(pT-10)+'" x2="'+(cW-pR-160)+'" y2="'+(pT-10)+'" stroke="#e67e22" stroke-width="2.5" stroke-dasharray="6 3"/>';
+  svg+='<text x="'+(cW-pR-155)+'" y="'+(pT-6)+'" fill="#999" font-size="9">Invested Capital</text>';
+  svg+='<line x1="'+(cW-pR-180)+'" y1="'+(pT+2)+'" x2="'+(cW-pR-160)+'" y2="'+(pT+2)+'" stroke="#16a085" stroke-width="2" stroke-dasharray="2 3"/>';
+  svg+='<text x="'+(cW-pR-155)+'" y="'+(pT+6)+'" fill="#999" font-size="9">Net Tangible Assets</text>';
   svg+='</svg>';
   return svg;
 }
@@ -5173,7 +5137,8 @@ function renderRoiicRollingChart(data){
     var path=pts.map(function(p,j){return (j===0?'M':'L')+xP(p.i).toFixed(1)+','+yP(p.v).toFixed(1)}).join(' ');
     svg+='<path d="'+path+'" fill="none" stroke="'+colors[w]+'" stroke-width="'+(w===1?'1.5':'2.5')+'" opacity="'+opacities[w]+'"/>';
     pts.forEach(function(p){
-      svg+='<circle cx="'+xP(p.i)+'" cy="'+yP(p.v)+'" r="3.5" fill="#0f0f0f" stroke="'+colors[w]+'" stroke-width="2"/>';
+      // index56: de-emphasize the markers so the lines (the trend) carry the eye — small solid dots in the line colour at the line's own opacity, instead of high-contrast hollow rings.
+      svg+='<circle cx="'+xP(p.i)+'" cy="'+yP(p.v)+'" r="2.2" fill="'+colors[w]+'" stroke="none" opacity="'+opacities[w]+'"/>';
     });
   });
   // CC8 option (c): keep per-point labels, but when two would collide
@@ -6513,23 +6478,7 @@ function renderAmortDeepDive(da,deprOnly,maintCapex,maintCapexLight,realProfit,r
   html+='<div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3);margin-top:2px"><span>Physical wear & tear</span><span>Acquisition accounting</span></div>';
   html+='</div>';
 
-  // Goodwill % of IC (#18) + Acquisition footprint (#16)
-  var ic=0;
-  if(currentYearKey&&yearStore[currentYearKey]&&yearStore[currentYearKey].formData){
-    var fd=yearStore[currentYearKey].formData;
-    ic=(fd.equity||0)+(fd.debt||0)-(fd.cash||0)-(fd.sti||0);
-  }
-  if(ic>0&&(goodwill>0||intangibles>0)){
-    var gwPctIC=goodwill/ic;
-    var acqPctIC=(goodwill+intangibles)/ic;
-    html+='<div class="dd-stat-row" style="margin-top:10px">';
-    html+='<div class="dd-stat"><div class="ds-val" style="color:'+(gwPctIC>0.5?'var(--orange)':'var(--text)')+'">'+pct(gwPctIC,0)+'</div><div class="ds-lbl">Goodwill / IC</div></div>';
-    html+='<div class="dd-stat"><div class="ds-val">'+pct(acqPctIC,0)+'</div><div class="ds-lbl">(GW+Intang) / IC</div></div>';
-    html+='<div class="dd-stat"><div class="ds-val">'+fmtM(goodwill)+'</div><div class="ds-lbl">Goodwill</div></div>';
-    html+='<div class="dd-stat"><div class="ds-val">'+fmtM(intangibles)+'</div><div class="ds-lbl">Intangibles</div></div>';
-    html+='</div>';
-    html+='<div style="font-size:.72rem;color:var(--text3);margin-top:4px">ROIC includes goodwill in the denominator (full acquisition history). Return on NTA strips it out (operational picture only).</div>';
-  }
+  // index55: the four capital-base-composition panels (Goodwill/IC, (GW+Intang)/IC, Goodwill, Intangibles) and their ROIC-vs-NTA note moved to the Capital Efficiency card (renderRoiicAnalysis), where they sit beside Real ROIC and Return on NTA. Decoupled from this section's amort>0 gate, so goodwill-heavy non-amortizing names (e.g. GOOGL) now show them.
 
   // Amortization source hint (#13)
   html+='<div style="font-size:.75rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:12px 0"><strong style="color:var(--text2)">📌 Where to find the depreciation/amortization split:</strong> Check (1) the cash flow statement — some companies break out depreciation and amortization separately, (2) the Property & Equipment footnote for depreciation, (3) the Intangible Assets footnote for amortization by category (customer relationships, technology, trade names).</div>';
@@ -7432,56 +7381,73 @@ function calculate(opts){opts=opts||{};
   var intangiblesVal=v('intangibles')||0;
   var nta=totalAssets>0?(totalAssets-goodwill-intangiblesVal-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  var roicCard=document.getElementById('roicCard');
-  if(equity>0&&growthCapex>0){
-    roicCard.style.display='block';
-    var _cr=canonicalReinvestRate(growthCapex,adjRdExp,(100-rdMaintPct)/100,realProfit);
+  if(equity>0){
+    // index51 (Capital Efficiency Decision 1): one unified items list rendered in two tiers — Real ROIC + Return on NTA as a prominent headline pair (hl:true), the rest as a smaller secondary row. Replaces the two duplicate render paths (growth-CapEx vs none); box content and all conditions are unchanged.
     var roicItems=[
-      {label:'Real ROIC (Full D&A)',value:pct(realROIC),sub:fmtM(realProfit)+' / '+fmtM(investedCapital)},
-      {label:'Invested Capital',value:fmtM(investedCapital),sub:fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash'},
-      {label:'Growth CapEx',value:fmtM(growthCapex),sub:fmtM(capex)+' total - '+fmtM(maintCapex)+' maint'},
-      {label:'Maint CapEx (Full D&A)',value:fmtM(maintCapex),sub:maintMethod},
-      {label:'Reinvestment Rate',value:_cr.rate!==null?pct(_cr.rate,1):'—',sub:fmtM(_cr.numerator)+' / '+fmtM(realProfit)+' REP'}
+      {label:'Real ROIC (Full D&A)',value:pct(realROIC),sub:fmtM(realProfit)+' / '+fmtM(investedCapital),hl:true},
+      {label:'Invested Capital',value:fmtM(investedCapital),sub:fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash'}
     ];
+    if(growthCapex>0){
+      var _cr=canonicalReinvestRate(growthCapex,adjRdExp,(100-rdMaintPct)/100,realProfit);
+      roicItems.push({label:'Growth CapEx',value:fmtM(growthCapex),sub:fmtM(capex)+' total - '+fmtM(maintCapex)+' maint'});
+      roicItems.push({label:'Maint CapEx (Full D&A)',value:fmtM(maintCapex),sub:maintMethod});
+      roicItems.push({label:'Reinvestment Rate',value:_cr.rate!==null?pct(_cr.rate,1):'\u2014',sub:fmtM(_cr.numerator)+' / '+fmtM(realProfit)+' REP'});
+    }
     if(hasLightView){
       var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-      roicItems.push({label:'Maint CapEx (All Amort Added Back)',value:fmtM(maintCapexLight),sub:'Depr Only x 1.05'});
       roicItems.push({label:'Real ROIC (All Amort Added Back)',value:pct(realROICLight),sub:fmtM(realProfitLight)+' / '+fmtM(investedCapital)});
+      if(growthCapex>0) roicItems.push({label:'Maint CapEx (All Amort Added Back)',value:fmtM(maintCapexLight),sub:'Depr Only x 1.05'});
+      else roicItems.push({label:'Real Profit (All Amort Added Back)',value:fmtM(realProfitLight)});
     }
     if(nta>0){
-      roicItems.push({label:'Return on NTA (Net Tangible Assets)',value:pct(returnOnNTA),sub:fmtM(realProfit)+' / '+fmtM(nta)});
+      roicItems.push({label:'Return on NTA (Net Tangible Assets)',value:pct(returnOnNTA),sub:fmtM(realProfit)+' / '+fmtM(nta),hl:true});
       roicItems.push({label:'Net Tangible Assets',value:fmtM(nta),sub:'Assets - GW - Intang - Cash - STI'});
     }
-    document.getElementById('roicMetrics').innerHTML=roicItems.map(function(m){return '<div class="metric"><div class="val">'+m.value+'</div><div class="lbl">'+m.label+'</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+m.sub+'</div></div>'}).join('');
-
-    var scenarios=[{label:'Bear (10%)',roic:0.10},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull ('+pct(Math.max(realROIC*1.25,realROIC+0.05),0)+')',roic:Math.max(realROIC*1.25,realROIC+0.05)}];
-    if(realROIC<=0.10){scenarios=[{label:'Bear (5%)',roic:0.05},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull (20%)',roic:0.20}];}
-    if(realROIC>=0.25)scenarios[0]={label:'Bear (10%)',roic:0.10};
-
-    var projHTML='<p style="font-size:.82rem;color:var(--text2);margin-bottom:12px">If growth CapEx of <strong style="color:var(--text)">'+fmtM(growthCapex)+'/yr</strong> earns a given return, what will the real yield become?</p>';
-    projHTML+='<table class="proj-table"><tr><th style="text-align:left">Scenario</th><th>New Profit (Yr 3)</th><th>Yield (Yr 3)</th><th>New Profit (Yr 5)</th><th>Yield (Yr 5)</th></tr>';
-    scenarios.forEach(function(s,i){
-      var a3=growthCapex*s.roic*3,a5=growthCapex*s.roic*5;
-      var p3=realProfit+a3,p5=realProfit+a5;
-      var y3=p3/ev,y5=p5/ev;
-      var cls=i===1?' class="highlight-row"':'';
-      projHTML+='<tr'+cls+'><td>'+s.label+'</td><td>'+fmtM(p3)+'</td><td>'+pct(y3)+'</td><td>'+fmtM(p5)+'</td><td>'+pct(y5)+'</td></tr>';
-    });
-    projHTML+='</table><p class="section-note">Assumes constant EV (no price change) and cumulative returns on annual growth CapEx.</p>';
-    document.getElementById('growthProjection').innerHTML=projHTML;
-  }else{
-    roicCard.style.display=equity>0?'block':'none';
-    if(equity>0){
-      var ntaHTML='<div class="metric"><div class="val">'+pct(realROIC)+'</div><div class="lbl">Real ROIC (Full D&A)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfit)+' / '+fmtM(investedCapital)+'</div></div><div class="metric"><div class="val">'+fmtM(investedCapital)+'</div><div class="lbl">Invested Capital</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash</div></div>';
-      if(hasLightView){
-        var realROICLight=investedCapital>0?realProfitLight/investedCapital:0;
-        ntaHTML+='<div class="metric"><div class="val">'+pct(realROICLight)+'</div><div class="lbl">Real ROIC (All Amort Added Back)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfitLight)+' / '+fmtM(investedCapital)+'</div></div>';
-        ntaHTML+='<div class="metric"><div class="val">'+fmtM(realProfitLight)+'</div><div class="lbl">Real Profit (All Amort Added Back)</div></div>';
-      }
-      if(nta>0)ntaHTML+='<div class="metric"><div class="val">'+pct(returnOnNTA)+'</div><div class="lbl">Return on NTA (Net Tangible Assets)</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+fmtM(realProfit)+' / '+fmtM(nta)+'</div></div><div class="metric"><div class="val">'+fmtM(nta)+'</div><div class="lbl">Net Tangible Assets</div><div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">Assets - GW - Intang - Cash</div></div>';
-      document.getElementById('roicMetrics').innerHTML=ntaHTML;
-      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx ≈ D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' All Amortization Added Back view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
+    var _mbox=function(m,prom){return '<div class="metric"'+(prom?' style="border:1px solid var(--accent2);background:rgba(52,152,219,.06)"':'')+'><div class="val"'+(prom?' style="font-size:1.55rem;color:var(--accent2)"':'')+'>'+m.value+'</div><div class="lbl">'+m.label+'</div>'+(m.sub?'<div style="font-size:.72rem;color:var(--text3);margin-top:2px;font-family:\'JetBrains Mono\',monospace">'+m.sub+'</div>':'')+'</div>';};
+    var _head=roicItems.filter(function(m){return m.hl;}),_rest=roicItems.filter(function(m){return !m.hl;});
+    var _mh='';
+    if(_head.length)_mh+='<div class="metrics" style="grid-template-columns:repeat('+_head.length+',1fr);margin-bottom:14px">'+_head.map(function(m){return _mbox(m,true);}).join('')+'</div>';
+    if(_rest.length)_mh+='<div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+_rest.map(function(m){return _mbox(m,false);}).join('')+'</div>';
+    // index55: capital-base composition (absorbed from the Amortization Analysis deep-dive). Sits beside Real ROIC / Return on NTA because it explains why they diverge. Same gate as before (IC>0 and some goodwill/intangibles); decoupled from the old amort>0 gate.
+    if(investedCapital>0&&(goodwill>0||intangiblesVal>0)){
+      var gwPctIC=goodwill/investedCapital;
+      var acqPctIC=(goodwill+intangiblesVal)/investedCapital;
+      _mh+='<div style="font-size:.78rem;color:var(--text2);font-weight:600;margin:16px 0 6px">Capital Base Composition</div>';
+      _mh+='<div class="dd-stat-row">';
+      _mh+='<div class="dd-stat"><div class="ds-val" style="color:'+(gwPctIC>0.5?'var(--orange)':'var(--text)')+'">'+pct(gwPctIC,0)+'</div><div class="ds-lbl">Goodwill / IC</div></div>';
+      _mh+='<div class="dd-stat"><div class="ds-val">'+pct(acqPctIC,0)+'</div><div class="ds-lbl">(GW+Intang) / IC</div></div>';
+      _mh+='<div class="dd-stat"><div class="ds-val">'+fmtM(goodwill)+'</div><div class="ds-lbl">Goodwill</div></div>';
+      _mh+='<div class="dd-stat"><div class="ds-val">'+fmtM(intangiblesVal)+'</div><div class="ds-lbl">Intangibles</div></div>';
+      _mh+='</div>';
+      _mh+='<div style="font-size:.72rem;color:var(--text3);margin-top:4px">ROIC includes goodwill in the denominator (full acquisition history). Return on NTA strips it out (operational picture only).</div>';
     }
+    document.getElementById('roicMetrics').innerHTML=_mh;
+    document.getElementById('roicMetrics').style.display='';
+    document.getElementById('growthProjection').style.display=''; // index54: counterpart to the equity<=0 collapse below — keep the metric divs shown for positive-equity names
+
+    if(growthCapex>0){
+      var scenarios=[{label:'Bear (10%)',roic:0.10},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull ('+pct(Math.max(realROIC*1.25,realROIC+0.05),0)+')',roic:Math.max(realROIC*1.25,realROIC+0.05)}];
+      if(realROIC<=0.10){scenarios=[{label:'Bear (5%)',roic:0.05},{label:'Base (ROIC: '+pct(realROIC,0)+')',roic:realROIC},{label:'Bull (20%)',roic:0.20}];}
+      if(realROIC>=0.25)scenarios[0]={label:'Bear (10%)',roic:0.10};
+      var projHTML='<p style="font-size:.82rem;color:var(--text2);margin-bottom:12px">If growth CapEx of <strong style="color:var(--text)">'+fmtM(growthCapex)+'/yr</strong> earns a given return, what will the real yield become?</p>';
+      projHTML+='<table class="proj-table"><tr><th style="text-align:left">Scenario</th><th>New Profit (Yr 3)</th><th>Yield (Yr 3)</th><th>New Profit (Yr 5)</th><th>Yield (Yr 5)</th></tr>';
+      scenarios.forEach(function(s,i){
+        var a3=growthCapex*s.roic*3,a5=growthCapex*s.roic*5;
+        var p3=realProfit+a3,p5=realProfit+a5;
+        var y3=p3/ev,y5=p5/ev;
+        var cls=i===1?' class="highlight-row"':'';
+        projHTML+='<tr'+cls+'><td>'+s.label+'</td><td>'+fmtM(p3)+'</td><td>'+pct(y3)+'</td><td>'+fmtM(p5)+'</td><td>'+pct(y5)+'</td></tr>';
+      });
+      projHTML+='</table><p class="section-note">Assumes constant EV (no price change) and cumulative returns on annual growth CapEx.</p>';
+      document.getElementById('growthProjection').innerHTML=projHTML;
+    }else{
+      document.getElementById('growthProjection').innerHTML='<p style="font-size:.82rem;color:var(--text3)">No material growth CapEx detected (CapEx \u2248 D&A). ROIC shown above reflects return on existing capital base.'+(hasLightView?' All Amortization Added Back view uses physical depreciation only, excluding acquisition-related amortization.':'')+'</p>';
+    }
+  }else{
+    // equity<=0 (e.g. VRSN): Real ROIC / Invested Capital are not meaningful (book equity negative, IC floored). Clear so nothing stale shows above the chart.
+    // index54 (VRSN empty-gap): also collapse the two divs, so their fixed 16px bottom margins don't stack into dead space above the chart on negative-equity names.
+    var _rmC=document.getElementById('roicMetrics');_rmC.innerHTML='';_rmC.style.display='none';
+    var _gpC=document.getElementById('growthProjection');_gpC.innerHTML='';_gpC.style.display='none';
   }
 
   // R&D Intensity Card
