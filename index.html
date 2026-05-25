@@ -410,7 +410,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-05-24';
+  var buildDate='2026-05-25';
   var buildId='v4.12.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
@@ -821,9 +821,57 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   <!-- Forward-Looking Divider -->
   <div id="forwardDivider" style="display:none;margin:24px 0 16px;padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(212,160,37,.06),rgba(155,89,182,.06));border:1px solid rgba(212,160,37,.2)">
     <div style="font-size:.92rem;font-weight:700;color:var(--accent2)">📐 What Happens From Here?</div>
-    <div style="font-size:.82rem;color:var(--text2);margin-top:4px;line-height:1.5">Everything above is based on actual reported financials — what the business already earned. Everything below involves assumptions about future growth, deployment, and returns. These are scenario tools, not predictions.</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-top:4px;line-height:1.5">Everything above is the company’s current financial status, from the available numbers. Everything below is what those numbers imply going forward — projections by nature, which warrant a degree of skepticism. The method, the discussion, and the debatable assumptions accompany each one.</div>
   </div>
 
+  <div class="card" id="forwardYieldCard" style="display:none">
+    <h2>🧭 Forward Yield <span style="font-size:.82rem;color:var(--accent2);font-weight:500">— a projection: today’s numbers carried forward, adjusted for the return the company earns reinvesting internally</span></h2>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">A forward projection: the current earnings yield, plus what your share of reinvested profit could add over time if the company keeps earning its current return on new capital. Set the return you expect on reinvested profit (r), how much it reinvests (b), and — when it reinvests beyond earnings — the financing cost (f). The projection updates as you adjust them.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:.78rem;font-weight:600;color:var(--text2)">View basis:</label>
+      <select id="fyView" onchange="_fySetView(this.value)" style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem">
+        <option value="fullda">Full D&amp;A (conservative floor)</option>
+        <option value="bestguess">Best Guess (slider-calibrated central case)</option>
+      </select>
+    </div>
+    <div style="font-size:.72rem;color:var(--text3);margin:-6px 0 14px;line-height:1.5">Each input can be nudged and snapped back with its “↺ default” link. To reset everything at once, <strong style="color:var(--accent2)">switch the view basis — that resets them all</strong> to fresh defaults.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Reinvestment Return r (%)</label>
+        <input type="number" id="fyR" step="0.1" oninput="renderForwardYield()" style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem">
+        <div style="font-size:.7rem;color:var(--text3);margin-top:3px">What you expect each reinvested dollar to earn. <span onclick="_fyReset('r')" style="color:var(--accent2);cursor:pointer;white-space:nowrap">&#8635; default: <span id="fyRDefault">&mdash;</span></span></div>
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Reinvestment Rate b (%)</label>
+        <input type="number" id="fyB" step="0.1" oninput="renderForwardYield()" style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem">
+        <div style="font-size:.7rem;color:var(--text3);margin-top:3px">Share of real profit reinvested for growth. <span onclick="_fyReset('b')" style="color:var(--accent2);cursor:pointer;white-space:nowrap">&#8635; default: <span id="fyBDefault">&mdash;</span></span></div>
+      </div>
+      <div id="fyFField" style="display:none">
+        <label style="font-size:.78rem;font-weight:600;color:var(--orange);display:block;margin-bottom:6px">Financing Cost f (%)</label>
+        <input type="number" id="fyF" step="0.1" oninput="renderForwardYield()" style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem">
+        <div style="font-size:.7rem;color:var(--text3);margin-top:3px">Cost on the part funded beyond earnings (only when b &gt; 1). <span onclick="_fyReset('f')" style="color:var(--accent2);cursor:pointer;white-space:nowrap">&#8635; default: <span id="fyFDefault">&mdash;</span></span></div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:.74rem;font-weight:600;color:var(--text2)">Cash rate r_cash (%) <span style="font-weight:400;color:var(--text3)">— money-market return on undeployed cash; also the floor for f</span></label>
+      <input type="number" id="fyRcash" step="0.1" oninput="renderForwardYield()" style="width:80px;margin-left:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem"> <span onclick="_fyReset('rcash')" style="color:var(--accent2);cursor:pointer;font-size:.7rem;white-space:nowrap">&#8635; default: <span id="fyRcashDefault">&mdash;</span></span>
+    </div>
+    <div id="fyResults"></div>
+    <details style="margin-top:14px;font-size:.8rem">
+      <summary style="cursor:pointer;color:var(--text2);font-weight:600">How this is calculated</summary>
+      <div id="fyMathBody" style="margin-top:8px"></div>
+    </details>
+    <details style="margin-top:8px;font-size:.8rem">
+      <summary style="cursor:pointer;color:var(--text2);font-weight:600">What r, b, and y mean</summary>
+      <div style="margin-top:8px;color:var(--text2);line-height:1.7">
+        <strong>y — current yield.</strong> What you’d earn each year right now if the company paid out all its real profit (REP ÷ enterprise value). The starting point.<br>
+        <strong>r — reinvestment return.</strong> What you expect each dollar the company holds back and reinvests to earn going forward. The default is the company’s Real ROIC — the return it has actually earned on its capital.<br>
+        <strong>b — reinvestment rate.</strong> How much of its real profit the company plows back into growth (new plant, equipment, R&amp;D) instead of paying out. Above 100% means it spends more than it earns and funds the rest externally.<br>
+        <strong>k — Forward Yield.</strong> The bottom line: today’s yield plus the extra value reinvestment creates — your expected total annual return if things hold.<br>
+        <strong>f — financing cost.</strong> When a company reinvests more than it earns (b above 100%), it funds the gap from outside; f is what that funding costs, and the over-reinvested part has to clear f to be worth it. Shows only when b is above 100%; defaults to about 4%.
+      </div>
+    </details>
+  </div>
   <div class="card" id="projCard" style="display:none">
     <h2>🎯 When Does This Investment Work?</h2>
     <button class="proj-toggle" id="projToggle" onclick="toggleProjections()">Model growth scenarios ▼</button>
@@ -2175,6 +2223,270 @@ function renderCashDeploy(){
 }
 
 // ============ Growth Compounder ============
+// ===== Forward Yield Engine — standalone, additive =====
+// k = y + min(b,1)*(r - y) + max(b-1,0)*(r - f)
+// View toggle Full D&A <-> Best Guess flips the REP basis under y, r, AND b.
+// In Best Guess view the r anchors capitalize growth R&D into the base
+// (symmetric ROIC); Full D&A leaves R&D out of both sides.
+var _fyView='fullda'; // 'fullda' | 'bestguess'
+var _fySeeds={r:null,b:null,rcash:null,f:null}; // current defaults, refreshed each render (for snap-back)
+function _fySetView(v){
+  _fyView=v;
+  var c=document.getElementById('forwardYieldCard');
+  if(c)c.dataset.fySeedSig=''; // force re-seed of r/b/f for the new basis
+  renderForwardYield();
+}
+function _fyReset(field){ // snap one input back to its default
+  var map={r:'fyR',b:'fyB',rcash:'fyRcash',f:'fyF'};
+  var inp=document.getElementById(map[field]); if(!inp) return;
+  var s=_fySeeds[field];
+  inp.value=(s!==null&&s!==undefined)?(s*100).toFixed(1):'';
+  renderForwardYield();
+}
+
+// REP for the active view. Full D&A = the conservative floor (m.realProfit).
+// Best Guess = the visible yield-ladder Panel 3: realProfit + amort*(adjAmortPct%)
+// + after-tax growth R&D (the partial slider basis, NOT the 100% Light base).
+function _fyRepForView(m){
+  if(_fyView!=='bestguess') return m.realProfit;
+  var amort=(m.deprOnly>0&&m.da>0)?(m.da-m.deprOnly):0;
+  var amortAdd=amort*(adjAmortPct/100);
+  var rd=m.rd_expense||0;
+  var rdGrowth=rd>0?(rd*((100-rdMaintPct)/100)*(1-TAX_RATE)):0;
+  return m.realProfit+amortAdd+rdGrowth;
+}
+// b on the active basis: same canonical numerator / the view's REP.
+function _fyBForYear(m){
+  return canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,_fyRepForView(m)).rate;
+}
+
+function renderForwardYield(){
+  var el=document.getElementById('fyResults');
+  if(!el) return;
+  var card=document.getElementById('forwardYieldCard');
+  var keys=getActiveYearKeys();
+  if(keys.length===0){el.innerHTML='';return;}
+  var latestKey=keys[keys.length-1];
+  var yr=yearStore[latestKey];
+  if(!yr){el.innerHTML='';return;}
+
+  var ms=enrichYears(keys);
+  var mL=ms[ms.length-1];
+  var d=yr.formData;
+
+  var price=getEffectivePrice(yr),shares=d.shares||0;
+  var ev=price*shares+(d.debt||0)-(d.cash||0)-(d.sti||0);
+  var repL=_fyRepForView(mL);
+
+  if(ev<=0||repL<=0){
+    el.innerHTML='<p style="font-size:.82rem;color:var(--text3)">EV &le; 0 or REP &le; 0 — Forward Yield not applicable for this period.</p>';
+    return;
+  }
+
+  var y=repL/ev;
+
+  var ic=mL.investedCapital;
+  var nta=mL.nta;
+  var icOk=ic>0;
+
+  // Symmetric R&D capitalization (Best Guess only): growth R&D added to REP must
+  // also sit in the capital base for a consistent ROIC. Full D&A: no adjustment.
+  var rdLife=getRdSectorPreset().assetLife;
+  function _fyCapAdj(idx){
+    if(_fyView!=='bestguess') return 0;
+    var gf=(100-rdMaintPct)/100, asset=0;
+    for(var j=Math.max(0,idx-rdLife+1);j<=idx;j++){
+      var rd=ms[j].rd_expense||0; if(rd<=0) continue;
+      var rem=(rdLife-(idx-j))/rdLife; if(rem>0) asset+=rd*gf*rem;
+    }
+    return asset;
+  }
+  var lastIdx=ms.length-1;
+  var rdAssetL=icOk?_fyCapAdj(lastIdx):0;
+  var icEff=ic+rdAssetL;
+  var icEffOk=icOk;
+
+  var roic=icEffOk?(repL/icEff):null;
+  var ronta=(nta>0)?(repL/nta):null;
+  var roiic=null, roiicNote='', roiicSpan='';
+  if(ms.length>=4){
+    var bkIdx=ms.length-4;
+    var mB=ms[bkIdx];
+    roiicSpan=(mB.label||'')+' \u2192 '+(mL.label||'');
+    var icEffB=mB.investedCapital+((mB.investedCapital>0)?_fyCapAdj(bkIdx):0);
+    var dIC=icEff-icEffB;
+    var dREP=repL-_fyRepForView(mB);
+    var icBase=Math.max(Math.abs(icEff),Math.abs(icEffB),1);
+    if(!icEffOk||mB.investedCapital<=0){roiicNote='IC floored (negative equity)';}
+    else if(dIC<=0){roiicNote='\u0394IC \u2264 0 \u2014 not meaningful';}
+    else if(Math.abs(dIC)<icBase*0.05){roiicNote='\u0394IC too small \u2014 not meaningful';}
+    else {roiic=dREP/dIC;}
+  } else {roiicNote='need 4+ years';}
+
+  var gw=mL.goodwill||0;
+  var acqRatio=icEffOk?(gw/icEff):null;
+  var acqFlag=(acqRatio!==null&&acqRatio>0.20);
+
+  // Seeds.
+  var rCashSeed=((d.inv_return_rate||4))/100;
+  var fSeed=((d.debt||0)>0)?((d.interest||0)/d.debt):rCashSeed;
+  if(fSeed<rCashSeed)fSeed=rCashSeed;
+  var bSeed=_fyBForYear(mL);
+  var bVals=ms.map(_fyBForYear).filter(function(v){return v!==null&&isFinite(v)&&v>=0;});
+  var bAvg=bVals.length?(bVals.reduce(function(a,c){return a+c;},0)/bVals.length):null;
+  var rSeed=icEffOk?roic:null;
+
+  // Store seeds for snap-back + refresh the "default: X%" hints.
+  _fySeeds={r:rSeed,b:bSeed,rcash:rCashSeed,f:fSeed};
+  function _setTxt(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
+  _setTxt('fyRDefault',rSeed!==null?(rSeed*100).toFixed(1)+'%':'n/a');
+  _setTxt('fyBDefault',bSeed!==null?(bSeed*100).toFixed(1)+'%':'n/a');
+  _setTxt('fyRcashDefault',(rCashSeed*100).toFixed(1)+'%');
+  _setTxt('fyFDefault',(fSeed*100).toFixed(1)+'%');
+
+  // Seed / persist inputs. Re-seed on company, period, or view change.
+  var sig=(d.ticker||'')+'|'+latestKey+'|'+_fyView;
+  var reSeed=(card.dataset.fySeedSig!==sig);
+  var rIn=document.getElementById('fyR'),bIn=document.getElementById('fyB'),
+      rcIn=document.getElementById('fyRcash'),fIn=document.getElementById('fyF');
+  if(reSeed){
+    rIn.value=(rSeed!==null)?(rSeed*100).toFixed(1):'';
+    bIn.value=(bSeed!==null)?(bSeed*100).toFixed(1):'';
+    rcIn.value=(rCashSeed*100).toFixed(1);
+    fIn.value=(fSeed*100).toFixed(1);
+    card.dataset.fySeedSig=sig;
+  }
+
+  var rV=parseFloat(rIn.value); var r=isNaN(rV)?null:(rV/100);
+  var bV=parseFloat(bIn.value); var b=isNaN(bV)?(bSeed||0):(bV/100);
+  var rcV=parseFloat(rcIn.value); var rCash=isNaN(rcV)?rCashSeed:(rcV/100);
+  var fV=parseFloat(fIn.value); var f=isNaN(fV)?fSeed:(fV/100); if(f<rCash)f=rCash;
+
+  var fField=document.getElementById('fyFField');
+  if(fField)fField.style.display=(b>1)?'block':'none';
+
+  function kCalc(yy,rr,bb,ff){if(rr===null)return null;return yy+Math.min(bb,1)*(rr-yy)+Math.max(bb-1,0)*(rr-ff);}
+  var k=kCalc(y,r,b,f);
+  var spread=(r!==null)?(r-y):null;
+  var growthPrem=(r!==null)?(Math.min(b,1)*(r-y)):null;
+  var overTerm=(r!==null)?(Math.max(b-1,0)*(r-f)):null;
+  function ppFmt(x){return (x>=0?'+':'')+(x*100).toFixed(2)+' pp';}
+
+  // ---- Sensitivity ranges (+ plain-English "where this comes from") ----
+  var rSens='',rWhy='';
+  if(r!==null){
+    var anchors=[],anchLbl=[];
+    if(roic!==null){anchors.push(roic);anchLbl.push('Real ROIC '+pct(roic,0));}
+    if(ronta!==null&&ronta<1.5){anchors.push(ronta);anchLbl.push('Return on NTA '+pct(ronta,0));}
+    if(roiic!==null&&Math.abs(roiic)<1.0){anchors.push(roiic);anchLbl.push('rolling ROIIC '+pct(roiic,0));}
+    var rLo,rHi;
+    if(anchors.length>=2){rLo=Math.min.apply(null,anchors);rHi=Math.max.apply(null,anchors);
+      rWhy='Range = the span of your return anchors ('+anchLbl.join(', ')+').';}
+    else{rLo=r*0.75;rHi=r*1.25;rWhy='Range = \u00b125% around your r (only one usable anchor).';}
+    if(rHi-rLo<0.005){rLo=r*0.75;rHi=r*1.25;}
+    var kRlo=kCalc(y,rLo,b,f),kRhi=kCalc(y,rHi,b,f);
+    rSens='k runs <strong>'+pct(Math.min(kRlo,kRhi))+' \u2192 '+pct(Math.max(kRlo,kRhi))+'</strong> as r moves '+pct(rLo)+'\u2013'+pct(rHi);
+  } else { rSens='<span style="color:var(--text3)">set r to see this</span>'; rWhy=''; }
+  var bSens='',bWhy='';
+  if(r!==null&&bVals.length>=2){
+    var bLo=Math.min.apply(null,bVals),bHi=Math.max.apply(null,bVals);
+    if(bHi-bLo<0.01){bLo=Math.max(0,b-0.15);bHi=b+0.15;bWhy='Range = \u00b115 points around b.';}
+    else{bWhy='Range = this company\u2019s own reinvestment over the years loaded ('+pct(bLo,0)+'\u2013'+pct(bHi,0)+').';}
+    var kBlo=kCalc(y,r,bLo,f),kBhi=kCalc(y,r,bHi,f);
+    bSens='k runs <strong>'+pct(Math.min(kBlo,kBhi))+' \u2192 '+pct(Math.max(kBlo,kBhi))+'</strong> as b moves '+pct(bLo)+'\u2013'+pct(bHi);
+  } else if(r!==null){ bSens='<span style="color:var(--text3)">one year of data — no range</span>'; bWhy=''; }
+  else { bSens='<span style="color:var(--text3)">set r to see this</span>'; bWhy=''; }
+
+  // ================= OUTPUT =================
+  var viewName=(_fyView==='bestguess')?'Best Guess':'Full D&A';
+  var h='';
+
+  // Headline + plain-English answer
+  h+='<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px">';
+  if(k!==null){
+    h+='<div style="font-size:2rem;font-weight:700;color:var(--accent)">'+pct(k)+'</div>';
+    h+='<div style="font-size:.85rem;color:var(--text2)">Forward Yield <span style="color:var(--text3)">— expected total annual return, '+viewName+' basis</span></div>';
+  } else {
+    h+='<div style="font-size:1.1rem;font-weight:700;color:var(--orange)">Set r to see the return</div>';
+  }
+  h+='</div>';
+  var plain='';
+  if(k!==null&&b<=1){
+    plain='In plain terms: if each reinvested dollar keeps earning about '+pct(r,0)+', you\u2019d expect about <strong>'+pct(k)+'</strong> a year — roughly the '+pct(y)+' you collect today, plus about '+(growthPrem*100).toFixed(1)+' points added by reinvesting part of the profit.';
+  } else if(k!==null&&b>1){
+    plain='In plain terms: this company reinvests more than its real profit ('+pct(b,0)+' of REP), funding the extra from outside. You\u2019d expect about <strong>'+pct(k)+'</strong> a year, driven mainly by the '+pct(r,0)+' return on what it reinvests — the part funded beyond earnings is charged about '+pct(f,0)+', not earned at today\u2019s yield.';
+  } else {
+    plain='Enter a reinvestment return (r) in the box above to see the expected total return. There\u2019s no automatic default here because the company has negative book equity, so Real ROIC can\u2019t be computed — set r by judgment.';
+  }
+  h+='<div style="font-size:.84rem;color:var(--text2);line-height:1.6;margin-bottom:14px">'+plain+'</div>';
+  // Notable flag: reinvesting beyond earnings (b > 1). Neutral framing — notable, not wrong.
+  if(k!==null&&b>1){
+    var flagTxt=(r>f)
+      ? 'this company reinvests more than it earns (b = '+pct(b,0)+'), and the forward yield ('+pct(k)+') comes out <em>above</em> the reinvestment return ('+pct(r,0)+'). It is funding extra growth at a cost (f = '+pct(f,0)+') below what that capital earns — accretive, but leverage-dependent and reversible if financing or returns shift.'
+      : 'this company reinvests more than it earns (b = '+pct(b,0)+'), funding the excess at a cost (f = '+pct(f,0)+') <em>above</em> the reinvestment return ('+pct(r,0)+') — the financing is dragging on the result, worth a hard look at whether the over-reinvestment is justified.';
+    h+='<div style="font-size:.78rem;background:var(--card2);border:1px solid var(--accent2);border-left:3px solid var(--accent2);border-radius:6px;padding:9px 12px;margin-bottom:14px;color:var(--text2);line-height:1.55">\u2691 <strong>Notable:</strong> '+flagTxt+'</div>';
+  }
+
+  // r-anchors panel
+  var roicLabel=(_fyView==='bestguess')?'Real ROIC (default for r, symmetric)':'Real ROIC (default for r)';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">';
+  h+='<div style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:8px">Where to anchor the reinvestment return r</div>';
+  h+='<div style="display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem">';
+  h+='<div><span style="color:var(--text3)">'+roicLabel+'</span><br><strong style="color:var(--green)">'+(roic!==null?pct(roic):'\u2014')+'</strong></div>';
+  h+='<div><span style="color:var(--text3)">Return on NTA</span><br><strong>'+(ronta!==null?pct(ronta)+(ronta>=1.5?' \u26a0':''):'\u2014')+'</strong></div>';
+  h+='<div><span style="color:var(--text3)">Recent trend (rolling ROIIC)</span><br><strong>'+(roiic!==null?(pct(roiic)+(Math.abs(roiic)>0.75?' \u26a0':'')):'n/m')+'</strong> <span style="color:var(--text3);font-size:.92em">'+(roiic!==null?(roiicSpan+(Math.abs(roiic)>0.75?' \u00b7 lumpy, directional only':'')):roiicNote)+'</span></div>';
+  h+='</div>';
+  var basisNote;
+  if(_fyView==='bestguess'){
+    basisNote=(rdAssetL>0)
+      ? 'Best Guess basis: growth R&amp;D is treated as real profit and counted in the capital base (so the return isn\u2019t overstated). Return on NTA keeps R&amp;D in the profit but measures it against tangible assets only, on purpose.'
+      : 'Best Guess basis: profit includes the amortization addback (no growth R&amp;D to capitalize on this name).';
+  } else {
+    basisNote='Full D&amp;A basis: the most conservative profit — R&amp;D fully expensed, nothing added back.';
+  }
+  h+='<div style="font-size:.72rem;color:var(--text3);margin-top:8px;line-height:1.5">'+basisNote+'</div>';
+  if(acqFlag){
+    h+='<div style="font-size:.74rem;color:var(--orange);margin-top:6px;line-height:1.5">\u26d1 This company carries a lot of acquisition goodwill ('+pct(acqRatio,0)+' of its capital), which can make ROIC understate the true operating return — Return on NTA is often the better anchor here.</div>';
+  }
+  if(!icOk){
+    h+='<div style="font-size:.74rem;color:var(--orange);margin-top:6px;line-height:1.5">\u26d1 Negative equity: ROIC can\u2019t be computed and Return on NTA is unreliable on a tiny tangible base, so set r by judgment.</div>';
+  }
+  h+='</div>';
+
+  // Sensitivity (explained; not yet editable)
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.8rem">';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px"><div style="color:var(--text2);font-weight:600;margin-bottom:4px">How much r matters</div>'+rSens+(rWhy?'<div style="color:var(--text3);font-size:.92em;margin-top:5px;line-height:1.45">'+rWhy+'</div>':'')+'</div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px"><div style="color:var(--text2);font-weight:600;margin-bottom:4px">How much b matters</div>'+bSens+(bWhy?'<div style="color:var(--text3);font-size:.92em;margin-top:5px;line-height:1.45">'+bWhy+'</div>':'')+'</div>';
+  h+='</div>';
+  if(bAvg!==null){
+    h+='<div style="font-size:.74rem;color:var(--text3);margin-top:8px">b\u2019s default ('+(bSeed!==null?pct(bSeed):'\u2014')+') comes from '+(mL.label||'the latest year')+'; the average across the years loaded is '+pct(bAvg)+'.</div>';
+  }
+  el.innerHTML=h;
+
+  // ---- "How this is calculated" dropdown body (math, on demand) ----
+  var mb=document.getElementById('fyMathBody');
+  if(mb){
+    var mh='';
+    if(k!==null){
+      mh+='<div style="font-family:JetBrains Mono,monospace;font-size:.82rem;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;line-height:1.7">';
+      mh+='k = y + b\u00b7(r \u2212 y)'+(b>1?'  <span style="color:var(--text3)">[b capped at 1; the excess (b\u22121) earns (r \u2212 f)]</span>':'')+'<br>';
+      mh+=pct(k)+' = '+pct(y)+' '+ppFmt(growthPrem).replace('+','+ ').replace(/^-/,'\u2212 ')+(b>1?' '+((overTerm>=0?'+ ':'\u2212 ')+(Math.abs(overTerm)*100).toFixed(2)+' pp'):'');
+      mh+='</div>';
+      mh+='<div style="font-size:.78rem;color:var(--text2);line-height:1.7;margin-top:8px">';
+      mh+='\u2022 <strong>y = '+pct(y)+'</strong> — current yield: real profit (REP) \u00f7 enterprise value.<br>';
+      mh+='\u2022 <strong>r = '+pct(r)+'</strong> — the return you expect each reinvested dollar to earn.<br>';
+      mh+='\u2022 <strong>b = '+pct(b)+'</strong> — share of real profit reinvested (growth CapEx + after-tax growth R&amp;D, \u00f7 REP).<br>';
+      mh+='\u2022 <strong>(r \u2212 y) = '+ppFmt(spread)+'</strong> — the value-creation spread: how much better reinvesting is than just taking the yield.';
+      if(b>1) mh+='<br>\u2022 <strong>f = '+pct(f)+'</strong> — financing cost charged on the part reinvested beyond earnings.';
+      mh+='</div>';
+      if(b>=1) mh+='<div style="font-size:.74rem;color:var(--text3);margin-top:8px;line-height:1.5">Because b \u2265 1, today\u2019s yield drops out and k is driven by r and the financing cost f — the company is funding growth beyond what it earns.</div>';
+    } else {
+      mh='<div style="font-size:.78rem;color:var(--text3)">Set a reinvestment return (r) to see the calculation.</div>';
+    }
+    mb.innerHTML=mh;
+  }
+}
+
 function renderGrowthCompounder(){
   var el=document.getElementById('gcResults');
   var reinvestSlider=document.getElementById('gcReinvestSlider');
@@ -3848,6 +4160,7 @@ function computeMetrics(entry){
   var ltInv=d.lt_investments||0,invRate=(d.inv_return_rate||4)/100;
   var equity=d.equity||0,debt=d.debt||0,cash=d.cash||0,sti=d.sti||0;
   var totalAssets=d.total_assets||0,goodwill=d.goodwill||0,intangibles=d.intangibles||0;
+  var ncSec=(entry.extra||{}).non_current_marketable_securities||0; // index63: non-operating securities netted from invested capital (operating ROIC; matches audit IC definition)
   var maintCapex;
   if(mcIn!==null&&mcIn>0){maintCapex=mcIn;}
   else{maintCapex=calcMaintCapex(capex,da,null).value;}
@@ -3861,7 +4174,7 @@ function computeMetrics(entry){
     var realSBCForLight=Math.max(sbcExp,sbcGrant);
     var invIncomeLight=ltInv*invRate;
     realProfitLight=cfo-realSBCForLight-maintCapexLight-restructuring+invIncomeLight;
-    var icLight=equity>0?(equity+debt-cash-sti):0;
+    var icLight=equity>0?(equity+debt-cash-sti-ncSec):0;
     realROICLight=icLight>0?realProfitLight/icLight:0;
     var ntaLight=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
     returnOnNTALight=ntaLight>0?realProfitLight/ntaLight:0;
@@ -3870,7 +4183,7 @@ function computeMetrics(entry){
   var invIncome=ltInv*invRate;
   var realProfit=cfo-realSBC-maintCapex-restructuring+invIncome;
   var growthCapex=Math.max(capex-maintCapex,0);
-  var investedCapital=equity>0?(equity+debt-cash-sti):0;
+  var investedCapital=equity>0?(equity+debt-cash-sti-ncSec):0;
   var realROIC=investedCapital>0?realProfit/investedCapital:0;
   var reportedFCF=cfo-capex;
   var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
@@ -6991,7 +7304,8 @@ function calculate(opts){opts=opts||{};
   var reportedFCF=cfo-capex;
   var gap=realProfit-reportedFCF;
   var growthCapex=Math.max(capex-maintCapex,0);
-  var investedCapital=equity>0?(equity+debt-cash-sti):0;
+  var verdictNcSec=(yearStore[currentYearKey]&&yearStore[currentYearKey].extra?(yearStore[currentYearKey].extra.non_current_marketable_securities||0):0); // index63: match computeMetrics IC
+  var investedCapital=equity>0?(equity+debt-cash-sti-verdictNcSec):0;
   var realROIC=investedCapital>0?realProfit/investedCapital:0;
 
   var yr=yieldRating(realYield);
@@ -7716,6 +8030,8 @@ function calculate(opts){opts=opts||{};
   document.getElementById('results').style.display='block';
   document.getElementById('exportBtn').style.display='block';
   document.getElementById('forwardDivider').style.display='block';
+  document.getElementById('forwardYieldCard').style.display='block';
+  try{renderForwardYield();}catch(e){console.warn('Forward yield error:',e);}
   document.getElementById('projCard').style.display='block';
   document.getElementById('targetCalcCard').style.display='block';
 
