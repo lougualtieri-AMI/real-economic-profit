@@ -1,6 +1,6 @@
 # ⚡ Real Economic Profit Analyzer (REPA)
 
-**Cut through accounting noise — find the real cash yield of a business.**
+**Cut through accounting noise — find the real ownership yield of a business.**
 
 A single-page web app that calculates what a company *actually* earns in cash, stripping away the accounting distortions buried in SEC filings, and then translates that into the return you'd expect to earn as an owner. Built for investors who want to see past reported earnings to the real economics — and past today's yield to the forward total return.
 
@@ -19,6 +19,8 @@ Real Economic Profit (REP) = Cash From Operations
                            − Restructuring     ("one-time" charges that recur)
                            + Investment Income
 ```
+
+The maintenance-CapEx charge uses a **physical-split cap**: when a company's Depreciation-Only figure is available, that physical depreciation (not total D&A) sets the floor on maintenance — so acquisition-heavy names aren't over-charged for amortization that isn't a real upkeep cost.
 
 From REP, the app builds a **three-tier yield cascade** so you can see the gap between what's reported and what you'd really earn:
 
@@ -76,6 +78,7 @@ The whole figure rests on those assumptions holding, and the panel keeps that fr
 * **"When Does This Investment Work?"** — model revenue-growth scenarios to see when (or if) your yield hits a target
 * **Target Price Calculator** — flips the equation: the price you'd need for the yield you want
 * **Red Flags** — automated alerts for SBC dilution, leverage, ROIC compression, and off-balance-sheet risk
+* **Maintenance-CapEx advisories** — a deferred-maintenance note (live trend table *and* the Export Brief) when a company spent less on upkeep than the estimate, plus a red "Depreciation Only missing" data-completeness nudge for acquisition-heavy names with that field left blank
 * **Export Brief** — one-click HTML/Markdown report with a full methodology appendix — ready for NotebookLM, Google Docs, or sharing
 * **Portfolio Scorecard** — rank and compare companies across all metrics
 
@@ -101,33 +104,34 @@ The app is laid out **grounded-first, forward-second** — everything built on r
 ```
 SEC Filing (10-K / 10-Q)
         ↓
-  NotebookLM / Gemini  →  extracts structured JSON (large context handles full filings)
+  (optional) Debulk prompt  →  distill the filing to the ~30 pages REPA needs
+        ↓
+  NotebookLM / Gemini  →  extraction master → structured JSON (10-K or TTM mode)
         ↓
   Paste JSON into the app  →  Real Economic Profit analysis
         ↓
-  Claude (audit prompt)  →  cross-checks extraction, explains findings, generates a Gemini research prompt
+  Claude (audit master)  →  cross-checks extraction, explains findings, generates a Gemini research prompt
         ↓
   Gemini Deep Research  →  post-filing developments, risk updates, forward guidance
         ↓
-  Claude  →  synthesizes research + financials into PDF reports
+  Claude  →  synthesizes research + financials into PDF reports (optional annotated companion)
 ```
 
-### Annual Workflow (10-K)
+Both cycles below use the **same two master prompts** — `NOTEBOOK_EXTRACTION_PROMPT` and `CLAUDE_AUDIT_PROMPT`. Each infers its mode from the inputs you paste, so there's no separate file per cycle.
 
-1. Upload the 10-K to **NotebookLM** (or Gemini)
-2. Paste the extraction prompt from `10_K_extraction.md`
-3. Copy the JSON → paste into the app → enter ticker and share price → **Analyze**
-4. Repeat for additional years (2–3 years recommended for trend analysis)
-5. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT_v4_2.md` + the JSON output
-6. Claude audits the data, generates a Gemini research prompt, and produces the PDF reports after you feed back the Gemini research
+### Annual Cycle (10-K)
 
-### Quarterly Workflow (10-Q TTM)
+1. *(Optional)* Run `DEBULKED_10K_PROMPT` in **NotebookLM** to distill the filing first.
+2. Paste `NOTEBOOK_EXTRACTION_PROMPT` (10-K mode) → copy the JSON → paste into the app, enter ticker and share price → **Analyze**. Repeat for 2–3 years for trend analysis.
+3. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT` + the JSON. It runs in **ANNUAL** mode (or **INITIATION** mode for a brand-new portfolio entrant), audits field-by-field, generates a Gemini research prompt, and produces the PDF reports after you feed the research back.
 
-1. Upload the 10-Q **and** the most recent 10-K to **NotebookLM**
-2. Paste the TTM extraction prompt from `10Q_extraction.md`
-3. Copy the JSON → paste into the app alongside the prior-period JSON
-4. Open a new Claude chat, paste `CLAUDE_QUARTERLY_AUDIT_v1_3.md` + both JSONs
-5. Claude audits the TTM data, generates a Gemini research prompt, and produces a Quarterly Brief PDF after you feed back the research
+### Quarterly Cycle (10-Q TTM)
+
+1. Upload the 10-Q **and** the most recent 10-K to **NotebookLM**; run `NOTEBOOK_EXTRACTION_PROMPT` (TTM mode).
+2. Copy the JSON → paste into the app alongside the prior-period JSON.
+3. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT` + both JSONs. It runs in **QUARTERLY** mode and produces a Quarterly Brief after you feed the research back.
+
+Two specialist prompts sit outside the routine cycle: `CLAUDE_PORTFOLIO_JSON_AUDIT` (a lightweight JSON-in/JSON-out integrity check, no PDFs), `CLAUDE_HISTORICAL_BACKTEST_PROMPT` (a hindsight-blinded backtest at a past period), and `Post_Report_3_Annotation_Prompt` (an annotated companion to a Gemini report). Field definitions for every term live in `REP_Glossary.md`.
 
 ### Try It Now (Sample Data)
 
@@ -176,15 +180,15 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The complete app — single file, no dependencies (v4.15.0) |
-| `10_K_extraction.md` | Gemini/NotebookLM prompt for annual 10-K extraction |
-| `10Q_extraction.md` | Gemini/NotebookLM prompt for quarterly 10-Q TTM extraction |
-| `CLAUDE_AUDIT_PROMPT_v4_2.md` | Claude audit prompt for annual 10-K filings |
-| `CLAUDE_QUARTERLY_AUDIT_v1_3.md` | Claude audit prompt for quarterly TTM updates |
-| `REP_Glossary.md` | Full glossary of all metrics and terms |
+| `index.html` | The complete app — single file, no dependencies (v4.16.0) |
 | `README.md` | This file |
-
-> **Note:** confirm the prompt filenames/versions above against the repo — the audit and extraction prompts have advanced since this table was last set, and any renamed or newer versions should be reflected here.
+| `REP_Glossary.md` | Full glossary of every metric, yield, ratio, and input field |
+| `NOTEBOOK_EXTRACTION_PROMPT_v1_1.md` | Extraction master — turns a filing into structured JSON (10-K and TTM modes) |
+| `CLAUDE_AUDIT_PROMPT_v1_0.md` | Audit master — ANNUAL / QUARTERLY / INITIATION modes; infers mode from the inputs you paste |
+| `DEBULKED_10K_PROMPT_v1_3.md` | Optional pre-process — distill a 150+ page filing to the ~30 pages REPA needs before extraction |
+| `CLAUDE_PORTFOLIO_JSON_AUDIT_v1_1.md` | Lightweight JSON-in / JSON-out integrity check and master-portfolio integration (no PDFs) |
+| `CLAUDE_HISTORICAL_BACKTEST_PROMPT_v2_1.md` | Hindsight-blinded backtest of REPA metrics at a past period (research use) |
+| `Post_Report_3_Annotation_Prompt_v1_3.md` | Annotated companion to a Gemini Deep Research report |
 
 ---
 
@@ -201,6 +205,7 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 
 | Version | Date | Key Changes |
 | --- | --- | --- |
+| v4.16.0 | Jun 2026 | Maintenance-CapEx **physical-split cap** (uses Depreciation Only as the physical base when available, protecting acquisition-heavy names from over-charged maintenance); **deferred-maintenance advisory** in both the live trend table and the Export Brief; red **"Depreciation Only missing"** data-completeness nudge for acquirer-shaped names with that field blank (supersedes the amber note for those years); renamed the third yield tier to **Real Ownership Yield** app-wide; added a **Total Return** column to the report's Buyback Vintage Yield Matrix for parity with the live card; removed dead glossary text |
 | v4.15.0 | Jun 2026 | Future Total Return panel (`k = (1−b)·y + b·r`); Best Guess slider-calibrated view (amort + growth-R&D add-back) with symmetric R&D-capitalized ROIC; Capital Allocation Analysis (ROIC/ROIIC, REP·IC·NTA indexed log chart, Buyback ROI with REP Growth & Total Return); Look-Through REP; grounded→forward layout |
 | v3.4.8 | Mar 2026 | Fixed net-debt narrative (subtracts Cash + STI, not just Cash) |
 | v3.4.7 | Mar 2026 | Terminology pass; fixed year-selection default bug |
