@@ -106,7 +106,7 @@ SEC Filing (10-K / 10-Q)
         ↓
   (optional) Debulk prompt  →  distill the filing to the ~30 pages REPA needs
         ↓
-  NotebookLM / Gemini  →  extraction master → structured JSON (10-K or TTM mode)
+  NotebookLM / Gemini  →  extraction prompt (Annual or TTM) → structured JSON
         ↓
   Paste JSON into the app  →  Real Economic Profit analysis
         ↓
@@ -117,19 +117,21 @@ SEC Filing (10-K / 10-Q)
   Claude  →  synthesizes research + financials into PDF reports (optional annotated companion)
 ```
 
-Both cycles below use the **same two master prompts** — `NOTEBOOK_EXTRACTION_PROMPT` and `CLAUDE_AUDIT_PROMPT`. Each infers its mode from the inputs you paste, so there's no separate file per cycle.
+The audit master (`CLAUDE_AUDIT_PROMPT`) infers its mode from the inputs you paste. Extraction uses **two mode-locked prompts** — `NOTEBOOK_EXTRACTION_ANNUAL` for the 10-K cycle and `NOTEBOOK_EXTRACTION_TTM` for the quarterly cycle — so the file you paste is the mode (nothing to infer or misread).
 
 ### Annual Cycle (10-K)
 
 1. *(Optional)* Run `DEBULKED_10K_PROMPT` in **NotebookLM** to distill the filing first.
-2. Paste `NOTEBOOK_EXTRACTION_PROMPT` (10-K mode) → copy the JSON → paste into the app, enter ticker and share price → **Analyze**. Repeat for 2–3 years for trend analysis.
+2. Paste `NOTEBOOK_EXTRACTION_ANNUAL` → copy the JSON → paste into the app, enter ticker and share price → **Analyze**. Repeat for 2–3 years for trend analysis.
 3. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT` + the JSON. It runs in **ANNUAL** mode (or **INITIATION** mode for a brand-new portfolio entrant), audits field-by-field, generates a Gemini research prompt, and produces the PDF reports after you feed the research back.
 
 ### Quarterly Cycle (10-Q TTM)
 
-1. Upload the 10-Q **and** the most recent 10-K to **NotebookLM**; run `NOTEBOOK_EXTRACTION_PROMPT` (TTM mode).
+1. Upload the 10-Q **and** the most recent 10-K to **NotebookLM**; run `NOTEBOOK_EXTRACTION_TTM`.
 2. Copy the JSON → paste into the app alongside the prior-period JSON.
 3. Open a new Claude chat, paste `CLAUDE_AUDIT_PROMPT` + both JSONs. It runs in **QUARTERLY** mode and produces a Quarterly Brief after you feed the research back.
+
+> New-entrant initiation: run **both** extraction prompts — `NOTEBOOK_EXTRACTION_ANNUAL` on the 10-K and `NOTEBOOK_EXTRACTION_TTM` on the 10-Q — then run the audit master in INITIATION mode.
 
 Two specialist prompts sit outside the routine cycle: `CLAUDE_PORTFOLIO_JSON_AUDIT` (a lightweight JSON-in/JSON-out integrity check, no PDFs), `CLAUDE_HISTORICAL_BACKTEST_PROMPT` (a hindsight-blinded backtest at a past period), and `Post_Report_3_Annotation_Prompt` (an annotated companion to a Gemini report). Field definitions for every term live in `REP_Glossary.md`.
 
@@ -183,7 +185,8 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 | `index.html` | The complete app — single file, no dependencies (v4.16.0) |
 | `README.md` | This file |
 | `REP_Glossary.md` | Full glossary of every metric, yield, ratio, and input field |
-| `NOTEBOOK_EXTRACTION_PROMPT_v1_1.md` | Extraction master — turns a filing into structured JSON (10-K and TTM modes) |
+| `NOTEBOOK_EXTRACTION_ANNUAL_v2_0.md` | Extraction — ANNUAL (10-K). Turns a 10-K into structured JSON. Mode-locked. |
+| `NOTEBOOK_EXTRACTION_TTM_v2_0.md` | Extraction — TTM (10-Q). Builds one trailing-twelve-month JSON from a 10-Q + prior 10-K. Mode-locked. |
 | `CLAUDE_AUDIT_PROMPT_v1_0.md` | Audit master — ANNUAL / QUARTERLY / INITIATION modes; infers mode from the inputs you paste |
 | `DEBULKED_10K_PROMPT_v1_3.md` | Optional pre-process — distill a 150+ page filing to the ~30 pages REPA needs before extraction |
 | `CLAUDE_PORTFOLIO_JSON_AUDIT_v1_1.md` | Lightweight JSON-in / JSON-out integrity check and master-portfolio integration (no PDFs) |
