@@ -392,7 +392,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-05-26';
-  var buildId='v4.16.0';
+  var buildId='v4.17.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -745,7 +745,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 
   <!-- Buybacks (index71 merge: Share Count & Capital Return Tracker + Buyback ROI Analysis into one card; inner ids buybackCard/buybackRoiCard preserved so render fns are untouched) -->
   <div class="card" id="buybacksCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybacksBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Buybacks <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
+    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('buybacksBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span></h2>
     <div id="buybacksBody">
       <!-- Sub-section: Share Count & Capital Return Tracker -->
       <div id="buybackCard" style="display:none">
@@ -1121,7 +1121,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index226 \u00b7 v4.16.0';
+const REPA_DATA_BUILD='index227 \u00b7 v4.17.0';
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
@@ -2082,6 +2082,8 @@ function renderForwardYield(){
   var bSeed=_fyPwB(ms);
   var bLatest=_fyBForYear(mL);
   var bVals=ms.map(_fyBForYear).filter(function(v){return v!==null&&isFinite(v)&&v>=0;});
+  // index227 (Item 6): per-year {label,b} on the active view's basis — lets the b-sensitivity readout anchor to the seed, draw a per-year bar strip, and flag denominator-collapse outliers (b>1) instead of letting them drive the range.
+  var bDetail=ms.map(function(m){return {label:(m.label||''),b:_fyBForYear(m)};}).filter(function(o){return o.b!==null&&isFinite(o.b)&&o.b>=0;});
   var rSeed=icEffOk?roic:null;
 
   // Store seeds for snap-back + refresh the "default: X%" hints.
@@ -2220,13 +2222,47 @@ function renderForwardYield(){
     if(b>1&&_kBear<y){ rWhy+=' Because it reinvests beyond earnings, full reversion turns the leverage into a drag \u2014 k falls <em>below</em> today\u2019s yield ('+pct(_kBear)+').'; }
   } else { rSens='<span style="color:var(--text3)">set r to see this</span>'; rWhy=''; }
   var bSens='',bWhy='';
-  if(r!==null&&bVals.length>=2){
-    var bLo=Math.min.apply(null,bVals),bHi=Math.max.apply(null,bVals);
-    if(bHi-bLo<0.01){bLo=Math.max(0,b-0.15);bHi=b+0.15;bWhy='Reinvestment barely moved over the years loaded, so this is an illustrative \u00b115-point span around b \u2014 not a historical range.';}
-    else{bWhy='This is the company\u2019s <strong>actual</strong> reinvestment range over the years loaded ('+pct(bLo,0)+'\u2013'+pct(bHi,0)+') \u2014 historical fact, not a forward scenario like the r band.';}
+  if(r!==null&&bDetail.length>=2){
+    // index227 (Item 6, A+C): policy band = years reinvesting <=100% of REP. Years above 100% are a low-REP-denominator artifact (b = spend/REP blows up when REP nears zero) and are flagged, not used as bounds.
+    var _bBand=bDetail.filter(function(o){return o.b<=1.0;});
+    var _bStruct=(_bBand.length<2); // structural over-investor (e.g. AMZN): reinvests >100% of REP nearly every year, so a trim would empty the band — fall back to the full range with a note.
+    var bExcl=_bStruct?[]:bDetail.filter(function(o){return o.b>1.0;});
+    var _bSrc=_bStruct?bDetail:_bBand;
+    var _bN=_bSrc.map(function(o){return o.b;});
+    var bLo=Math.min.apply(null,_bN), bHi=Math.max.apply(null,_bN);
+    var _illustrative=false;
+    if(bHi-bLo<0.01){bLo=Math.max(0,b-0.15);bHi=b+0.15;_illustrative=true;}
     var kBlo=kCalc(y,r,bLo,f),kBhi=kCalc(y,r,bHi,f);
-    bSens='k runs <strong>'+pct(Math.min(kBlo,kBhi))+' \u2192 '+pct(Math.max(kBlo,kBhi))+'</strong> as b moves '+pct(bLo)+'\u2013'+pct(bHi);
-  } else if(r!==null){ bSens='<span style="color:var(--text3)">one year of data — no range</span>'; bWhy=''; }
+    // per-year bar strip (Option C): active-view b each year; true outliers (b>1, with a policy band present) are hatched + capped and their real value labeled in red.
+    var _barMax=Math.max(bHi,0.0001);
+    var _bars='<div style="display:flex;align-items:flex-end;gap:3px;height:46px;margin:8px 0 3px">';
+    bDetail.forEach(function(o){
+      var _capped=(o.b>1.0)&&!_bStruct;
+      var _hh=Math.max(3,Math.min(100,(_capped?100:(o.b/_barMax*100))));
+      var _bg=_capped?'repeating-linear-gradient(45deg,var(--red),var(--red) 3px,transparent 3px,transparent 6px)':'var(--accent-dim)';
+      var _bc=_capped?'var(--red)':'var(--accent-dim)';
+      _bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%" title="'+o.label+': b = '+pct(o.b,0)+(_capped?' (excluded \u2014 denominator artifact)':'')+'">'
+        +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:.54rem;color:'+(_capped?'var(--red)':'var(--text3)')+';line-height:1;margin-bottom:2px;white-space:nowrap">'+(o.b*100).toFixed(0)+'</div>'
+        +'<div style="width:100%;max-width:18px;height:'+_hh.toFixed(0)+'%;background:'+_bg+';border:1px solid '+_bc+';border-radius:2px 2px 0 0"></div>'
+        +'<div style="font-size:.5rem;color:var(--text3);line-height:1;margin-top:3px;white-space:nowrap">'+(o.label||'').replace(/^FY/,'').replace('TTM-','T')+'</div>'
+      +'</div>';
+    });
+    _bars+='</div>';
+    var _anchorLine=(bSeed!==null)?('<div style="font-size:.92em;color:var(--text2);margin-bottom:1px">Typically reinvests <strong style="color:var(--text)">'+pct(bSeed,0)+'</strong> of REP <span style="color:var(--text3)">(profit-weighted, all years)</span></div>'):'';
+    var _rangeLine='<div style="margin-top:4px">k runs <strong>'+pct(Math.min(kBlo,kBhi))+' \u2192 '+pct(Math.max(kBlo,kBhi))+'</strong> as b moves '+pct(bLo)+'\u2013'+pct(bHi)+'</div>';
+    bSens=_anchorLine+_bars+_rangeLine;
+    if(_illustrative){
+      bWhy='Reinvestment barely moved over the years loaded, so the range is an illustrative \u00b115-point span around b \u2014 not a historical range.';
+    } else if(_bStruct){
+      bWhy='This company reinvests <strong>more than 100% of REP in almost every year</strong>, so the range is the full historical span ('+pct(bLo,0)+'\u2013'+pct(bHi,0)+') rather than a trimmed policy band \u2014 over-investment is its standing pattern, not an outlier.';
+    } else {
+      bWhy='Its <strong>usual</strong> reinvestment range (years plowing back \u2264100% of REP): '+pct(bLo,0)+'\u2013'+pct(bHi,0)+' \u2014 historical fact, not a forward scenario like the r band.';
+    }
+    if(bExcl.length){
+      var _exTxt=bExcl.map(function(o){return o.label+' (b = '+pct(o.b,0)+')';}).join(', ');
+      bWhy+='<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--text3)"><span style="color:var(--red)">\u2691</span> Excluded from the range: <strong>'+_exTxt+'</strong> \u2014 reinvestment above 100% of REP, a low-profit-year denominator artifact (b = spend \u00f7 REP spikes when REP nears zero), not a reinvestment policy.</div>';
+    }
+  } else if(r!==null){ bSens='<span style="color:var(--text3)">one year of data \u2014 no range</span>'; bWhy=''; }
   else { bSens='<span style="color:var(--text3)">set r to see this</span>'; bWhy=''; }
 
   // ================= OUTPUT =================
@@ -2276,11 +2312,11 @@ function renderForwardYield(){
     h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">';
     h+='<div style="flex:1;min-width:150px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:6px;padding:8px 11px">'
       +'<div style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Yield you keep <span style="opacity:.6;text-transform:none">\u00b7 '+viewName+'</span></div>'
-      +'<div style="font-size:1.15rem;font-weight:700;color:var(--green)">'+((b<=1)?pct(_keptY):'\u2014')+'</div>'
+      +'<div style="font-size:1.15rem;font-weight:700;color:var(--green)">'+((b<=1)?pct(_keptY):'<span style="color:var(--text3);text-decoration:line-through;text-decoration-color:var(--red)">'+pct(y)+'</span>')+'</div>'
       +((b<=1)
         ?('<div style="font-size:.72rem;color:var(--text2);line-height:1.4">'+pct(1-b,0)+' \u00d7 <strong style="color:var(--green)">'+pct(y)+'</strong> earnings yield</div>'
           +'<div style="font-size:.66rem;color:var(--text3);line-height:1.35">the slice you keep, not reinvest \u2014 the proven piece</div>')
-        :('<div style="font-size:.7rem;color:var(--text3);line-height:1.4">fully reinvested \u2014 the company funds beyond its earnings, so no yield is left to keep</div>'))
+        :('<div style="font-size:.72rem;color:var(--text2);line-height:1.4">REP yield <strong style="color:var(--text)">'+pct(y)+'</strong> \u2014 reinvested, not kept</div><div style="font-size:.66rem;color:var(--text3);line-height:1.35">at b \u2265 1 the whole yield is plowed back, so your return is the reinvestment rate r ('+pct(r,0)+') plus the leverage term \u2014 not this '+pct(y)+'</div>'))
       +'</div>';
     h+='<div style="flex:1;min-width:150px;background:transparent;border:1px dashed var(--blue);border-radius:6px;padding:8px 11px">'
       +'<div style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Growth from reinvestment</div>'
@@ -2293,7 +2329,7 @@ function renderForwardYield(){
     h+='</div>';
     var _splitLine=(b<=1)
       ? 'These two always sum to your total return above. Reinvest less, and <span style="color:var(--text)">the left box rises toward the full '+pct(y)+' earnings yield</span>; reinvest more (toward 100% of profit), and <span style="color:var(--text)">the right box climbs toward the '+pct(r,0)+' return on what gets reinvested</span> — the reinvestment rate sets where between those ends you land.'
-      : 'These two sum to your total return above. Here the company reinvests more than its entire profit, so there is no kept yield — your whole return is the right box: <span style="color:var(--text)">the '+pct(r,0)+' return on what gets reinvested</span>, net of the '+pct(f,0)+' cost on the part funded beyond earnings.';
+      : 'These two sum to your total return above. Here the company reinvests more than its entire profit, so the <span style="color:var(--text)">'+pct(y)+' REP yield is plowed back rather than collected</span> — your whole return is the right box: <span style="color:var(--text)">the '+pct(r,0)+' return on what gets reinvested</span>, net of the '+pct(f,0)+' cost on the part funded beyond earnings.';
     h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:8px">'+_splitLine+'</div>';
     if(_fyDbl!==null&&y>0){
       var _dblLine='At this pace your <strong>yield-on-cost</strong> doubles in <strong>~'+_fyDbl.toFixed(0)+' yr'+(Math.round(_fyDbl)===1?'':'s')+'</strong> — the real profit you collect on what you paid keeps compounding.';
@@ -2436,7 +2472,7 @@ function renderForwardYield(){
       anchors:{roic:_u(roic),roiic1:_u(roiic1),roiic3:_u(roiic3),roiic5:_u(roiic5),ronta:_u(ronta)},
       anchorNotes:{roiic1:(_ri1&&_ri1.note)||'',roiic3:(_ri3&&_ri3.note)||'',roiic5:(_ri5&&_ri5.note)||'',roiic1Span:(_ri1&&_ri1.span)||'',roiic3Span:(_ri3&&_ri3.span)||'',roiic5Span:(_ri5&&_ri5.span)||''},
       bAnchors:{all:_u(bSeed),y3:_u(_b3),latest:_u(bLatest)},
-      bRange:{lo:_u(typeof bLo!=='undefined'?bLo:null),hi:_u(typeof bHi!=='undefined'?bHi:null),kLo:_u(typeof kBlo!=='undefined'?kBlo:null),kHi:_u(typeof kBhi!=='undefined'?kBhi:null)},
+      bRange:{lo:_u(typeof bLo!=='undefined'?bLo:null),hi:_u(typeof bHi!=='undefined'?bHi:null),kLo:_u(typeof kBlo!=='undefined'?kBlo:null),kHi:_u(typeof kBhi!=='undefined'?kBhi:null),excluded:(typeof bExcl!=='undefined'&&bExcl.length)?bExcl.map(function(o){return o.label+' ('+(o.b*100).toFixed(0)+'%)';}):[]},
       ic:ic, icEff:icEff, nta:nta, icOk:icOk, roic:_u(roic), ronta:_u(ronta),
       acqRatio:_u(acqRatio), acqFlag:acqFlag, rdAssetL:rdAssetL,
       keptY:_u(typeof _keptY!=='undefined'?_keptY:null), growthRate:_u(typeof _fyG!=='undefined'?_fyG:null),
@@ -2561,7 +2597,9 @@ function renderBuybackTracker(){
   // buybackShares (shares retired, same-year basis) is intentionally left raw.
   (function(){var _bbAdj=repaSplitAdjust(rows.map(function(r){return r.shares;}));for(var _bi=0;_bi<rows.length;_bi++)rows[_bi].shares=_bbAdj[_bi];})();
 
-  if(!hasBuybackData){card.style.display='none';syncBuybacksCard();return;}
+  // index227 (Item 7): also show the card for SBC-but-no-buyback names (AMZN, pre-dividend GOOGL). The share-count / SBC-dilution chart already renders here (rising share line + red SBC bars, no green) — it was only gated off. Full hide stays only when there is neither capital return NOR a usable SBC+share series.
+  var hasDilutionData=(rows.length>=2&&rows.every(function(r){return r.shares>0;})&&rows.some(function(r){return r.realSBC>0;}));
+  if(!hasBuybackData&&!hasDilutionData){card.style.display='none';syncBuybacksCard();return;}
   card.style.display='block';syncBuybacksCard();
 
   var price=v('price')||0;
@@ -2607,11 +2645,16 @@ function renderBuybackTracker(){
   var _spanFirst=rows[0].label;
   var _spanLast=rows[rows.length-1].label;
   h+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:6px;font-weight:500">'+_spanFirst+' – '+_spanLast+' · '+_spanYears+' year'+(_spanYears!==1?'s':'')+'</div>';
+  if(!hasBuybackData){
+    h+='<div style="background:var(--card2);border:1px solid var(--accent-dim);border-left:3px solid var(--accent2);border-radius:6px;padding:9px 12px;margin-bottom:14px;font-size:.78rem;color:var(--text2);line-height:1.5">No capital returned to shareholders over this span \u2014 no buybacks, no dividends. With 100%+ of REP reinvested, the chart below tracks <strong style="color:var(--red)">SBC dilution only</strong>: the rising share line and red SBC bars, with no buyback offset.</div>';
+  }
   h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
-  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
-  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
-  h+='</div>';
+  if(hasBuybackData){
+    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
+    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
+    h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
+    h+='</div>';
+  }
   if(cumDivs>0){
     h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
     h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Dividends</div>';
@@ -2627,7 +2670,7 @@ function renderBuybackTracker(){
   h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net Capital Returned</div>';
   h+='<div style="font-size:1.15rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
   h+='<div style="font-size:.62rem;color:var(--text2);margin-top:4px;line-height:1.5;font-family:\'JetBrains Mono\',monospace">';
-  h+='<span style="color:var(--blue)">'+fmtM(cumRepurch)+'</span> <span style="color:var(--text3)">BB</span>';
+  if(hasBuybackData)h+='<span style="color:var(--blue)">'+fmtM(cumRepurch)+'</span> <span style="color:var(--text3)">BB</span>';
   if(cumDivs>0) h+=' + <span style="color:var(--green)">'+fmtM(cumDivs)+'</span> <span style="color:var(--text3)">Div</span>';
   h+=' − <span style="color:var(--red)">'+fmtM(cumRealSBC)+'</span> <span style="color:var(--text3)">SBC</span>';
   h+='</div>';
@@ -2793,7 +2836,7 @@ function renderBuybackTracker(){
       // Legend
       h+='<div class="chart-legend" style="gap:8px 16px;margin-top:4px">';
       h+='<span><span class="dot" style="background:#3498db"></span> Diluted Shares</span>';
-      h+='<span><span class="dot" style="background:#2ecc71"></span> Buybacks ($)</span>';
+      if(hasBuybackData)h+='<span><span class="dot" style="background:#2ecc71"></span> Buybacks ($)</span>';
       h+='<span><span class="dot" style="background:#e74c3c"></span> Real SBC ($)</span>';
       h+='</div>';
       h+='</div>';
@@ -7066,8 +7109,9 @@ function exportDataMarkdown(){
     nl('');
     nl('Sensitivity \u2014 how much b matters (the company\u2019s historical reinvestment range; r held):');
     if(br.lo!=null&&br.hi!=null){
-      nl('- b_range (historical): '+p2(br.lo)+' \u2192 '+p2(br.hi)+'  [historical fact, not a forward scenario like the r band]');
+      nl('- b_range (policy band, b \u2264 100% of REP): '+p2(br.lo)+' \u2192 '+p2(br.hi)+'  [historical fact, not a forward scenario like the r band]');
       nl('- k_over_that_range: '+p2(Math.min(br.kLo,br.kHi))+' \u2192 '+p2(Math.max(br.kLo,br.kHi)));
+      if(br.excluded&&br.excluded.length){nl('- excluded_outliers: '+br.excluded.join(', ')+'  [reinvestment >100% of REP \u2014 low-profit-year denominator artifact, not a policy signal]');}
     } else {
       nl('- b_range: n/a  [one year of data, or reinvestment essentially flat]');
     }
@@ -8651,9 +8695,11 @@ function calculate(opts){opts=opts||{};
     _baseBar+='</div>';
     var _premium=intangiblesVal+goodwill;
     if(_premium>_baseExCash*0.005){
-      _baseBar+='<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">Total operating base (ex-cash): <strong style="color:var(--text2)">'+fmtM(_baseExCash)+'</strong>. The blue core is <strong style="color:var(--text2)">Net Tangible Assets</strong> ('+pct(nta/_baseExCash,0)+'); the rest is <strong style="color:var(--text2)">acquisition premium</strong> ('+fmtM(_premium)+', '+pct(_premium/_baseExCash,0)+') \u2014 goodwill + intangibles. That premium is what splits the two return measures: <strong style="color:var(--text2)">ROIC</strong> counts it in the base, so it shows the return on everything <em>paid for</em> (acquisitions included); <strong style="color:var(--text2)">Return on NTA</strong> strips it out, so it shows the return on what\'s <em>actually there</em> \u2014 the tangible operating assets.</div>';
+      _baseBar+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding:7px 11px;background:var(--card2);border-radius:8px"><span style="font-size:.74rem;color:var(--text2);font-weight:600">Total operating base (ex-cash)</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:1.05rem;font-weight:700;color:var(--text)">'+fmtM(_baseExCash)+'</span></div>';
+      _baseBar+='<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">The blue core is <strong style="color:var(--text2)">Net Tangible Assets</strong> ('+pct(nta/_baseExCash,0)+'); the rest is <strong style="color:var(--text2)">acquisition premium</strong> ('+fmtM(_premium)+', '+pct(_premium/_baseExCash,0)+') \u2014 goodwill + intangibles. That premium is what splits the two return measures: <strong style="color:var(--text2)">ROIC</strong> counts it in the base, so it shows the return on everything <em>paid for</em> (acquisitions included); <strong style="color:var(--text2)">Return on NTA</strong> strips it out, so it shows the return on what\'s <em>actually there</em> \u2014 the tangible operating assets.</div>';
     }else{
-      _baseBar+='<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">Total operating base (ex-cash): <strong style="color:var(--text2)">'+fmtM(_baseExCash)+'</strong>. The base is entirely <strong style="color:var(--text2)">Net Tangible Assets</strong> \u2014 no goodwill or intangibles, so ROIC and Return on NTA measure the same capital.</div>';
+      _baseBar+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding:7px 11px;background:var(--card2);border-radius:8px"><span style="font-size:.74rem;color:var(--text2);font-weight:600">Total operating base (ex-cash)</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:1.05rem;font-weight:700;color:var(--text)">'+fmtM(_baseExCash)+'</span></div>';
+      _baseBar+='<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">The base is entirely <strong style="color:var(--text2)">Net Tangible Assets</strong> \u2014 no goodwill or intangibles, so ROIC and Return on NTA measure the same capital.</div>';
     }
   }
   // index171: didactic "how the base lives" note (collapsed <details>; native, no JS). Equity-independent; appended at the end of the base-bar group in both branches. Gated on the base bar having rendered.
@@ -8731,7 +8777,7 @@ function calculate(opts){opts=opts||{};
     var _gross=equity+debt;
     if(_gross>0){
       var _fSegs=[{l:'Equity',v:equity,c:'var(--green)'},{l:'Debt',v:debt,c:'#64748b'}].filter(function(s){return s.v>0;});
-      _baseBar+='<div style="font-size:.74rem;color:var(--text2);font-weight:600;margin:'+(_baseExCash>0?'16px':'0')+' 0 6px">How it\'s funded \u2192 Invested Capital</div>';
+      _baseBar+='<div style="font-size:.74rem;color:var(--text2);font-weight:600;margin:'+(_baseExCash>0?'16px':'0')+' 0 6px">How it\'s funded \u2192 Gross Capital</div>';
       _baseBar+='<div style="display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">';
       _fSegs.forEach(function(s,i){
         var w=s.v/_gross*100;
@@ -8742,7 +8788,12 @@ function calculate(opts){opts=opts||{};
       _fSegs.forEach(function(s){_baseBar+='<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+s.c+';opacity:.85;vertical-align:middle;margin-right:4px"></span>'+s.l+' '+pct(s.v/_gross,0)+'</span>';});
       _baseBar+='</div>';
       var _oplGap=_baseExCash>0?(_baseExCash-investedCapital):0;
-      _baseBar+='<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">Gross capital (equity + debt): <strong style="color:var(--text2)">'+fmtM(_gross)+'</strong>, less cash/STI '+fmtM(cash+sti)+' \u2192 <strong style="color:var(--text2)">Invested Capital '+fmtM(investedCapital)+'</strong>.'+((_baseExCash>0&&_oplGap>_baseExCash*0.02)?' The operating assets above run larger than Invested Capital because <strong style="color:var(--text2)">operating liabilities</strong> (payables, accruals, deferred revenue) fund the difference (\u2248'+fmtM(_oplGap)+').':'')+'</div>';
+      _baseBar+='<div style="margin-top:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden">';
+      _baseBar+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;background:var(--card2)"><span style="font-size:.76rem;color:var(--text2);font-weight:700">Gross Capital <span style="font-weight:400;color:var(--text3)">(equity + debt)</span></span><span style="font-family:\'JetBrains Mono\',monospace;font-size:1rem;font-weight:700;color:var(--text)">'+fmtM(_gross)+'</span></div>';
+      _baseBar+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 12px"><span style="font-size:.72rem;color:var(--text3)">less cash &amp; STI</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:.82rem;color:var(--text2)">'+fmtM(cash+sti)+'</span></div>';
+      _baseBar+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;background:var(--card2);border-top:1px solid var(--border)"><span style="font-size:.76rem;color:var(--text2);font-weight:700">= Invested Capital</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:1.1rem;font-weight:700;color:'+(investedCapital<0?'var(--orange)':'var(--text)')+'">'+fmtM(investedCapital)+'</span></div>';
+      _baseBar+='</div>';
+      _baseBar+=(investedCapital<0?'<div style="font-size:.72rem;color:var(--text3);line-height:1.55;margin-top:8px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0">Cash exceeds the entire capital base, so net invested capital is negative \u2014 conceptually, returning that cash to owners would drive their residual stake below zero. The operating business is funded by <strong style="color:var(--text2)">operating liabilities</strong> (payables, accruals, deferred revenue), not by equity or debt.</div>':((_baseExCash>0&&_oplGap>_baseExCash*0.02)?'<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-top:6px">The operating assets above run larger than Invested Capital because <strong style="color:var(--text2)">operating liabilities</strong> (payables, accruals, deferred revenue) fund the difference (\u2248'+fmtM(_oplGap)+').</div>':''));
     }
     _baseBar+=_baseDidactic;
     if(_baseBar)_baseBar+='<div style="height:1px;background:var(--border);margin:14px 0"></div>';
