@@ -379,6 +379,61 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 .amort-box.false .ab-title{color:var(--green)}
 .amort-box .ab-desc{font-size:.72rem;color:var(--text3);margin-top:4px;line-height:1.5}
 
+/* index228 (Item 2B): Historical flexible explorer — scoped styles (ported from REPA_Historical_Fuller_Mock v3) */
+#histExplorer{margin:8px 0 4px}
+#histExplorer .hx-lbl{font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin:2px 0 6px}
+#histExplorer .hx-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+#histExplorer .hx-presets button{padding:8px 11px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s}
+#histExplorer .hx-presets button.active{border-color:var(--accent);color:var(--text)}
+#histExplorer .hx-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+#histExplorer .hx-checks{display:flex;gap:13px;flex-wrap:wrap}
+#histExplorer .hx-chk{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;user-select:none;color:var(--text)}
+#histExplorer .hx-chk input{width:15px;height:15px}
+#histExplorer .hx-dot{width:15px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block;border-radius:2px}
+#histExplorer .hx-miniopt{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text3);cursor:pointer;user-select:none}
+#histExplorer .hx-miniopt input{width:13px;height:13px}
+#histExplorer .hx-note{font-size:.72rem;color:var(--text3);line-height:1.5;margin:8px 0 2px}
+#histExplorer .hx-logwarn{display:none;font-size:.78rem;color:var(--accent2);background:rgba(212,160,37,.14);border:1px solid var(--accent-dim);border-radius:8px;padding:9px 12px;margin:8px 0 2px;line-height:1.45}
+#histExplorer .hx-logwarn b{color:var(--text)}
+#histExplorer .hx-chartwrap{width:100%;overflow:hidden;margin:6px 0 2px}
+#histExplorer svg{width:100%;height:auto;display:block}
+/* index229 / Item 2A: Capital Allocation two-tab (Co-Movement + Ratios & ROIIC). Scoped to #roiicChartArea; ported from REPA_CapAlloc_TwoTab_Mock.html. */
+#roiicChartArea .ca-intro{font-size:.78rem;color:var(--text3);margin:0 0 14px;line-height:1.55}
+#roiicChartArea .ca-lbl{font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin:2px 0 6px}
+#roiicChartArea .ca-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+#roiicChartArea .ca-presets button{padding:8px 11px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s}
+#roiicChartArea .ca-presets button.active{border-color:var(--accent);color:var(--text)}
+#roiicChartArea .ca-presets button .t{color:var(--accent2)}
+#roiicChartArea .ca-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+#roiicChartArea .ca-checks{display:flex;gap:14px;flex-wrap:wrap}
+#roiicChartArea .ca-chk{display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;user-select:none;color:var(--text)}
+#roiicChartArea .ca-chk input{width:15px;height:15px}
+#roiicChartArea .ca-chk .ca-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+#roiicChartArea .ca-miniopt{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text3);cursor:pointer;user-select:none}
+#roiicChartArea .ca-miniopt input{width:13px;height:13px}
+#roiicChartArea .ca-note{font-size:.72rem;color:var(--text3);line-height:1.5;margin:8px 0 2px}
+#roiicChartArea .ca-chartwrap{width:100%;overflow:hidden;margin:6px 0 2px}
+#roiicChartArea svg{width:100%;height:auto;display:block}
+#roiicChartArea .ca-ctxread{font-size:.82rem;color:var(--text2);background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:9px 13px;margin:10px 0 4px;line-height:1.5}
+#roiicChartArea .ca-ctxread b{font-family:'JetBrains Mono',ui-monospace,monospace;color:var(--text)}
+#roiicChartArea .ca-ident{font-size:.86rem;color:var(--text);font-weight:600;text-align:center;margin:4px 0 12px}
+#roiicChartArea .ca-ident .op{color:var(--text3);font-weight:400;margin:0 6px}
+#roiicChartArea .ca-decomp{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#roiicChartArea .ca-dchip{flex:1;min-width:120px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+#roiicChartArea .ca-dchip .v{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:1.3rem;font-weight:700}
+#roiicChartArea .ca-dchip .l{font-size:.66rem;color:var(--text2);margin-top:4px;line-height:1.3}
+#roiicChartArea .ca-dop{display:flex;align-items:center;color:var(--text3);font-size:1.2rem;font-weight:600}
+#roiicChartArea .ca-subcap{font-size:.7rem;color:var(--text3);text-align:center;margin:8px 0 2px}
+#roiicChartArea .ca-roiic{margin-top:20px;border-top:1px solid var(--border);padding-top:14px}
+#roiicChartArea .ca-roiic .hd{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+#roiicChartArea .ca-roiic .sub{font-size:.7rem;color:var(--text3);margin-bottom:10px;line-height:1.5}
+#roiicChartArea .ca-roiic .sub b{color:var(--text2)}
+#roiicChartArea .ca-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#roiicChartArea .ca-cell{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;text-align:center}
+#roiicChartArea .ca-cell .v{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:1rem;font-weight:600;color:var(--accent2)}
+#roiicChartArea .ca-cell .v.nm{color:var(--text3)}
+#roiicChartArea .ca-cell .l{font-size:.64rem;color:var(--text2);margin-top:3px}
+#roiicChartArea .ca-cell .star{color:var(--accent2)}
 </style>
 </head>
 <body>
@@ -391,8 +446,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-05-26';
-  var buildId='v4.17.0';
+  var buildDate='2026-06-08';
+  var buildId='v4.21.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -729,8 +784,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
     <div id="roiicGNote" style="font-size:.7rem;color:var(--text3);line-height:1.55;margin:0 0 16px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0"><strong style="color:var(--text2)">Implied REP growth</strong> is the organic, steady-state rate (g = b&middot;r): how fast REP compounds if the company keeps reinvesting b% of profit at these ROIIC returns. It is a pure operating rate &mdash; Future Total Return adds it to the payout yield for an owner&rsquo;s total return. It can read <em>below</em> the Profit CAGR/Change above; that gap is growth the steady-state identity doesn&rsquo;t capture &mdash; typically acquisitions, where REP arrives faster than retention &times; return implies.</div>
 
     <div id="roiicTabs" style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0">
-      <button class="roiic-tab active" data-tab="dual" onclick="switchRoiicTab('dual')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">REP · IC · NTA</button>
-      <button class="roiic-tab" data-tab="roiic" onclick="switchRoiicTab('roiic')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Rolling ROIIC</button>
+      <button class="roiic-tab active" data-tab="comove" onclick="switchRoiicTab('comove')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid var(--border);border-bottom-color:var(--card);border-radius:8px 8px 0 0;margin-bottom:-1px;background:var(--card);color:var(--blue);font-weight:600">Co-Movement</button>
+      <button class="roiic-tab" data-tab="ratios" onclick="switchRoiicTab('ratios')" style="padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);border-radius:8px 8px 0 0;margin-bottom:-1px;background:transparent;color:var(--text3);font-weight:400">Ratios &amp; ROIIC</button>
     </div>
 
     <div id="roiicChartArea" style="min-height:120px;padding:10px 0"></div>
@@ -769,8 +824,9 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
       <!-- index191: curated key-metrics summary, always visible above the charts -->
       <div id="historicalSummary" style="display:none"></div>
       <!-- index192: charts first (chart1 absolute ROIC+REP, chart2 yields/margin/revenue), then both full tables back-to-back, collapsed by default. Sub-headers dropped; reads as one Historical panel. -->
-      <div id="histChart1"></div>
-      <div id="histChart2" style="margin-top:18px"></div>
+      <div id="histExplorer"></div>
+      <!-- Item 9 (v4.20.0): Historical k — realized backward-looking k & g (every name) -->
+      <div id="histRealizedK" style="display:none;margin-top:16px"></div>
       <div id="trendCard" style="display:none;margin-top:14px">
         <div class="hist-tbl-hd" onclick="histToggle('histTrendTable','histTrendArrow')" style="cursor:pointer;user-select:none;font-size:.8rem;font-weight:600;color:var(--text2);padding:6px 0;border-top:1px solid var(--border)"><span id="histTrendArrow" style="font-size:.72rem;color:var(--text3);margin-right:5px">&#9654;</span>Full Data Table &mdash; all metrics</div>
         <div id="histTrendTable" style="display:none"></div>
@@ -1121,7 +1177,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index227 \u00b7 v4.17.0';
+const REPA_DATA_BUILD='index235 \u00b7 v4.21.0';
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
@@ -1954,6 +2010,14 @@ function selectLast3Years(){
 // In Best Guess view the r anchors capitalize growth R&D into the base
 // (symmetric ROIC); Full D&A leaves R&D out of both sides.
 var _fyView='fullda'; // 'fullda' | 'bestguess'
+var _piYield=null;             // index232: user-chosen owner-yield for the private-investments callout (null = TBILL_REF default). Session-only; deliberately NOT saved to export/backup (it's a what-if overlay, not part of the audit record).
+var _piHold=0,_piEV=0,_piIC=0; // stashed at render so the live oninput handler can recompute without a full panel rebuild
+function _piSetYield(v){
+  var y=parseFloat(v); if(!isFinite(y)||y<0)y=0; if(y>100)y=100; _piYield=y/100;
+  var bps=(_piEV>0)?(_piHold*_piYield/_piEV)*10000:0, earn=_piHold*_piYield;
+  var b=document.getElementById('piBpsOut'); if(b)b.textContent=bps.toFixed(0);
+  var e=document.getElementById('piEarnOut'); if(e)e.textContent=fmtM(earn);
+}
 // index134: read-only snapshot of the Future Total Return panel's finalized values, written at the end of
 // renderForwardYield each render. The Markdown data-export reads THIS rather than re-deriving k/r/b/f/
 // sensitivity/lever, so the exported FTR numbers are by construction identical to what the panel painted
@@ -2285,9 +2349,11 @@ function renderForwardYield(){
   var _piEl=document.getElementById('fyPrivInv');
   if(_piEl){
     if(icOk && _invHold>0 && (_invHold/ic)>=0.10 && !_hasLT){
-      var _tBill=TBILL_REF;
-      var _piBps=(ev>0)?(_invHold*_tBill/ev)*10000:0;
-      _piEl.innerHTML='<div style="font-size:.72rem;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text3);line-height:1.5"><strong style="color:var(--text2)">Private investments \u2014</strong> '+(d.ticker||'This company')+' holds <strong style="color:var(--accent2);font-size:.85rem">'+fmtM(_invHold)+'</strong> (\u2248'+pct(_invHold/ic,0)+' of invested capital) parked on the balance sheet, outside REP and credited no return here. A conservative ~'+pct(_tBill,1)+' would add ~'+_piBps.toFixed(0)+' bps to the yield; whatever it actually compounds at is upside not captured in these numbers.</div>';
+      var _piY=(_piYield!=null)?_piYield:TBILL_REF;
+      var _piBps=(ev>0)?(_invHold*_piY/ev)*10000:0;
+      var _piEarn=_invHold*_piY;
+      _piHold=_invHold; _piEV=ev; _piIC=ic;
+      _piEl.innerHTML='<div style="background:var(--card2);border:1px solid var(--blue);border-radius:8px;padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap"><div style="font-size:.74rem;color:var(--blue);font-weight:600;letter-spacing:.02em">Private investments \u2014 carrying value</div><div style="font-size:1.3rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent2)">'+fmtM(_invHold)+'</div></div><div style="font-size:.7rem;color:var(--text3);line-height:1.55;margin-top:7px">'+(d.ticker||'This company')+' holds this (\u2248'+pct(_invHold/ic,0)+' of invested capital) parked on the balance sheet \u2014 real owner value, but outside REP and credited no return here.</div><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:.7rem;color:var(--text2)">Credit it at <input id="piYieldIn" type="number" min="0" max="100" step="0.1" value="'+(_piY*100).toFixed(1)+'" oninput="_piSetYield(this.value)" style="width:54px;background:var(--bg);border:1px solid #555;border-radius:4px;color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.72rem;padding:3px 6px;text-align:right">% \u2192 adds <strong style="color:var(--accent2)">~<span id="piBpsOut">'+_piBps.toFixed(0)+'</span> bps</strong> to the yield (\u2248<span id="piEarnOut" style="color:var(--text)">'+fmtM(_piEarn)+'</span> owner-earnings). Default ~'+pct(TBILL_REF,1)+' (T-bill); this input is a what-if and is not saved to exports.</div></div>';
     } else { _piEl.innerHTML=''; }
   }
 
@@ -2364,8 +2430,9 @@ function renderForwardYield(){
   if(bSeed!==null){
     h+='<div style="font-size:.74rem;color:var(--text3);margin-top:8px">b\u2019s default is the profit-weighted average across the years loaded (\u03a3 reinvestment \u00f7 \u03a3 REP). Use the window chips by the b input to switch between the all-years, 3-year, and latest reinvestment rate.</div>';
   }
+  // v4.21.0 (Item 9 embed): forward k vs realized "Historical k" over the chosen window — model vs reality.
+  h+=(function(){try{return _fyRealizedEmbedHTML(k);}catch(e){console.warn('FTR realized embed:',e);return '';}})();
   el.innerHTML=h;
-
   // ---- "How this is calculated" dropdown body (math, on demand) ----
   var mb=document.getElementById('fyMathBody');
   if(mb){
@@ -3013,6 +3080,15 @@ function renderBuybackRoi(){
     else if(_bbActive==='custom'){_pv=_bbRepNowPick.value;_plabel='custom';}
     if(typeof _pv==='number'&&!isNaN(_pv)){repNowM=_pv;repNowLabel=_plabel;_bbOverride=true;}
   }
+  // Item 8 fix (v4.19.0): the trailing REP-CAGR / Total-Return columns derive the
+  // years-elapsed from the "now" label. When the basis chooser overrides repNowLabel
+  // to a descriptive string ('3-yr avg' / 'TTM-2026' / 'custom'), parseInt(repNowLabel)
+  // becomes NaN (or a nonsense small int), the _gN>0 / _mN>0 guard fails, and every
+  // CAGR/Total-Return cell blanks to "—". Pin the endpoint to the latest annual year
+  // (preserved in _bbRepRefs.latestLabel, captured above BEFORE the override) so the
+  // year arithmetic is identical across all four basis modes — only the REP *value*
+  // (repNowM) tracks the chooser, exactly as "Latest year" mode already behaves.
+  var _endYr=parseInt(_bbRepRefs.latestLabel);
 
   // ---- Helpers ----
   function calcOwn(r){return(r.sharesRetired>0&&r.dilShares>0)?r.sharesRetired/r.dilShares:0;}
@@ -3051,7 +3127,7 @@ function renderBuybackRoi(){
     var yNow=(r.costM>0&&repCapNow>0)?repCapNow/r.costM:null;
     var yNowLT=(r.costM>0&&repCapNowLT>0)?repCapNowLT/r.costM:null;
     var dep=isDepressed(r,rows);
-    var entry={label:r.label,shortLabel:r.shortLabel,costM:r.costM,own:own,dilShares:r.dilShares,
+    var entry={label:r.label,shortLabel:r.shortLabel,key:r.key,costM:r.costM,own:own,dilShares:r.dilShares,
       sharesRetired:r.sharesRetired,repThenM:r.repThenM,ltRepM:r.ltRepM,repCapThen:repCapThen,
       repCapNow:repCapNow,repCapNowLT:repCapNowLT,yThen:yThen,yNow:yNow,yNowLT:yNowLT,depressed:dep};
     active.push(entry);
@@ -3165,7 +3241,7 @@ function renderBuybackRoi(){
       h+='<td style="text-align:right">'+(a.repCapNow?fmtM(a.repCapNow):'—')+'</td>';
       h+='<td style="text-align:right">'+pill(a.yThen,false)+'</td>';
       h+='<td style="text-align:right">'+pill(a.yNow,false)+'</td>';
-      var _gN=parseInt(repNowLabel)-parseInt(a.shortLabel);
+      var _gN=_endYr-parseInt(a.shortLabel);
       var _g=(a.repThenM>0&&_gN>0&&repNowM>0)?(Math.pow(repNowM/a.repThenM,1/_gN)-1):null;
       h+='<td style="text-align:right;padding:2px 4px;font-size:.64rem;font-family:\'JetBrains Mono\',monospace;color:'+(_g===null?'var(--text3)':(_g>=0?'var(--green)':'var(--red)'))+'">'+(_g===null?'\u2014':((_g>=0?'+':'')+pct(_g,1)))+'</td>';
       var _k=(_bK!==null&&a.yNow!==null&&_g!==null)?((1-_bK)*a.yNow+_g):null;
@@ -3242,7 +3318,7 @@ function renderBuybackRoi(){
           h+='<td style="padding:2px"><div style="'+cellStyle+'">'+pct(yld,1)+'</div></td>';
         }
       }
-      var _mN=parseInt(repNowLabel)-parseInt(br.shortLabel);
+      var _mN=_endYr-parseInt(br.shortLabel);
       var _mg=(br.repThenM>0&&_mN>0&&repNowM>0)?(Math.pow(repNowM/br.repThenM,1/_mN)-1):null;
       h+='<td style="text-align:center;padding:1px 2px;border-left:1px solid var(--border);font-family:\'JetBrains Mono\',monospace;font-weight:500;font-size:.56rem;color:'+(_mg===null?'var(--text3)':(_mg>=0?'var(--green)':'var(--red)'))+'">'+(_mg===null?'\u2014':((_mg>=0?'+':'')+pct(_mg,0)))+'</td>';
       var _mk=(_bK!==null&&br.costM>0&&_mg!==null)?((1-_bK)*((br.own*repNowM)/br.costM)+_mg):null;
@@ -3251,6 +3327,54 @@ function renderBuybackRoi(){
     }
     h+='</table></div>';
     h+='<p style="font-size:.68rem;color:var(--text3);margin:6px 0 0">Each row = one purchase year. Each column = REP measured that year. Outlined cell = yield at time of purchase. Read across to see yield growing as REP compounded. Trailing columns: REP CAGR (REP Growth) and Tot Ret (Total Return) — defined in the legend above. ▼ = depressed REP year.</p>';
+
+    // ===== v4.21.0 (Item 9 embed): buyback discipline — generic k (at prevailing market yield) vs actual k (at real repurchase prices) =====
+    // The gap is the buyback-timing edge: cost-weighted entry yields differ only by what management paid vs the market price; growth (g) is identical.
+    (function(){
+      var _rk=_realizedKWindow(_rkWin); if(!_rk||!_rk.ok||_rk.b==null)return;
+      var _inWin=buybackRows.filter(function(br){return parseInt(br.shortLabel)>=(_rk.toYr-_rk.actualWin);});
+      var _wc=0,_wAct=0,_wGen=0,_yrs=[];
+      _inWin.forEach(function(br){
+        if(!(br.costM>0))return;
+        var _px=getPillAnchor(yearStore[br.key])||0; var _mc=_px*(br.dilShares||0);
+        var _actY=(br.own*br.repThenM)/br.costM;            // entered at the real repurchase price
+        var _genY=(_mc>0)?(br.repThenM/_mc):null;            // entered at the prevailing market price
+        if(_genY==null||!(_actY>0))return;
+        _wc+=br.costM; _wAct+=_actY*br.costM; _wGen+=_genY*br.costM; _yrs.push(br.shortLabel);
+      });
+      if(_wc<=0)return;
+      var _b=_rk.b, _g=_rk.g;
+      var _aY=_wAct/_wc, _gY=_wGen/_wc;
+      var _kAct=(1-_b)*_aY+_g, _kGen=(1-_b)*_gY+_g;
+      var _gap=_kAct-_kGen; var _discPP=(_aY-_gY); // entry-yield discipline
+      var _good=_gap>=0;
+      var _hh='<div style="margin-top:18px;border-top:1px dashed var(--border);padding-top:13px">';
+      _hh+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+      _hh+='<div style="font-size:.8rem;font-weight:700;color:var(--accent2)">Buyback discipline <span style="font-weight:400;color:var(--text3);font-size:.72rem">\u2014 did they buy below market? generic k (at market) vs actual k (at repurchase prices)</span></div>';
+      _hh+='<div style="margin-left:auto;display:flex;gap:5px;align-items:center">'+_rkWinChips()+'</div>';
+      _hh+='</div>';
+      _hh+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
+      _hh+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:6px;padding:8px 11px">'
+        +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Generic k \u00b7 at market</div>'
+        +'<div style="font-size:1.15rem;font-weight:700;color:var(--text2)">'+pct(_kGen)+'</div>'
+        +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">if shares were bought at the prevailing price</div></div>';
+      _hh+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid '+(_good?'var(--green)':'var(--red)')+';border-radius:6px;padding:8px 11px">'
+        +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Actual k \u00b7 at repurchase</div>'
+        +'<div style="font-size:1.15rem;font-weight:700;color:'+(_good?'var(--green)':'var(--red)')+'">'+pct(_kAct)+'</div>'
+        +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">at the real prices management paid</div></div>';
+      _hh+='</div>';
+      var _col=Math.abs(_gap)<0.002?'var(--text2)':(_good?'var(--green)':'var(--red)');
+      var _msg=Math.abs(_gap)<0.002
+        ? 'Management bought at roughly market value over the in-window years \u2014 buybacks added no timing edge either way.'
+        : (_good
+          ? 'Management bought <strong>below</strong> market value: the repurchase prices lifted realized k by <strong>+'+(_gap*100).toFixed(1)+' pp</strong> over buying at the prevailing yield (entry yield '+(_discPP>=0?'+':'')+(_discPP*100).toFixed(1)+' pp richer). Disciplined capital return.'
+          : 'Management paid <strong>up</strong> for buybacks: the repurchase prices cost <strong>'+(_gap*100).toFixed(1)+' pp</strong> of realized k versus buying at the prevailing yield. Worth a hard look at timing.');
+      _hh+='<div style="font-size:.74rem;color:'+_col+';line-height:1.5;margin-top:8px">'+_msg+'</div>';
+      _hh+='<div style="font-size:.66rem;color:var(--text3);margin-top:6px;line-height:1.45">Cost-weighted across buyback years '+_yrs.join(', ')+'; growth g ('+pct(_g,1)+') is the realized '+_rk.actualWin+'-year REP rate, identical to both \u2014 so the whole gap is entry price. '
+        +'<span onclick="var e=document.getElementById(\'histRealizedK\');if(e)e.scrollIntoView({behavior:\'smooth\',block:\'center\'})" style="color:var(--accent2);cursor:pointer;white-space:nowrap">see full Historical k panel \u2193</span></div>';
+      _hh+='</div>';
+      h+=_hh;
+    })();
   }
 
   // ============ CAPITAL ALLOCATION FLAGS ============
@@ -3681,6 +3805,25 @@ function doImport(){
 
     var filled=0,warnings=[],fyEnd=null,fyLabel=null,extra={};
     var rawAmortization=null; // Track separate amortization for D&A computation
+    // Item 3 fix (v4.19.0): hard-stop a fiscal-year-less import BEFORE the field-write
+    // loop touches the shared input boxes. This pre-scan is provably equivalent to the
+    // pill gate below (if(fyEnd||fyLabel)): fyEnd is only ever set by a fyKeys hit and
+    // fyLabel only by a fyLabelKeys hit (a bare 'date' sets only quarterEndDate and
+    // never reaches the gate), so a resolvable fiscal year requires one of those keys
+    // present with a truthy value. Without this guard, a paste that omits the fiscal
+    // fields runs the loop, strands its values in the live inputs, creates no pill, and
+    // the next Save folds those orphaned values into the previous pill (the ABNB bug).
+    var _fyResolvable=false;
+    for(var _fsk in flat){
+      if(!flat.hasOwnProperty(_fsk))continue;
+      var _fslk=_fsk.toLowerCase();
+      if((fyKeys[_fslk]||fyLabelKeys[_fslk])&&flat[_fsk]){_fyResolvable=true;break;}
+    }
+    if(!_fyResolvable){
+      statusEl.className='import-status error';
+      statusEl.textContent='\u26a0 No fiscal year detected \u2014 add fiscal_year_end & fiscal_year_label to the extraction prompt. Nothing was imported (no values written), so the active pill is unchanged.';
+      return;
+    }
     for(var key in flat){
       if(!flat.hasOwnProperty(key))continue;
       var val=flat[key];
@@ -4470,7 +4613,7 @@ function renderHistoricalSummary(){
 function renderTrend(){
   try{renderHistoricalSummary();}catch(e){console.warn('Hist summary error:',e);}
   var trendCard=document.getElementById('trendCard');
-  var c1=document.getElementById('histChart1');
+  var c1=null; // index228: #histChart1 retired -> Historical explorer; the if(c1) guards below are now no-ops (trendCard handles visibility)
   var keys=getActiveYearKeys();
   if(keys.length<2){if(c1)c1.style.display='none';trendCard.style.display='none';syncHistoricalCard();return;}
   if(c1)c1.style.display='block';
@@ -4771,7 +4914,7 @@ function renderTrend(){
   }
 
   var _tp=html.split('<!--HISTSPLIT-->');
-  document.getElementById('histChart1').innerHTML=_tp[0]||'';
+  // index228: #histChart1 retired; the trend chart is now the Historical explorer. Trend TABLE preserved.
   document.getElementById('histTrendTable').innerHTML=_tp[1]||'';
 
   syncHistoricalCard();
@@ -4925,7 +5068,7 @@ function renderRdCapEff(years){
 }
 
 // ============ ROIIC Analysis Module ============
-var roiicActiveTab='dual';
+var roiicActiveTab='comove';
 
 function switchRoiicTab(tab){
   roiicActiveTab=tab;
@@ -4979,15 +5122,8 @@ function _histWindowControl(total,cur,setter){
     '<span style="font-size:.66rem;color:var(--text3);font-family:JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:.5px">View</span>'+btns+'</div>';
 }
 // ============ Long-Run History (All Stored Years) ============
-function renderLongRun(){
-  var card=document.getElementById('longRunCard');
-  var c2=document.getElementById('histChart2');
-  if(!card)return;
-  var allKeys=getSortedYearKeys();
-  if(allKeys.length<3){if(c2)c2.style.display='none';card.style.display='none';syncHistoricalCard();return;}
-  if(c2)c2.style.display='block';
-  card.style.display='block';syncHistoricalCard();
-
+// ===== index228 Item 2B/2C inserted block =====
+function _histEnrich(allKeys){
   var years=enrichYears(allKeys,{extra:true});
 
   // Compute all three REP yield variants per year
@@ -5043,6 +5179,542 @@ function renderLongRun(){
     var _yr_rev=y.revenue||0;
     y.repMargin=_yr_rev>0?y.realProfit/_yr_rev:null;
   });
+  return years;
+}
+
+/* ===== index228 (Item 2B): Historical flexible explorer — faithful port of REPA_Historical_Fuller_Mock v3.
+   Series come from _histEnrich() (the SAME enrichment the Long-Run Yield table uses), so the explorer and
+   the table can never diverge. In-app % metrics are fractions, scaled x100 here. Event markers (Item 2C)
+   read the optional per-ticker `events:[{date,label}]` field — null-safe (absent -> no markers).
+   Solid = $ actuals; dashed = % ratios. No REP/IC/yield math changes. ===== */
+var _histExpSel={rep:true,rev:true,roic:false,ronta:false,margin:false,bgyld:false};
+var _histExpShowVals=false, _histExpLog=false, _histExpData=null;
+var _HIST_PRESETS=[
+  {id:'core',keys:['rep','rev'],label:'Core \u00b7 REP\u00b7Revenue'},
+  {id:'repRevRoic',keys:['rep','rev','roic'],label:'REP\u00b7Rev\u00b7ROIC'},
+  {id:'returns',keys:['roic','ronta'],label:'Returns'},
+  {id:'yieldmargin',keys:['bgyld','margin'],label:'Yield & Margin'},
+  {id:'all',keys:['rep','rev','roic','ronta','margin','bgyld'],label:'Everything'}
+];
+
+function renderHistExplorer(allKeys){
+  var mount=document.getElementById('histExplorer');
+  if(!mount)return;
+  if(!allKeys||allKeys.length<2){mount.style.display='none';mount.innerHTML='';return;}
+  mount.style.display='block';
+  var years=_histEnrich(allKeys);
+  var YEARS=years.map(function(y){return y.label;});
+  var DATES=years.map(function(y){return y.endDate;});
+  var EVENTS=[];
+  try{
+    var tk=((((yearStore[allKeys[allKeys.length-1]]||{}).formData)||{}).ticker||'').toUpperCase();
+    var po=getPortfolio(); var evs=(tk&&po&&po[tk]&&po[tk].events)?po[tk].events:null;
+    if(!evs){ for(var _i=0;_i<allKeys.length;_i++){ var _y=yearStore[allKeys[_i]]||{}; var _e=(_y.extra&&_y.extra.events)||(_y.formData&&_y.formData.events); if(_e){evs=_e;break;} } }
+    if(Array.isArray(evs)) EVENTS=evs.filter(function(e){return e&&e.date;}).map(function(e){return {date:e.date,label:e.label||''};});
+  }catch(e){}
+  var SER={
+    rep:   {label:'REP',color:'#e67e22',kind:'$',data:years.map(function(y){return y.realProfit;})},
+    rev:   {label:'Revenue',color:'#2ecc71',kind:'$',data:years.map(function(y){return (y.revenue!=null?y.revenue:null);})},
+    roic:  {label:'Real ROIC',color:'#3498db',kind:'%',data:years.map(function(y){return y.realROIC!=null?y.realROIC*100:null;})},
+    ronta: {label:'Return on NTA',color:'#9b59b6',kind:'%',data:years.map(function(y){return y.returnOnNTA!=null?y.returnOnNTA*100:null;})},
+    margin:{label:'REP Margin',color:'#1abc9c',kind:'%',data:years.map(function(y){return y.repMargin!=null?y.repMargin*100:null;})},
+    bgyld: {label:'Best Guess Yield',color:'#f0c040',kind:'%',data:years.map(function(y){return y.yieldBestGuess!=null?y.yieldBestGuess*100:null;})}
+  };
+  _histExpData={YEARS:YEARS,DATES:DATES,T:DATES.map(function(d){return Date.parse(d);}),EVENTS:EVENTS,SER:SER};
+  _histExpBuild();
+}
+
+function _histExpBuild(){
+  var d=_histExpData; if(!d)return; var SER=d.SER;
+  var presets=_HIST_PRESETS.map(function(p){return '<button id="hxp_'+p.id+'" onclick="_histExpPreset(\''+p.id+'\')">'+p.label+'</button>';}).join('');
+  var checks=Object.keys(SER).map(function(k){
+    var dash=SER[k].kind==='%'?'border-top-style:dashed':'border-top-style:solid';
+    return '<label class="hx-chk"><input type="checkbox" id="hxc_'+k+'" '+(_histExpSel[k]?'checked':'')+' onchange="_histExpToggle(\''+k+'\')"><span class="hx-dot" style="border-top-color:'+SER[k].color+';'+dash+'"></span>'+SER[k].label+'</label>';
+  }).join('');
+  var html='<div class="hx-lbl">View</div>'
+    +'<div class="hx-presets" id="hxPresets">'+presets+'</div>'
+    +'<div class="hx-row"><div><div class="hx-lbl">Series</div><div class="hx-checks" id="hxChecks">'+checks+'</div></div>'
+    +'<div style="display:flex;gap:14px">'
+    +'<label class="hx-miniopt"><input type="checkbox" id="hxShowVals"'+(_histExpShowVals?' checked':'')+' onchange="_histExpShowVals=this.checked;_histExpRender()"> values at points</label>'
+    +'<label class="hx-miniopt"><input type="checkbox" id="hxLog"'+(_histExpLog?' checked':'')+' onchange="_histExpLog=this.checked;_histExpRender()"> log $-axis</label>'
+    +'</div></div>'
+    +'<div class="hx-note" id="hxAxisNote"></div>'
+    +'<div class="hx-logwarn" id="hxLogWarn"></div>'
+    +'<div class="hx-chartwrap"><svg id="hxChart" viewBox="0 0 740 300" preserveAspectRatio="xMidYMid meet"></svg></div>';
+  document.getElementById('histExplorer').innerHTML=html;
+  _histExpRender();
+}
+
+function _histExpPreset(id){var p=_HIST_PRESETS.find(function(x){return x.id===id;});if(!p)return;Object.keys(_histExpSel).forEach(function(k){_histExpSel[k]=p.keys.indexOf(k)>=0;var cb=document.getElementById('hxc_'+k);if(cb)cb.checked=_histExpSel[k];});_histExpRender();}
+function _histExpToggle(k){var cb=document.getElementById('hxc_'+k);_histExpSel[k]=cb?cb.checked:_histExpSel[k];_histExpRender();}
+function _histExpMatchPreset(){var on=Object.keys(_histExpSel).filter(function(k){return _histExpSel[k];}).sort().join(',');var p=_HIST_PRESETS.find(function(x){return x.keys.slice().sort().join(',')===on;});return p?p.id:null;}
+function _histExpFmtVal(SER,k,v){return SER[k].kind==='$'?('$'+(v/1000).toFixed(1)+'B'):(v.toFixed(1)+'%');}
+
+function _histExpRender(){
+  var d=_histExpData; if(!d)return;
+  var cur=_histExpMatchPreset();
+  _HIST_PRESETS.forEach(function(p){var b=document.getElementById('hxp_'+p.id);if(b)b.classList.toggle('active',p.id===cur);});
+  _histExpDraw(Object.keys(d.SER).filter(function(k){return _histExpSel[k];}));
+}
+
+function _histExpXFns(pL,pR){var W=740,H=300,pT=24,pB=40,iW=W-pL-pR,iH=H-pT-pB,n=_histExpData.YEARS.length;
+  return {W:W,H:H,pL:pL,pR:pR,pT:pT,iW:iW,iH:iH,x:function(i){return pL+(n<=1?iW/2:iW*i/(n-1));}};}
+function _histExpXByDate(g,te){var T=_histExpData.T;if(!T.length)return g.x(0);if(te<=T[0])return g.x(0);if(te>=T[T.length-1])return g.x(T.length-1);
+  for(var i=1;i<T.length;i++){if(te<=T[i]){var f=(te-T[i-1])/(T[i]-T[i-1]);return g.x(i-1)+f*(g.x(i)-g.x(i-1));}}return g.x(T.length-1);}
+function _histExpBuildAxis(members,unit,floor0,wantLog,pT,iH){
+  var SER=_histExpData.SER;
+  var data=members.reduce(function(a,k){return a.concat(SER[k].data);},[]).filter(function(v){return v!=null&&isFinite(v);});
+  if(!data.length) data=[0,1];
+  var minD=Math.min.apply(null,data), maxD=Math.max.apply(null,data);
+  var canLog=wantLog&&unit==='$'&&minD>0;
+  var blocked=wantLog&&unit==='$'&&minD<=0;
+  if(canLog){
+    var lo=minD*0.9, hi=maxD*1.1, a=Math.log(lo), b=Math.log(hi);
+    var map=function(v){return pT+iH-((Math.log(v)-a)/(b-a))*iH;};
+    var tv=[]; for(var t=0;t<=4;t++) tv.push(Math.exp(a+(b-a)*t/4));
+    return {map:map,tickVals:tv,lo:lo,hi:hi,log:true,blocked:false};
+  }
+  var lo2,hi2;
+  if(floor0){lo2=0;hi2=maxD;} else {lo2=Math.min(0,minD);hi2=Math.max(0,maxD);}
+  var sp=(hi2-lo2)||1; lo2=floor0?0:lo2-sp*0.14; hi2=hi2+sp*0.14;
+  var map2=function(v){return pT+iH-((v-lo2)/(hi2-lo2))*iH;};
+  var tv2=[]; for(var t2=0;t2<=4;t2++) tv2.push(lo2+(hi2-lo2)*t2/4);
+  return {map:map2,tickVals:tv2,lo:lo2,hi:hi2,log:false,blocked:blocked};
+}
+function _histExpDraw(keys){
+  var d=_histExpData; if(!d)return; var SER=d.SER, YEARS=d.YEARS, EVENTS=d.EVENTS;
+  var chartEl=document.getElementById('hxChart'), noteEl=document.getElementById('hxAxisNote'), warnEl=document.getElementById('hxLogWarn');
+  if(!chartEl)return;
+  var showVals=_histExpShowVals, wantLog=_histExpLog;
+  var actuals=keys.filter(function(k){return SER[k].kind==='$';}), ratios=keys.filter(function(k){return SER[k].kind==='%';});
+  var Lm=[],Rm=[],Lunit=null,Runit=null,Lfloor=false,Rfloor=false,hasR=false,Lcap='',Rcap='';
+  if(actuals.length&&ratios.length){
+    Lm=actuals;Lunit='$';Lcap='$B'; Rm=ratios;Runit='%';hasR=true;Rcap='%';
+  } else if(actuals.length&&!ratios.length){
+    if(actuals.indexOf('rev')>=0&&actuals.indexOf('rep')>=0){
+      Lm=['rev'];Lunit='$';Lfloor=true;Lcap='Rev $B'; Rm=['rep'];Runit='$';hasR=true;Rcap='REP $B';
+    } else { Lm=actuals;Lunit='$';Lfloor=actuals[0]==='rev';Lcap='$B'; }
+  } else if(!actuals.length&&ratios.length){
+    Lm=ratios;Lunit='%';Lcap='%';
+  } else { chartEl.innerHTML=''; if(noteEl)noteEl.innerHTML='Tick at least one series.'; if(warnEl)warnEl.style.display='none'; return; }
+  var g=_histExpXFns(Lm.length?54:18,hasR?54:18),W=g.W,H=g.H,pL=g.pL,pR=g.pR,pT=g.pT,iH=g.iH,x=g.x;
+  var AL=_histExpBuildAxis(Lm,Lunit,Lfloor,wantLog,pT,iH);
+  var AR=hasR?_histExpBuildAxis(Rm,Runit,Rfloor,wantLog,pT,iH):null;
+  var yL=AL.map, yR=AR?AR.map:function(){return 0;};
+  var s='';
+  var tickTxt=function(unit,v){return unit==='$'?(v/1000).toFixed(v<1000?1:0):v.toFixed(0)+'%';};
+  AL.tickVals.forEach(function(v){var yy=yL(v);
+    s+='<line x1="'+pL+'" y1="'+yy+'" x2="'+(W-pR)+'" y2="'+yy+'" stroke="#2a2a2a" stroke-width="1"/>';
+    s+='<text x="'+(pL-6)+'" y="'+(yy+3)+'" fill="#aaa" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+tickTxt(Lunit,v)+'</text>';});
+  s+='<text x="'+(pL-6)+'" y="'+(pT-9)+'" fill="#999" font-size="8.5" text-anchor="end">'+Lcap+(AL.log?' (log)':'')+'</text>';
+  if(hasR){AR.tickVals.forEach(function(v){var yy=yR(v);
+    s+='<text x="'+(W-pR+6)+'" y="'+(yy+3)+'" fill="#aaa" font-size="9" text-anchor="start" font-family="JetBrains Mono">'+tickTxt(Runit,v)+'</text>';});
+    s+='<text x="'+(W-pR+6)+'" y="'+(pT-9)+'" fill="#999" font-size="8.5" text-anchor="start">'+Rcap+(AR.log?' (log)':'')+'</text>';}
+  if(!AL.log&&AL.lo<0&&AL.hi>0){var z=yL(0);s+='<line x1="'+pL+'" y1="'+z+'" x2="'+(W-pR)+'" y2="'+z+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
+  else if(hasR&&AR&&!AR.log&&AR.lo<0&&AR.hi>0){var z2=yR(0);s+='<line x1="'+pL+'" y1="'+z2+'" x2="'+(W-pR)+'" y2="'+z2+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
+  EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_histExpXByDate(g,te);
+    s+='<line x1="'+ex.toFixed(1)+'" y1="'+pT+'" x2="'+ex.toFixed(1)+'" y2="'+(pT+iH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
+    s+='<text x="'+ex.toFixed(1)+'" y="'+(pT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';});
+  YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
+  function line(k){var sr=SER[k],onR=Rm.indexOf(k)>=0,yf=onR?yR:yL,dash=sr.kind==='%';
+    var p='',started=false,o='';
+    sr.data.forEach(function(v,i){ if(v==null||!isFinite(v)){started=false;return;} p+=(started?'L':'M')+x(i).toFixed(1)+','+yf(v).toFixed(1)+' '; started=true; });
+    if(p) o+='<path d="'+p+'" fill="none" stroke="'+sr.color+'" stroke-width="2.4"'+(dash?' stroke-dasharray="6 4"':'')+'/>';
+    sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; o+='<circle cx="'+x(i).toFixed(1)+'" cy="'+yf(v).toFixed(1)+'" r="3" fill="'+sr.color+'"/>';
+      if(showVals)o+='<text x="'+x(i).toFixed(1)+'" y="'+(yf(v)-7).toFixed(1)+'" fill="'+sr.color+'" font-size="8" text-anchor="middle" font-family="JetBrains Mono">'+_histExpFmtVal(SER,k,v)+'</text>';});
+    return o;}
+  ratios.forEach(function(k){s+=line(k);});
+  actuals.forEach(function(k){s+=line(k);});
+  chartEl.innerHTML=s;
+  var an='';
+  if(actuals.length&&ratios.length)an='Left $B: '+actuals.map(function(k){return SER[k].label;}).join(', ')+' (solid). Right %: '+ratios.map(function(k){return SER[k].label;}).join(', ')+' (dashed).';
+  else if(actuals.indexOf('rev')>=0&&actuals.indexOf('rep')>=0&&!ratios.length)an='REP and Revenue on separate $ axes \u2014 watch them diverge. Add a ratio and they share one axis.';
+  else if(actuals.length)an='$B \u2014 '+actuals.map(function(k){return SER[k].label;}).join(', ')+'.';
+  else an='% \u2014 '+ratios.map(function(k){return SER[k].label;}).join(', ')+' (dashed).';
+  var logged=[],blocked=[];
+  function _tag(ax,mem,unit){ if(unit!=='$'||!ax)return; if(ax.log){mem.forEach(function(k){logged.push(SER[k].label);});} else if(ax.blocked){mem.forEach(function(k){blocked.push(SER[k].label);});} }
+  _tag(AL,Lm,Lunit); _tag(AR,Rm,Runit);
+  if(wantLog&&logged.length&&!blocked.length) an+=' Log $-axis on.';
+  if(noteEl)noteEl.innerHTML=an;
+  if(warnEl){ if(wantLog&&blocked.length){ warnEl.style.display='block';
+      if(logged.length) warnEl.innerHTML='\u26a0 Log applies to <b>'+logged.join(', ')+'</b> only. <b>'+blocked.join(', ')+'</b> stays <b>linear</b> \u2014 log can\u2019t plot values below zero, so the toggle does not change it.';
+      else warnEl.innerHTML='\u26a0 Log unavailable: <b>'+blocked.join(', ')+'</b> has values below zero, so the $-axis stays <b>linear</b> despite the toggle.';
+    } else { warnEl.style.display='none'; } }
+}
+
+
+/* ===================== Item 9 (v4.20.0): Historical k =====================
+   Realized, backward-looking counterpart of the Future Total Return k —
+   computed entirely from actual REP history, so it works for EVERY name, not
+   just buyback names. Each loaded ANNUAL filing is a "vintage": the entry yield
+   is REP_then / (period-end price x shares), grounded in stored data (no buyback
+   needed). Engine reuses computeMetrics (REP), getPillAnchor (period-end price,
+   split-invariant when multiplied by contemporaneous shares) and _fyPwB (b).
+     g  = (REP_now / REP_then)^(1/yrs) - 1        [realized REP CAGR, growth only]
+     k  = (1 - b)*y_entry + g                     [realized total return, = y + b(r-y)]
+     base compounding = (1 + y_entry)^yrs - 1     [the do-nothing yield, zero growth]
+     total return     = (1 + k)^yrs - 1           [all-in, cumulative]
+   Two-sided depressed-base guard (the dominant real-data effect): a low ENTRY
+   year inflates g/k for that vintage (AMZN FY2023), a low ENDPOINT deflates every
+   row (AAPL FY2025). Both are flagged with the same ▼ convention as the buyback
+   matrix and called out honestly rather than papered over. */
+var _rkData=null, _rkRange='all', _rkOpenGraph=null, _rkLog=false;
+// v4.21.0 (Item 9 embeds + endpoint normalization)
+var _rkNowMode='auto';   // History-panel endpoint basis: 'auto' (latest annual) | 'avg3' | 'ttm'
+var _rkWin=3;            // realized-k trailing window (years) for the FTR / Buybacks embeds: 1 | 3 | 5
+
+// ---- shared realized-k references: annual REP history + the three "profit now" endpoints ----
+// Single source for the History panel, both embeds, and the endpoint chooser, so a normalized
+// "now" basis re-bases every realized read at once (and pins the elapsed-years to the latest
+// annual year, exactly as the buyback matrix does after the Item 8 fix).
+function _rkRefs(){
+  var keys=getSortedYearKeys();
+  var ann=[]; var ttmRep=0, ttmLabel='';
+  for(var i=0;i<keys.length;i++){
+    var yr=yearStore[keys[i]]; if(!yr||!yr.formData)continue;
+    var lbl=(yr.fiscal_year_label||'').toUpperCase(); var fd=yr.formData;
+    var rep=0; try{rep=computeMetrics(yr).realProfit||0;}catch(e){}
+    if(yr.isInterim||lbl.indexOf('TTM')===0||lbl.indexOf('Q')===0){ if(rep){ttmRep=rep;ttmLabel=(yr.fiscal_year_label||keys[i]);} continue; }
+    var label=(yr.fiscal_year_label||keys[i]).replace(/^FY/,'');
+    var px=getPillAnchor(yr), sh=fd.shares||0;
+    ann.push({key:keys[i], yr:parseInt(label), label:label, rep:rep, px:px, shares:sh, mktCap:px*sh});
+  }
+  if(ann.length<2)return null;
+  var reps=ann.map(function(a){return a.rep;});
+  var last=ann[ann.length-1];
+  return {ann:ann, endYr:last.yr, latest:last.rep, latestLabel:last.label,
+          avg3:repaTrailingAvg(reps,3), ttm:ttmRep, ttmLabel:ttmLabel};
+}
+function _rkResolveNow(refs){
+  if(_rkNowMode==='avg3' && refs.avg3>0) return {repNow:refs.avg3, label:'3-yr avg', override:true};
+  if(_rkNowMode==='ttm'  && refs.ttm>0)  return {repNow:refs.ttm,  label:(refs.ttmLabel||'TTM'), override:true};
+  return {repNow:refs.latest, label:refs.latestLabel, override:false};
+}
+function _rkB(){ try{return _fyPwB(enrichYears(getActiveYearKeys()));}catch(e){return null;} }
+
+// single-number realized k over a trailing window (market entry yield), respecting the chosen endpoint basis.
+// start vintage = the annual filing closest to (endYr - win), bounded by available history.
+function _realizedKWindow(win){
+  var refs=_rkRefs(); if(!refs)return null;
+  var now=_rkResolveNow(refs); var repNow=now.repNow, endYr=refs.endYr, ann=refs.ann;
+  var start=ann[0];
+  for(var i=0;i<ann.length;i++){ if(endYr-ann[i].yr<=win){ start=ann[i]; break; } }
+  var actualWin=endYr-start.yr;
+  if(actualWin<=0||start.rep<=0||repNow<=0)return {ok:false, win:win, actualWin:actualWin};
+  var b=_rkB();
+  var yMkt=(start.mktCap>0)?start.rep/start.mktCap:null;
+  var g=Math.pow(repNow/start.rep,1/actualWin)-1;
+  var k=(b!=null&&yMkt!=null)?((1-b)*yMkt+g):null;
+  return {ok:(k!=null), win:win, actualWin:actualWin, fromYr:start.yr, fromLabel:start.label,
+          toYr:endYr, b:b, yMkt:yMkt, g:g, k:k, repThen:start.rep, repNow:repNow,
+          nowLabel:now.label, override:now.override};
+}
+
+// window chips shared by both embeds
+function _rkWinChips(){
+  var refs=_rkRefs(); var maxWin=refs?(refs.endYr-refs.ann[0].yr):99;
+  var h='<span style="font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-right:1px">window</span>';
+  [1,3,5].forEach(function(n){ if(n>maxWin&&n!==1)return; var on=(_rkWin===n);
+    h+='<button type="button" onclick="_rkSetWin('+n+')" style="padding:3px 9px;border:1px solid '+(on?'var(--accent)':'var(--border)')+';background:'+(on?'rgba(212,160,37,.14)':'var(--card2)')+';color:'+(on?'var(--text)':'var(--text2)')+';border-radius:6px;font-size:.68rem;font-weight:600;cursor:pointer">'+n+'y</button>';
+  });
+  return h;
+}
+function _rkSetWin(n){ _rkWin=n;
+  var fc=document.getElementById('forwardYieldCard'); if(fc&&fc.style.display!=='none'){try{renderForwardYield();}catch(e){}}
+  var bc=document.getElementById('buybackRoiCard'); if(bc&&bc.style.display!=='none'){try{renderBuybackRoi();}catch(e){}}
+}
+function _rkSetNow(mode){ _rkNowMode=mode;
+  try{renderRealizedK();}catch(e){}
+  // the embeds must respect the chosen "now" -> refresh them on the same basis
+  var fc=document.getElementById('forwardYieldCard'); if(fc&&fc.style.display!=='none'){try{renderForwardYield();}catch(e){}}
+  var bc=document.getElementById('buybackRoiCard'); if(bc&&bc.style.display!=='none'){try{renderBuybackRoi();}catch(e){}}
+}
+
+// ---- FTR embed: forward k (the live headline assumption) vs realized "Historical k" over the window ----
+function _fyRealizedEmbedHTML(fwdK){
+  var rk=_realizedKWindow(_rkWin);
+  var h='<div style="margin-top:16px;border-top:1px dashed var(--border);padding-top:13px">';
+  h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+  h+='<div style="font-size:.8rem;font-weight:700;color:var(--accent2)">Model vs reality <span style="font-weight:400;color:var(--text3);font-size:.72rem">\u2014 your forward k against what the business actually compounded</span></div>';
+  h+='<div style="margin-left:auto;display:flex;gap:5px;align-items:center">'+_rkWinChips()+'</div>';
+  h+='</div>';
+  if(!rk||!rk.ok){
+    h+='<div style="font-size:.74rem;color:var(--text3)">Not enough annual history for a '+_rkWin+'-year realized read'+((rk&&rk.actualWin>0)?(' (only '+rk.actualWin+'y of history available)'):'')+'.</div></div>';
+    return h;
+  }
+  var fwd=(fwdK!=null)?fwdK:null;
+  var diff=(fwd!=null)?(fwd-rk.k):null;
+  h+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:8px 11px">'
+    +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Forward k \u00b7 your bet</div>'
+    +'<div style="font-size:1.15rem;font-weight:700;color:var(--accent)">'+(fwd!=null?pct(fwd):'\u2014')+'</div>'
+    +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">from the assumptions set above</div></div>';
+  h+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:6px;padding:8px 11px">'
+    +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Historical k \u00b7 '+rk.actualWin+'y'+(rk.override?' <span style="color:var(--orange)">hyp</span>':'')+'</div>'
+    +'<div style="font-size:1.15rem;font-weight:700;color:var(--accent2)">'+pct(rk.k)+'</div>'
+    +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">realized '+rk.fromLabel+'\u2192'+(rk.override?rk.nowLabel:rk.toYr)+', entry at market</div></div>';
+  h+='</div>';
+  if(diff!=null){
+    var col=Math.abs(diff)<0.02?'var(--text2)':(diff>0?'var(--orange)':'var(--green)');
+    var msg=Math.abs(diff)<0.02
+      ? 'Your forward assumptions line up with the realized '+rk.actualWin+'-year record \u2014 grounded.'
+      : (diff>0
+        ? 'Forward k sits <strong>'+(diff*100).toFixed(1)+' pp above</strong> the realized '+rk.actualWin+'-year record \u2014 you are betting the business does better than it just did.'
+        : 'Forward k sits <strong>'+(Math.abs(diff)*100).toFixed(1)+' pp below</strong> the realized '+rk.actualWin+'-year record \u2014 conservative versus the track record.');
+    h+='<div style="font-size:.74rem;color:'+col+';line-height:1.5;margin-top:8px">'+msg+'</div>';
+  }
+  h+='<div style="font-size:.66rem;color:var(--text3);margin-top:6px;line-height:1.45"><strong>Endpoint:</strong> '+rk.nowLabel+(rk.override?' <span style="color:var(--orange)">(hypothetical)</span>':' (latest annual)')+', set via the &ldquo;profit now&rdquo; chooser in the History / Realized k panel. Realized k = (1\u2212b)\u00b7entry yield + realized REP growth, on actual history (entry at the prevailing market price). '
+    +'<span onclick="var e=document.getElementById(\'histRealizedK\');if(e)e.scrollIntoView({behavior:\'smooth\',block:\'center\'})" style="color:var(--accent2);cursor:pointer;white-space:nowrap">see full Historical k panel \u2193</span></div>';
+  h+='</div>';
+  return h;
+}
+
+function renderRealizedK(allKeys){
+  var mount=document.getElementById('histRealizedK');
+  if(!mount)return;
+  // annual-only, chronological (skip interim/TTM) — same gate as the buyback engine
+  var keys=(allKeys||getSortedYearKeys()).filter(function(k){
+    var yr=yearStore[k]; if(!yr||!yr.formData)return false;
+    var lbl=(yr.fiscal_year_label||'').toUpperCase();
+    return !(yr.isInterim||lbl.indexOf('TTM')===0||lbl.indexOf('Q')===0);
+  });
+  if(keys.length<2){mount.style.display='none';mount.innerHTML='';_rkData=null;return;}
+  mount.style.display='block';
+
+  // company-level profit-weighted b — the same figure the FTR panel and buyback matrix use
+  var b=null; try{b=_fyPwB(enrichYears(getActiveYearKeys()));}catch(e){b=null;}
+
+  var rows=keys.map(function(k){
+    var yr=yearStore[k]; var fd=yr.formData||{};
+    var rep=0; try{rep=computeMetrics(yr).realProfit||0;}catch(e){}
+    var px=getPillAnchor(yr); var sh=fd.shares||0; var mc=px*sh;
+    var label=(yr.fiscal_year_label||k).replace(/^FY/,'');
+    return {label:label, yr:parseInt(label), rep:rep, px:px, shares:sh, mktCap:mc,
+            yEntry:(mc>0&&rep>0)?rep/mc:null};
+  });
+  // depressed ENTRY: this vintage's REP is markedly below an adjacent year (inflates its g)
+  for(var i=0;i<rows.length;i++){
+    var nb=Math.max(i>0?rows[i-1].rep:0, i<rows.length-1?rows[i+1].rep:0);
+    rows[i].depEntry=(nb>0 && rows[i].rep>0 && rows[i].rep<nb*0.85);
+  }
+  var last=rows[rows.length-1];
+  var endYr=last.yr; // elapsed-years always pin to the latest annual year (Item 8 lesson)
+  // v4.21.0: chooser-aware endpoint. The "now" REP value can be re-based to a normalized basis
+  // (3-yr avg / TTM) to defuse a depressed latest year, while endYr stays the real latest annual year.
+  var _refs=_rkRefs();
+  var _now=_refs?_rkResolveNow(_refs):{repNow:last.rep,label:last.label,override:false};
+  var repNow=_now.repNow;
+  // depressed ENDPOINT: the chosen "now" REP is below the prior-years' peak (drags every row low)
+  var priorMax=Math.max(rows.length>=2?rows[rows.length-2].rep:0, rows.length>=3?rows[rows.length-3].rep:0);
+  var endpointDep=(priorMax>0 && repNow>0 && repNow<priorMax*0.90);
+
+  rows.forEach(function(r){
+    var yrs=endYr-r.yr; r.yrs=yrs;
+    r.g=(r.rep>0&&yrs>0&&repNow>0)?(Math.pow(repNow/r.rep,1/yrs)-1):null;
+    r.k=(b!=null&&r.yEntry!=null&&r.g!=null)?((1-b)*r.yEntry+r.g):null;
+    r.baseComp=(r.yEntry!=null&&yrs>0)?(Math.pow(1+r.yEntry,yrs)-1):null;
+    r.totRet=(r.k!=null&&yrs>0)?(Math.pow(1+r.k,yrs)-1):null;
+  });
+  var repByYr={}; rows.forEach(function(r){repByYr[r.yr]=r.rep;});
+  repByYr[endYr]=repNow; // normalize the "now" column to the chosen basis (intermediate years stay real)
+
+  _rkData={rows:rows, repByYr:repByYr, b:b, repNow:repNow, endYr:endYr, endpointDep:endpointDep,
+           refs:_refs, nowLabel:_now.label, override:_now.override};
+  _rkBuild();
+}
+
+function _rkVisibleRows(){
+  var d=_rkData; if(!d)return [];
+  if(_rkRange==='all')return d.rows.slice();
+  var n=parseInt(_rkRange); // 3 / 5 / 10 most-recent vintages
+  return d.rows.slice(Math.max(0,d.rows.length-n));
+}
+function _rkSetRange(r){_rkRange=r;_rkOpenGraph=null;_rkBuild();}
+function _rkToggleGraph(yr){_rkOpenGraph=(_rkOpenGraph===yr?null:yr);_rkBuild();}
+function _rkToggleLog(){_rkLog=!_rkLog;_rkBuild();}
+function _rkFp(x,dec){if(dec===undefined)dec=1;if(x===null||x===undefined||isNaN(x))return '\u2014';return (x>=0?'+':'')+(x*100).toFixed(dec)+'%';}
+
+function _rkBuild(){
+  var d=_rkData; if(!d){return;}
+  var vis=_rkVisibleRows();
+  var b=d.b, endYr=d.endYr;
+  var h='';
+
+  // ---- header ----
+  h+='<div style="border-top:1px solid var(--border);padding-top:14px">';
+  h+='<div style="font-size:.92rem;font-weight:700;color:var(--accent2);margin-bottom:2px">Historical k <span style="font-size:.74rem;font-weight:400;color:var(--text3)">— what the business actually compounded at</span></div>';
+  h+='<div style="font-size:.78rem;color:var(--text2);line-height:1.5;margin-bottom:12px">The backward-looking, backtested counterpart of the Future Total Return <strong>k</strong> — measured on real REP history rather than projected. Each row is the position entered in that year; the grid shows its <em>yield-on-cost</em> climbing as REP compounds against your fixed entry cost. <span style="color:var(--text3)">b ('+(b!=null?pct(b,0):'n/a')+') = the share of profit the company reinvests, the same figure the FTR panel uses.</span></div>';
+
+  // ---- display-range toggle ----
+  var maxN=d.rows.length;
+  var ranges=[['3','3y'],['5','5y'],['10','10y'],['all','All']];
+  h+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap">';
+  h+='<span style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-right:2px">Show</span>';
+  ranges.forEach(function(rg){
+    if(rg[0]!=='all'&&parseInt(rg[0])>=maxN)return; // hide ranges that exceed available history
+    var on=(_rkRange===rg[0]);
+    h+='<button type="button" onclick="_rkSetRange(\''+rg[0]+'\')" style="padding:5px 11px;border:1px solid '+(on?'var(--accent)':'var(--border)')+';background:'+(on?'rgba(212,160,37,.14)':'var(--card2)')+';color:'+(on?'var(--text)':'var(--text2)')+';border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer">'+rg[1]+'</button>';
+  });
+  h+='<span style="font-size:.66rem;color:var(--text3);margin-left:4px">bounded by years held ('+maxN+' filings)</span>';
+  h+='</div>';
+
+  // ---- endpoint ("profit now") basis chooser — normalizes a depressed latest year (the real fix for AAPL-type endpoint depression) ----
+  if(d.refs){
+    var rf=d.refs;
+    var _nowBtn=function(mode,txt,sub,avail){
+      var on=(_rkNowMode===mode);
+      var oc=avail?(' onclick="_rkSetNow(\''+mode+'\')"'):'';
+      return '<button type="button"'+oc+(avail?'':' disabled')+' style="padding:5px 10px;border:1px solid '+(on?'var(--accent)':'var(--border)')+';background:'+(on?'rgba(212,160,37,.14)':'var(--card2)')+';color:'+(on?'var(--text)':(avail?'var(--text2)':'var(--text3)'))+';border-radius:7px;font-size:.7rem;font-weight:600;cursor:'+(avail?'pointer':'not-allowed')+';line-height:1.25;text-align:left;opacity:'+(avail?'1':'.55')+'">'+txt+(sub?'<br><span style="font-size:.6rem;font-weight:500;opacity:.85;font-family:\'JetBrains Mono\',monospace">'+sub+'</span>':'')+'</button>';
+    };
+    h+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:'+(d.override?'8px':'12px')+';flex-wrap:wrap">';
+    h+='<span style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-right:2px">profit now</span>';
+    h+=_nowBtn('auto','Latest year','('+(rf.latestLabel||'\u2014')+') '+fmtM(rf.latest),true);
+    h+=_nowBtn('avg3','3-yr avg',(rf.avg3>0?fmtM(rf.avg3):'n/a'),(rf.avg3>0));
+    h+=_nowBtn('ttm','Twelve-month',(rf.ttm>0?fmtM(rf.ttm):'n/a'),(rf.ttm>0));
+    h+='</div>';
+    if(d.override){
+      h+='<div style="font-size:.72rem;color:var(--orange);font-weight:600;line-height:1.45;margin:0 0 12px">\u26a0 Hypothetical endpoint \u2014 every realized g / k below is measured against '+d.nowLabel+' = '+fmtM(d.repNow)+', not the actual latest-year REP ('+(rf.latestLabel||'\u2014')+' = '+fmtM(rf.latest)+'). Resets on reload or company switch.</div>';
+    }
+  }
+
+  // ---- heat grid (the glance) ----
+  var cols=[]; var minYr=vis[0].yr;
+  for(var y=minYr;y<=endYr;y++)cols.push(y);
+  // relative-magnitude scale (NOT absolute yield bands) so low-yield/high-growth names stay legible
+  var maxYoC=0;
+  vis.forEach(function(r){ if(r.mktCap>0){ cols.forEach(function(c){ if(c>=r.yr&&d.repByYr[c]!=null){ var v=d.repByYr[c]/r.mktCap; if(v>maxYoC)maxYoC=v; } }); } });
+  h+='<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px">Yield-on-cost — the glance</div>';
+  h+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="border-collapse:separate;border-spacing:3px;min-width:100%">';
+  h+='<tr><th style="font-size:.64rem;color:var(--text3);font-weight:500;padding:2px"></th>';
+  cols.forEach(function(c){
+    var isNow=(c===endYr);
+    h+='<th style="font-family:\'JetBrains Mono\',monospace;font-size:.62rem;color:'+(isNow?'var(--green)':'var(--text2)')+';font-weight:500;padding:2px;white-space:nowrap">\u0027'+String(c).slice(-2)+(isNow?'<br><span style="font-size:.54rem">now</span>':'')+'</th>';
+  });
+  h+='</tr>';
+  vis.forEach(function(r){
+    var depMk=r.depEntry?' <span style="color:var(--orange);font-size:.58rem">\u25bc</span>':'';
+    h+='<tr><td style="font-size:.72rem;color:var(--text2);text-align:left;white-space:nowrap;padding-right:4px">'+r.label+depMk+'</td>';
+    cols.forEach(function(c){
+      if(c<r.yr){h+='<td style="background:#161616;border-radius:5px;padding:6px 5px;text-align:center;color:var(--text3);font-family:\'JetBrains Mono\',monospace;font-size:.7rem;font-weight:400">\u2014</td>';return;}
+      var rep=d.repByYr[c];
+      var yoc=(r.mktCap>0&&rep!=null)?rep/r.mktCap:null;
+      if(yoc===null){h+='<td style="background:#161616;border-radius:5px;padding:6px 5px;text-align:center;color:var(--text3)">\u2014</td>';return;}
+      var frac=maxYoC>0?Math.min(yoc/maxYoC,1):0;
+      var a=(0.10+0.62*frac).toFixed(2);
+      var isNow=(c===endYr);
+      var bg=isNow?('rgba(46,204,113,'+a+')'):('rgba(212,160,37,'+a+')');
+      h+='<td style="background:'+bg+';border-radius:5px;padding:6px 5px;text-align:center;color:#fff;font-family:\'JetBrains Mono\',monospace;font-size:.72rem;font-weight:600;white-space:nowrap">'+pct(yoc,1)+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</table></div>';
+
+  // ---- slim summary (the numbers) — order: base yield (y) · Historical k · base compounding · total return ----
+  h+='<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:16px 0 4px">The numbers</div>';
+  h+='<table style="width:100%;border-collapse:collapse">';
+  h+='<tr style="border-bottom:2px solid var(--border)">';
+  ['vintage','base yield (y)','Historical k','base compounding','total return',''].forEach(function(t,idx){
+    var al=idx===0?'left':(idx===5?'center':'right');
+    h+='<th style="padding:8px 6px;text-align:'+al+';font-size:.64rem;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.3px">'+t+'</th>';
+  });
+  h+='</tr>';
+  vis.forEach(function(r){
+    var open=(_rkOpenGraph===r.yr);
+    var dim=(r.yrs<=0); // the endpoint vintage has nothing to compound yet
+    var rowCol=dim?'var(--text3)':'var(--text2)';
+    var depMk=r.depEntry?' <span style="color:var(--orange);font-size:.6rem">\u25bc</span>':'';
+    h+='<tr style="border-bottom:1px solid rgba(51,51,51,.5)">';
+    h+='<td style="padding:9px 6px;text-align:left;font-size:.8rem;color:'+rowCol+'">'+r.label+depMk+'</td>';
+    h+='<td style="padding:9px 6px;text-align:right;font-family:\'JetBrains Mono\',monospace;font-size:.82rem;color:'+(r.yEntry!=null?'var(--text)':'var(--text3)')+'">'+(r.yEntry!=null?pct(r.yEntry,2):'\u2014')+'</td>';
+    h+='<td style="padding:9px 6px;text-align:right;font-family:\'JetBrains Mono\',monospace;font-size:.82rem;font-weight:600;color:'+(r.k==null?'var(--text3)':(r.k>=0?'var(--accent2)':'var(--red)'))+'">'+_rkFp(r.k)+'</td>';
+    h+='<td style="padding:9px 6px;text-align:right;font-family:\'JetBrains Mono\',monospace;font-size:.82rem;color:'+(r.baseComp==null?'var(--text3)':'var(--text2)')+'">'+_rkFp(r.baseComp)+'</td>';
+    h+='<td style="padding:9px 6px;text-align:right;font-family:\'JetBrains Mono\',monospace;font-size:.82rem;font-weight:600;color:'+(r.totRet==null?'var(--text3)':(r.totRet>=0?'var(--green)':'var(--red)'))+'">'+_rkFp(r.totRet)+'</td>';
+    h+='<td style="padding:9px 6px;text-align:center;white-space:nowrap">'+(r.yrs>0?('<span onclick="_rkToggleGraph('+r.yr+')" style="font-family:\'JetBrains Mono\',monospace;font-size:.66rem;color:'+(open?'var(--accent2)':'var(--text3)')+';cursor:pointer">graph '+(open?'\u25be':'\u25b8')+'</span>'):'\u2014')+'</td>';
+    h+='</tr>';
+    if(open){
+      h+='<tr><td colspan="6" style="padding:4px 0 12px"><div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">'+_rkGraph(r)+'</div></td></tr>';
+    }
+  });
+  h+='</table>';
+  h+='<p style="font-size:.68rem;color:var(--text3);line-height:1.5;margin:8px 0 0"><strong style="color:var(--text2)">base yield (y)</strong> = yield-on-cost at entry (REP \u00f7 market cap that year). <strong style="color:var(--text2)">Historical k</strong> = (1\u2212b)\u00b7y + realized growth. <strong style="color:var(--text2)">base compounding</strong> = the entry yield alone compounded, zero growth. <strong style="color:var(--text2)">total return</strong> = k compounded over the years held. The gap between <em>total return</em> and <em>base compounding</em> is the growth premium.</p>';
+
+  // ---- depressed-base note (honest, both ends) ----
+  var depEntries=vis.filter(function(r){return r.depEntry;}).map(function(r){return r.label;});
+  if(depEntries.length||d.endpointDep){
+    h+='<div style="font-size:.74rem;color:var(--text2);line-height:1.55;margin:12px 0 0;padding:10px 13px;background:rgba(230,126,34,.07);border-left:3px solid var(--orange);border-radius:0 6px 6px 0">';
+    h+='<strong style="color:var(--orange)">\u25bc Depressed-base caution.</strong> ';
+    if(depEntries.length)h+='Vintage'+(depEntries.length>1?'s':'')+' '+depEntries.join(', ')+' had an abnormally low REP that year, so their realized growth (and k) read <em>high</em> \u2014 they measure a recovery off a trough, not a durable compounding rate. ';
+    if(d.endpointDep)h+='The latest year\u2019s REP ($'+ (d.repNow>=1e3?(d.repNow/1e3).toFixed(1)+'B':d.repNow.toFixed(0)+'M') +') sits below its recent peak, so <em>every</em> vintage\u2019s g and k read <em>low</em> \u2014 a depressed endpoint drags the whole panel. ';
+    h+='<span style="color:var(--text3)">Switch the <strong>profit now</strong> basis above (3-yr avg / TTM) to normalize the endpoint and see every row on a non-depressed &ldquo;now.&rdquo;</span>';
+    h+='</div>';
+  }
+
+  // ---- how this works (collapsed didactic) ----
+  h+='<div style="margin-top:12px"><div onclick="var e=document.getElementById(\'rkHow\');var a=document.getElementById(\'rkHowArr\');if(e.style.display===\'none\'){e.style.display=\'block\';a.textContent=\'\u25be\';}else{e.style.display=\'none\';a.textContent=\'\u25b8\';}" style="cursor:pointer;user-select:none;font-size:.74rem;font-weight:600;color:var(--text2)"><span id="rkHowArr" style="color:var(--text3);margin-right:5px">\u25b8</span>how this works</div>';
+  h+='<div id="rkHow" style="display:none;font-size:.76rem;color:var(--text2);line-height:1.6;margin-top:8px;padding:11px 14px;background:var(--card2);border-radius:8px">';
+  h+='<p style="margin:0 0 8px">This panel runs the Future Total Return identity <em>backward</em>, on what actually happened. Pick any past year as your entry point. The app already stored that period\u2019s end-of-period share price, so your <strong>entry yield</strong> is just that year\u2019s REP divided by the market cap you would have paid: REP\u00f7(price\u00d7shares). No buyback required \u2014 every name has this.</p>';
+  h+='<p style="margin:0 0 8px"><strong>Realized growth (g)</strong> is the annual rate REP actually compounded from then to now: (REP_now\u00f7REP_then) raised to 1\u00f7years, minus one. Assumption-free \u2014 no price, no multiple.</p>';
+  h+='<p style="margin:0 0 8px"><strong>Historical k</strong> adds the cash you collect along the way: under a held (constant) multiple, price tracks REP, so the total return is the payout share of the yield (1\u2212b)\u00b7y <em>plus</em> that growth g. It is the same k the forward panel projects \u2014 here it is the score, not the forecast.</p>';
+  h+='<p style="margin:0"><strong>Why two cumulative columns?</strong> <em>base compounding</em> is what the entry yield alone would have returned with zero growth; <em>total return</em> is what you actually got. Seeing them side by side is the whole point: the gap is how much the company\u2019s reinvested growth beat the yield you paid for.</p>';
+  h+='</div></div>';
+
+  h+='</div>';
+  document.getElementById('histRealizedK').innerHTML=h;
+}
+
+// per-vintage drill-down: realized yield-on-cost curve vs the base-compounding baseline
+function _rkGraph(r){
+  var d=_rkData; if(!d)return '';
+  var pts=[]; // {yr, yoc(realized), base(y compounded at y)}
+  for(var c=r.yr;c<=d.endYr;c++){
+    var rep=d.repByYr[c];
+    var yoc=(r.mktCap>0&&rep!=null)?rep/r.mktCap:null;
+    var base=(r.yEntry!=null)?(r.yEntry*Math.pow(1+r.yEntry,c-r.yr)):null;
+    pts.push({yr:c,yoc:yoc,base:base});
+  }
+  var W=560,H=190,pL=42,pR=14,pT=16,pB=26,iW=W-pL-pR,iH=H-pT-pB;
+  var vals=[]; pts.forEach(function(p){if(p.yoc!=null)vals.push(p.yoc);if(p.base!=null)vals.push(p.base);});
+  if(!vals.length)return '<div style="font-size:.72rem;color:var(--text3)">No data.</div>';
+  var lo=Math.min.apply(null,vals), hi=Math.max.apply(null,vals);
+  var useLog=_rkLog&&lo>0;
+  var ymap;
+  if(useLog){var la=Math.log(lo*0.9),lb=Math.log(hi*1.1);ymap=function(v){return pT+iH-((Math.log(v)-la)/(lb-la))*iH;};}
+  else{var sp=(hi-lo)||1;var lo2=Math.max(0,lo-sp*0.12),hi2=hi+sp*0.12;ymap=function(v){return pT+iH-((v-lo2)/(hi2-lo2))*iH;};}
+  var n=pts.length;
+  var xmap=function(i){return pL+(n<=1?iW/2:iW*i/(n-1));};
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">';
+  // gridlines + y ticks
+  var ticks=[]; if(useLog){var laa=Math.log(lo*0.9),lbb=Math.log(hi*1.1);for(var t=0;t<=3;t++)ticks.push(Math.exp(laa+(lbb-laa)*t/3));}
+  else{var sp3=(hi-lo)||1;var l3=Math.max(0,lo-sp3*0.12),h3=hi+sp3*0.12;for(var t3=0;t3<=3;t3++)ticks.push(l3+(h3-l3)*t3/3);}
+  ticks.forEach(function(v){var yy=ymap(v);s+='<line x1="'+pL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-pR)+'" y2="'+yy.toFixed(1)+'" stroke="#2a2a2a" stroke-width="1"/>';s+='<text x="'+(pL-5)+'" y="'+(yy+3).toFixed(1)+'" fill="#aaa" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+(v*100).toFixed(1)+'%</text>';});
+  pts.forEach(function(p,i){s+='<text x="'+xmap(i).toFixed(1)+'" y="'+(H-10)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">\u0027'+String(p.yr).slice(-2)+'</text>';});
+  // baseline (base compounding) — muted dashed
+  var bp='',started=false;
+  pts.forEach(function(p,i){if(p.base==null){started=false;return;}bp+=(started?'L':'M')+xmap(i).toFixed(1)+','+ymap(p.base).toFixed(1)+' ';started=true;});
+  if(bp)s+='<path d="'+bp+'" fill="none" stroke="#888" stroke-width="1.8" stroke-dasharray="5 4"/>';
+  // realized yield-on-cost — gold solid
+  var rp='';started=false;
+  pts.forEach(function(p,i){if(p.yoc==null){started=false;return;}rp+=(started?'L':'M')+xmap(i).toFixed(1)+','+ymap(p.yoc).toFixed(1)+' ';started=true;});
+  if(rp)s+='<path d="'+rp+'" fill="none" stroke="var(--accent2)" stroke-width="2.6"/>';
+  pts.forEach(function(p,i){if(p.yoc!=null)s+='<circle cx="'+xmap(i).toFixed(1)+'" cy="'+ymap(p.yoc).toFixed(1)+'" r="3" fill="var(--accent2)"/>';});
+  s+='</svg>';
+  var leg='<div style="display:flex;gap:16px;align-items:center;margin-bottom:6px;font-size:.7rem">'
+    +'<span style="display:flex;align-items:center;gap:5px;color:var(--text2)"><span style="width:16px;border-top:2.6px solid var(--accent2);display:inline-block"></span>realized yield-on-cost</span>'
+    +'<span style="display:flex;align-items:center;gap:5px;color:var(--text3)"><span style="width:16px;border-top:1.8px dashed #888;display:inline-block"></span>base compounding (y at y)</span>'
+    +'<span onclick="_rkToggleLog()" style="margin-left:auto;cursor:pointer;font-family:\'JetBrains Mono\',monospace;font-size:.66rem;color:'+(_rkLog?'var(--accent2)':'var(--text3)')+'">log '+(_rkLog?'on':'off')+'</span></div>';
+  return leg+s;
+}
+
+function renderLongRun(){
+  var card=document.getElementById('longRunCard');
+  if(!card)return;
+  var allKeys=getSortedYearKeys();
+  try{ renderHistExplorer(allKeys); }catch(e){console.warn('Hist explorer error:',e);} // index228: explorer renders on >=2 yrs, independent of the >=3 long-run TABLE gate below
+  try{ renderRealizedK(allKeys); }catch(e){console.warn('Realized-k (Item 9) error:',e);} // Item 9 / v4.20.0: Historical k panel, same >=2yr gate
+  if(allKeys.length<3){card.style.display='none';syncHistoricalCard();return;}
+  card.style.display='block';syncHistoricalCard();
+
+  var years=_histEnrich(allKeys);
 
   // Determine which yield variant is the "headline" for this company
   // Logic: if R&D is significant → Best Guess; if amort spread is big → Add-Back; else Full D&A
@@ -5060,137 +5732,9 @@ function renderLongRun(){
     headlineKey='yieldFullDA';headlineLabel='Full D&A Yield';headlineColor='#3498db';
   }
 
-// Build the chart
-  // index190: Historical chart 2 simplified to the three series Lou asked for -- Best Guess Yield + REP Margin
-  // (left %) and Revenue (right $). Real ROIC, the revenue/profit background bars, and the dashed reference
-  // yields were dropped: ROIC lives in chart 1 above, and the Full-D&A / All-Amort variants live in the data
-  // table below. The headline-yield auto-selection above is kept intact (the data table still uses it); this
-  // chart always plots Best Guess.
-  var n=years.length;
-  var cW=740,cH=280,pL=62,pR=62,pT=32,pB=42;
-  var plotW=cW-pL-pR,plotH=cH-pT-pB;
-  var xP=cc8MakeXP(years,function(y){return y.endDate;},pL,plotW);
-
-  var yKey='yieldBestGuess', yLabel='Best Guess Yield', yColor='#d4a025';
-  var marginColor='#1abc9c', revColor='#2ecc71';
-
-  var hasRev=years.some(function(y){return y.revenue&&y.revenue>0;});
-  var yieldVals=years.map(function(y){return y[yKey];});
-  var marginVals=years.map(function(y){return y.repMargin||0;});
-  var hasMarginData=hasRev&&years.some(function(y){return y.repMargin!==null;});
-
-  // Left axis: percentages (Best Guess yield + REP margin)
-  var allPctVals=yieldVals.slice();
-  if(hasMarginData) allPctVals=allPctVals.concat(marginVals);
-  var pctMin=Math.min.apply(null,allPctVals), pctMax=Math.max.apply(null,allPctVals);
-  var pctPad=(pctMax-pctMin)*0.15||0.02;
-  pctMin=Math.max(pctMin-pctPad,-0.1); pctMax=pctMax+pctPad;
-  var pctRange=pctMax-pctMin; if(pctRange<0.01)pctRange=0.1;
-  function yPct(val){return pT+plotH-((val-pctMin)/pctRange*plotH);}
-
-  // Right axis: revenue ($M), drawn as a line
-  var revVals=years.map(function(y){return y.revenue||0;});
-  var revMax=Math.max.apply(null,revVals)*1.15; if(revMax<1)revMax=1;
-  function yRev(val){return pT+plotH-(val/revMax*plotH);}
-
+var hasRev=years.some(function(y){return y.revenue&&y.revenue>0;}); // index228: chart retired; kept for the table
   var html='';
-
-  // Summary pills
-  var firstY=years[0],lastY=years[years.length-1];
-  html+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center">';
-  html+='<div style="font-size:.78rem;color:var(--text3)">'+n+' years: '+firstY.label+' \u2192 '+lastY.label+'</div>';
-  html+='<div style="flex:1"></div>';
-  html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:rgba(212,160,37,.12);color:'+yColor+'">'+yLabel+': '+pct(firstY[yKey],1)+' \u2192 '+pct(lastY[yKey],1)+'</div>';
-  if(hasMarginData){
-    var _mFirst=firstY.revenue>0?firstY.realProfit/firstY.revenue:null;
-    var _mLast=lastY.revenue>0?lastY.realProfit/lastY.revenue:null;
-    if(_mFirst!==null&&_mLast!==null){
-      var _mDir=_mLast>=_mFirst?'rgba(46,204,113,.12)':'rgba(231,76,60,.12)';
-      var _mTxt=_mLast>=_mFirst?'#2ecc71':'#e74c3c';
-      html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:'+_mDir+';color:'+_mTxt+'">REP Margin: '+pct(_mFirst,1)+' \u2192 '+pct(_mLast,1)+'</div>';
-    }
-  }
-  if(hasRev){
-    html+='<div style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:rgba(46,204,113,.12);color:'+revColor+'">Revenue: '+fmtM(firstY.revenue||0)+' \u2192 '+fmtM(lastY.revenue||0)+'</div>';
-  }
-  html+='</div>';
-
-  // SVG
-  html+='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
-  // Grid + axis labels
-  for(var g=0;g<=4;g++){
-    var gy=pT+(plotH/4)*g;
-    html+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
-    var pv=pctMax-((pctMax-pctMin)/4)*g;
-    html+='<text x="'+(pL-8)+'" y="'+(gy+4)+'" fill="#bbb" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+(pv*100).toFixed(1)+'%</text>';
-    if(hasRev){
-      var rv=revMax-((revMax)/4)*g;
-      html+='<text x="'+(cW-pR+8)+'" y="'+(gy+4)+'" fill="#bbb" font-size="9" text-anchor="start" font-family="JetBrains Mono">'+fmtM(rv)+'</text>';
-    }
-  }
-  // X labels (CC8 option c: stagger a colliding label)
-  var _lrLastX=-1e9;
-  years.forEach(function(y,i){
-    var lx=xP(i), ly=(lx-_lrLastX<42)?(cH-8-12):(cH-8);
-    if(lx-_lrLastX>=42)_lrLastX=lx;
-    html+='<text x="'+lx+'" y="'+ly+'" fill="#bbb" font-size="10" text-anchor="middle" font-family="DM Sans">'+y.label+'</text>';
-  });
-  // Axis titles
-  html+='<text x="12" y="'+(pT+plotH/2)+'" fill="'+yColor+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(-90,12,'+(pT+plotH/2)+')">'+(hasMarginData?'Yield / Margin (%)':'Yield (%)')+'</text>';
-  if(hasRev) html+='<text x="'+(cW-8)+'" y="'+(pT+plotH/2)+'" fill="'+revColor+'" font-size="9" font-weight="600" text-anchor="middle" font-family="DM Sans" transform="rotate(90,'+(cW-8)+','+(pT+plotH/2)+')">Revenue ($M)</text>';
-
-  // Revenue line (right axis)
-  if(hasRev&&n>1){
-    var revPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yRev(y.revenue||0).toFixed(1);}).join(' ');
-    html+='<path d="'+revPath+'" fill="none" stroke="'+revColor+'" stroke-width="2" stroke-linecap="round"/>';
-  }
-  if(hasRev) years.forEach(function(y,i){
-    html+='<circle cx="'+xP(i)+'" cy="'+yRev(y.revenue||0)+'" r="3" fill="'+revColor+'" stroke="#0f0f0f" stroke-width="1.5"/>';
-  });
-
-  // REP Margin line (dashed, left axis)
-  if(hasMarginData){
-    if(n>1){
-      var mPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y.repMargin||0).toFixed(1);}).join(' ');
-      html+='<path d="'+mPath+'" fill="none" stroke="'+marginColor+'" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="6,3"/>';
-    }
-    years.forEach(function(y,i){
-      if(y.repMargin===null)return;
-      html+='<circle cx="'+xP(i)+'" cy="'+yPct(y.repMargin)+'" r="3.5" fill="'+marginColor+'" stroke="#0f0f0f" stroke-width="1.5"/>';
-      html+='<text x="'+xP(i)+'" y="'+(yPct(y.repMargin)-10)+'" fill="'+marginColor+'" font-size="8.5" text-anchor="middle" font-family="JetBrains Mono" font-weight="600">'+pct(y.repMargin,1)+'</text>';
-    });
-  }
-
-  // Best Guess Yield line (bold, on top, left axis) with soft area fill
-  if(n>1){
-    var hArea='M'+xP(0)+','+yPct(years[0][yKey]);
-    years.forEach(function(y,i){if(i>0)hArea+=' L'+xP(i)+','+yPct(y[yKey]);});
-    hArea+=' L'+xP(n-1)+','+(pT+plotH)+' L'+xP(0)+','+(pT+plotH)+' Z';
-    html+='<path d="'+hArea+'" fill="'+yColor+'" opacity=".06"/>';
-    var hPath=years.map(function(y,i){return (i===0?'M':'L')+xP(i).toFixed(1)+','+yPct(y[yKey]).toFixed(1);}).join(' ');
-    html+='<path d="'+hPath+'" fill="none" stroke="'+yColor+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>';
-  }
-  years.forEach(function(y,i){
-    html+='<circle cx="'+xP(i)+'" cy="'+yPct(y[yKey])+'" r="4.5" fill="'+yColor+'" stroke="#0f0f0f" stroke-width="2"/>';
-    html+='<text x="'+xP(i)+'" y="'+(yPct(y[yKey])-11)+'" fill="'+yColor+'" font-size="9.5" text-anchor="middle" font-family="JetBrains Mono" font-weight="700">'+pct(y[yKey],1)+'</text>';
-  });
-  html+='</svg>';
-
-  // Legend
-  html+='<div class="chart-legend" style="flex-wrap:wrap;gap:8px 16px">';
-  html+='<span><span class="dot" style="background:'+yColor+'"></span> '+yLabel+'</span>';
-  if(hasMarginData) html+='<span><span class="dot" style="background:'+marginColor+';border:1px dashed '+marginColor+'"></span> REP Margin (REP/Rev)</span>';
-  if(hasRev) html+='<span><span class="dot" style="background:'+revColor+'"></span> Revenue (right axis)</span>';
-  html+='</div>';
-
-  // Caption (Best Guess split)
-  html+='<div style="font-size:.72rem;color:var(--text3);margin-top:10px;padding:8px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">';
-  html+='<strong style="color:var(--accent)">Best Guess yield</strong> = All-Amort REP plus the after-tax growth-R\u0026D addback (split: '+rdMaintPct+'% maintenance / '+(100-rdMaintPct)+'% growth), over per-year enterprise value. Real ROIC is in the chart above; the Full D\u0026A and All-Amort yield variants are in the data table below.';
-  html+='</div>';
-
-  // index192: internal collapse removed; the outer #longRunCard wrapper handles collapse now. The split
-  // marker sends the chart + caption above into #histChart2 and this table into #histLongRunTable.
-  html+='<!--HISTSPLIT-->';
+    html+='<!--HISTSPLIT-->';
   var _lrW=parseInt(histLongRunWindow,10);
   var _lrTbl=(histLongRunWindow!=='all'&&isFinite(_lrW)&&_lrW<years.length)?years.slice(years.length-_lrW):years;
   html+=_histWindowControl(years.length,histLongRunWindow,'setHistLongRunWindow');
@@ -5219,8 +5763,7 @@ function renderLongRun(){
   html+='</table></div>';
 
   var _lp=html.split('<!--HISTSPLIT-->');
-  document.getElementById('histChart2').innerHTML=_lp[0]||'';
-  document.getElementById('histLongRunTable').innerHTML=_lp[1]||'';
+  document.getElementById('histLongRunTable').innerHTML=_lp[1]||''; // index228: #histChart2 retired -> Historical explorer
 }
 
 // index72: relocated content from the dissolved PCBA card. Computes Profit-vs-Capital-Base CAGRs and the growth-intensity ratio (CapEx-only and R&D-inclusive variants).
@@ -5364,14 +5907,12 @@ function renderRoiicAnalysis(){
 
   var chartArea=document.getElementById('roiicChartArea');
   try{
-    if(roiicActiveTab==='roiic'){
-      chartArea.innerHTML=renderRoiicRollingChart(roiicData,{show1y:roiicShow1y});
+    if(roiicActiveTab==='ratios'){
+      // Tab 2 -- Ratios & ROIIC (static): margin x turnover = ROIC decomposition + Rolling ROIIC strip.
+      chartArea.innerHTML=_caRatiosHtml(roiicData);
     }else{
-      // index188: chart-local "recent N years" view filter. Slice to the window, then renderRoiicDualChart
-      // rebases 100 to the first positive value inside it. Full history stays in the table and the stats.
-      var _tw=parseInt(roiicTrendWindow,10);
-      var _trend=(roiicTrendWindow!=='all'&&isFinite(_tw)&&_tw<roiicData.length)?roiicData.slice(roiicData.length-_tw):roiicData;
-      chartArea.innerHTML=_roiicWindowControl(roiicData.length)+renderRoiicDualChart(_trend)+_icNote;
+      // Tab 1 -- Co-Movement (interactive levels explorer). Builds its own controls + chart; redraws on toggle.
+      _caInit(roiicData, _icNote);
     }
   }catch(e){
     chartArea.innerHTML='<div style="color:var(--red);font-size:.8rem;padding:10px">Chart error: '+e.message+'</div>';
@@ -5416,219 +5957,180 @@ function renderRoiicAnalysis(){
   try{document.getElementById('roiicRdCapEff').innerHTML=renderRdCapEff(years);}catch(e){document.getElementById('roiicRdCapEff').innerHTML='';console.warn('R&D CapEff error:',e);}
 }
 
-function renderRoiicDualChart(data){
-  // index187: REP, IC and NTA indexed to 100 on a LOG axis (layered on index186's linear indexing).
-  // On a log axis equal GROWTH RATES render as equal SLOPES, so same-rate series are parallel lines and any
-  // divergence in slope is a real divergence in growth -- the cleanest read of "how do the three move together."
-  // Each series is still rebased to 100 at its first finite strictly-positive value (typically the start year);
-  // a series with no positive value (VRSN's floored-$0 IC, a negative tangible base) is omitted with a CC11 note.
-  // A log axis can't show <= 0, so a point that turns negative AFTER a positive base is dropped and the line is
-  // gapped there (footnoted) -- unlike the linear view (index186), where it dipped below the line. Absolute
-  // levels live in the Capital Base bars and the per-year table; this chart specializes in the RELATIONSHIP.
-  var cW=700,cH=250,pL=50,pR=20,pT=28,pB=35;
-  var plotW=cW-pL-pR,plotH=cH-pT-pB;
-  var n=data.length;
-  function indexSeries(key){
-    var baseIdx=-1,base=null;
-    for(var i=0;i<n;i++){
-      var v=data[i][key];
-      if(v!=null&&isFinite(v)&&v>0){baseIdx=i;base=v;break;}
-    }
-    if(baseIdx<0)return {ok:false,pts:[],baseLabel:null};
-    var pts=[];
-    for(var j=0;j<n;j++){
-      var vv=data[j][key];
-      if(vv!=null&&isFinite(vv))pts.push({i:j,v:vv/base*100});
-    }
-    return {ok:true,pts:pts,baseLabel:data[baseIdx].label};
+/* ===== index229 / Item 2A: Capital Allocation -> two tabs (Co-Movement + Ratios & ROIIC).
+   Faithful port of REPA_CapAlloc_TwoTab_Mock.html. REPLACES the retired REP-IC-NTA indexed chart
+   (was renderRoiicDualChart) and the RETIRED jagged Rolling-ROIIC chart (was renderRoiicRollingChart).
+   PRESENTATION ONLY -- no REP/IC/NTA/ROIC/ROIIC numbers change:
+     - Co-Movement plots the SAME per-year REP/Revenue/IC/NTA actuals already carried in roiicData.
+     - Decomposition (margin x turnover = ROIC) is rep/rev, rev/ic, rep/ic on period-end IC; rep/ic
+       equals computeMetrics.realROIC by construction.
+     - The Rolling ROIIC strip surfaces roiicData[last].roiic{1,3,5} -- the SAME windowed dREP/dIC already
+       computed for the per-year detail table. In Full-D&A (this card's basis, and the FTR default) those
+       are byte-identical to the r-anchor _fyRoiicW values (verified in node against AVGO: 1yr n/m, 3yr 0.5%, 5yr 3.4%).
+   Event markers reuse the Item 2C date-interpolation (_caXByDate), same mechanism as renderHistExplorer. ===== */
+var _caSel={rep:false,rev:true,ic:true,nta:false}; // mock default: lands on Revenue.IC (turnover view)
+var _caShowRead=true;
+var _caShowPts=false; // index230: toggle value labels ($B) at each plotted point
+var _caData=null;
+var _CA_PRESETS=[
+  {id:'rep_ic',keys:['rep','ic'],label:'REP \u00b7 IC'},
+  {id:'rev_ic',keys:['rev','ic'],label:'Revenue \u00b7 IC',star:true},
+  {id:'rep_rev',keys:['rep','rev'],label:'REP \u00b7 Revenue'},
+  {id:'rep_rev_ic',keys:['rep','rev','ic'],label:'REP \u00b7 Revenue \u00b7 IC'},
+  {id:'rep_ic_nta',keys:['rep','ic','nta'],label:'REP \u00b7 IC \u00b7 NTA'}
+];
+function _caMult(x){return x.toFixed(2)+'\u00d7';}
+
+// Tab 1 -- Co-Movement. Build _caData from roiicData (incl. Item 2C events), render controls + chart.
+function _caInit(roiicData, icNote){
+  var SER={
+    rep:{label:'REP',color:'var(--accent2)',axis:'R',data:roiicData.map(function(d){return d.rep;})},
+    rev:{label:'Revenue',color:'var(--blue)',axis:'L',data:roiicData.map(function(d){return (d.revenue!=null?d.revenue:null);})},
+    ic :{label:'Invested Capital',color:'var(--purple)',axis:'L',data:roiicData.map(function(d){return d.ic;})},
+    nta:{label:'NTA',color:'var(--green)',axis:'L',data:roiicData.map(function(d){return d.nta;})}
+  };
+  var YEARS=roiicData.map(function(d){return d.label;});
+  var DATES=roiicData.map(function(d){return d.endDate;});
+  var EVENTS=[];
+  try{
+    var allKeys=getSortedYearKeys();
+    var tk=((((yearStore[allKeys[allKeys.length-1]]||{}).formData)||{}).ticker||'').toUpperCase();
+    var po=getPortfolio(); var evs=(tk&&po&&po[tk]&&po[tk].events)?po[tk].events:null;
+    if(!evs){ for(var _i=0;_i<allKeys.length;_i++){ var _y=yearStore[allKeys[_i]]||{}; var _e=(_y.extra&&_y.extra.events)||(_y.formData&&_y.formData.events); if(_e){evs=_e;break;} } }
+    if(Array.isArray(evs)) EVENTS=evs.filter(function(e){return e&&e.date;}).map(function(e){return {date:e.date,label:e.label||''};});
+  }catch(e){}
+  _caData={YEARS:YEARS,DATES:DATES,T:DATES.map(function(d){return Date.parse(d);}),EVENTS:EVENTS,SER:SER,icNote:icNote||''};
+  _caBuild();
+}
+function _caBuild(){
+  var area=document.getElementById('roiicChartArea'); if(!area||!_caData)return; var SER=_caData.SER;
+  var presets=_CA_PRESETS.map(function(p){return '<button id="cap_'+p.id+'" onclick="_caSetPreset(\''+p.id+'\')">'+p.label+(p.star?' <span class="t">\u2605</span>':'')+'</button>';}).join('');
+  var checks=Object.keys(SER).map(function(k){return '<label class="ca-chk"><input type="checkbox" id="cac_'+k+'" '+(_caSel[k]?'checked':'')+' onchange="_caToggle(\''+k+'\')"><span class="ca-dot" style="background:'+SER[k].color+'"></span>'+SER[k].label+'</label>';}).join('');
+  var html='<div class="ca-intro">How profit, sales, and the capital base move together \u2014 in actuals. REP vs IC: is profit keeping pace with the capital base. Revenue vs IC: capital turnover (the gap = sales per dollar of capital). REP vs Revenue: does profit lag a sales ramp.</div>'
+    +'<div class="ca-lbl">View</div>'
+    +'<div class="ca-presets" id="caPresets">'+presets+'</div>'
+    +'<div class="ca-row"><div><div class="ca-lbl">Series</div><div class="ca-checks" id="caChecks">'+checks+'</div></div>'
+    +'<label class="ca-miniopt"><input type="checkbox" id="caShowRead"'+(_caShowRead?' checked':'')+' onchange="_caShowRead=this.checked;_caRender()"> ratio readout</label>'
+    +'<label class="ca-miniopt"><input type="checkbox" id="caShowPts"'+(_caShowPts?' checked':'')+' onchange="_caShowPts=this.checked;_caRender()"> point values ($B)</label></div>'
+    +'<div class="ca-note" id="caAxisNote"></div>'
+    +'<div class="ca-chartwrap"><svg id="caChart" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet"></svg></div>'
+    +'<div class="ca-ctxread" id="caCtxRead"></div>'
+    +(_caData.icNote||'');
+  area.innerHTML=html;
+  _caRender();
+}
+function _caSetPreset(id){var p=_CA_PRESETS.find(function(x){return x.id===id;});if(!p)return;Object.keys(_caSel).forEach(function(k){_caSel[k]=p.keys.indexOf(k)>=0;var cb=document.getElementById('cac_'+k);if(cb)cb.checked=_caSel[k];});_caRender();}
+function _caToggle(k){var cb=document.getElementById('cac_'+k);_caSel[k]=cb?cb.checked:_caSel[k];_caRender();}
+function _caMatchPreset(){var on=Object.keys(_caSel).filter(function(k){return _caSel[k];}).sort().join(',');var p=_CA_PRESETS.find(function(x){return x.keys.slice().sort().join(',')===on;});return p?p.id:null;}
+function _caRender(){
+  if(!_caData)return; var SER=_caData.SER;
+  var cur=_caMatchPreset();
+  _CA_PRESETS.forEach(function(p){var b=document.getElementById('cap_'+p.id);if(b)b.classList.toggle('active',p.id===cur);});
+  var keys=Object.keys(SER).filter(function(k){return _caSel[k];});
+  var hasL=keys.some(function(k){return SER[k].axis==='L';}),hasR=keys.some(function(k){return SER[k].axis==='R';});
+  var an='';
+  if(hasL&&hasR)an='Left axis $B: '+keys.filter(function(k){return SER[k].axis==='L';}).map(function(k){return SER[k].label;}).join(', ')+'. Right axis $B (zero-crossing): REP.';
+  else if(hasL)an='Shared left axis $B \u2014 the gap between the lines is the relationship (Revenue vs IC narrowing = turnover rising).';
+  else if(hasR)an='Right axis $B (zero-crossing): REP only.';
+  else an='Tick at least one series.';
+  var noteEl=document.getElementById('caAxisNote'); if(noteEl)noteEl.innerHTML=an;
+  _caDraw(keys,hasL,hasR);
+  _caDrawCtx(keys);
+}
+function _caXFns(hasL,hasR){
+  var W=680,H=300,padL=hasL?52:18,padR=hasR?54:18,padT=20,padB=40;
+  var innerW=W-padL-padR,innerH=H-padT-padB,n=_caData.YEARS.length;
+  return {W:W,H:H,padL:padL,padR:padR,padT:padT,padB:padB,innerW:innerW,innerH:innerH,x:function(i){return padL+(n<=1?innerW/2:innerW*i/(n-1));}};
+}
+function _caXByDate(g,te){var T=_caData.T;if(!T.length)return g.x(0);if(te<=T[0])return g.x(0);if(te>=T[T.length-1])return g.x(T.length-1);
+  for(var i=1;i<T.length;i++){if(te<=T[i]){var f=(te-T[i-1])/(T[i]-T[i-1]);return g.x(i-1)+f*(g.x(i)-g.x(i-1));}}return g.x(T.length-1);}
+function _caDraw(keys,hasL,hasR){
+  var SER=_caData.SER,YEARS=_caData.YEARS,EVENTS=_caData.EVENTS;
+  var g=_caXFns(hasL,hasR),W=g.W,H=g.H,padL=g.padL,padR=g.padR,padT=g.padT,innerH=g.innerH,x=g.x;
+  var b=function(v){return v/1000;};
+  var lMax=0;keys.filter(function(k){return SER[k].axis==='L';}).forEach(function(k){SER[k].data.forEach(function(v){if(v!=null&&isFinite(v))lMax=Math.max(lMax,v);});});
+  lMax=b(lMax)*1.12||1;
+  var yL=function(v){return padT+innerH-(b(v)/lMax)*innerH;};
+  var rLo=0,rHi=0;
+  if(hasR){var dd=SER.rep.data.filter(function(v){return v!=null&&isFinite(v);}).map(b);rLo=Math.min.apply(null,[0].concat(dd));rHi=Math.max.apply(null,[0].concat(dd));var sp=(rHi-rLo)||1;rLo-=sp*0.12;rHi+=sp*0.12;}
+  var yR=function(v){return padT+innerH-((b(v)-rLo)/(rHi-rLo))*innerH;};
+  var s='';var ticks=4;
+  if(hasL){
+    for(var t=0;t<=ticks;t++){var v=lMax*t/ticks,yy=padT+innerH-(v/lMax)*innerH;
+      s+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="#2a2a2a" stroke-width="1"/>';
+      s+='<text x="'+(padL-6)+'" y="'+(yy+3)+'" fill="#aaa" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+v.toFixed(0)+'</text>';}
+    s+='<text x="'+(padL-6)+'" y="'+(padT-7)+'" fill="#999" font-size="8.5" text-anchor="end">$B</text>';
   }
-  var series=[
-    {key:'rep',color:'#3498db',dash:'',  w:2.6,r:4,  s:indexSeries('rep')},
-    {key:'ic', color:'#e67e22',dash:'6 3',w:2.5,r:4,  s:indexSeries('ic')},
-    {key:'nta',color:'#16a085',dash:'2 3',w:2,  r:3.5,s:indexSeries('nta')}
-  ];
-  var drawn=series.filter(function(o){return o.s.ok&&o.s.pts.length>0;});
-  if(drawn.length===0)return '<div style="color:var(--text3);font-size:.85rem;padding:20px">No positive values to index.</div>';
-  // Log y-range over POSITIVE indexed points only (a log axis can't show <= 0); always include the 100 origin.
-  var posV=[100];
-  drawn.forEach(function(o){o.s.pts.forEach(function(p){if(p.v>0)posV.push(p.v);});});
-  var vMin=Math.min.apply(null,posV),vMax=Math.max.apply(null,posV);
-  var logMin=Math.log10(vMin),logMax=Math.log10(vMax);
-  var lpad=Math.max((logMax-logMin)*0.12,0.04);
-  logMin-=lpad;logMax+=lpad;
-  var logRange=logMax-logMin;if(logRange===0)logRange=1;
-  var xDates=data.map(function(d){return d.endDate?new Date(d.endDate).getTime():NaN});
-  var finiteDates=xDates.filter(function(t){return isFinite(t)});
-  var dMin=finiteDates.length?Math.min.apply(null,finiteDates):NaN;
-  var dMax=finiteDates.length?Math.max.apply(null,finiteDates):NaN;
-  var dSpan=dMax-dMin;
-  function xP(i){
-    if(n<=1)return pL+plotW/2;
-    if(!(dSpan>0)||!isFinite(xDates[i]))return pL+(i/(n-1))*plotW;
-    return pL+((xDates[i]-dMin)/dSpan)*plotW;
+  if(hasR){
+    for(var t2=0;t2<=ticks;t2++){var vr=rLo+(rHi-rLo)*t2/ticks,yyr=padT+innerH-((vr-rLo)/(rHi-rLo))*innerH;
+      s+='<text x="'+(W-padR+6)+'" y="'+(yyr+3)+'" fill="#aaa" font-size="9" text-anchor="start" font-family="JetBrains Mono">'+vr.toFixed(0)+'</text>';}
+    s+='<text x="'+(W-padR+6)+'" y="'+(padT-7)+'" fill="var(--accent2)" font-size="8.5" text-anchor="start">REP $B</text>';
+    if(rLo<0&&rHi>0){var z=padT+innerH-((0-rLo)/(rHi-rLo))*innerH;
+      s+='<line x1="'+padL+'" y1="'+z+'" x2="'+(W-padR)+'" y2="'+z+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
   }
-  function yP(val){return pT+plotH-((Math.log10(val)-logMin)/logRange*plotH)}
-  var svg='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
-  var axMidY=pT+plotH/2;
-  svg+='<text x="13" y="'+axMidY+'" fill="#999" font-size="9" text-anchor="middle" transform="rotate(-90,13,'+axMidY+')" font-family="DM Sans">Index (log, start = 100)</text>';
-  // 1-2-5 log gridlines within the padded range; the 100 origin line is emphasized.
-  var lo=Math.pow(10,logMin),hi=Math.pow(10,logMax);
-  var ticks=[],eLo=Math.floor(Math.log10(lo)),eHi=Math.ceil(Math.log10(hi));
-  for(var e=eLo;e<=eHi;e++){
-    [1,2,5].forEach(function(m){
-      var t=m*Math.pow(10,e);
-      if(t>=lo*0.999&&t<=hi*1.001)ticks.push(t);
-    });
-  }
-  var baseLabels=drawn.map(function(o){return o.s.baseLabel;});
-  var allSameBase=baseLabels.every(function(l){return l===baseLabels[0];});
-  ticks.forEach(function(t){
-    var gy=yP(t),is100=Math.abs(t-100)<1e-6;
-    svg+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="'+(is100?'#666':'#333')+'" stroke-width="'+(is100?'1':'0.5')+'"'+(is100?' stroke-dasharray="4 4"':'')+'/>';
-    svg+='<text x="'+(pL-6)+'" y="'+(gy+4)+'" fill="'+(is100?'#aaa':'#999')+'" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+t.toFixed(0)+'</text>';
-    if(is100)svg+='<text x="'+(cW-pR)+'" y="'+(gy-4)+'" fill="#888" font-size="8.5" text-anchor="end" font-family="JetBrains Mono">'+(allSameBase?('100 = '+baseLabels[0]):'100 = first +ve yr')+'</text>';
-  });
-  // Lines (gapped at any <= 0 point, which a log axis can't show) + markers.
-  var droppedAny=false;
-  if(n>1){
-    drawn.forEach(function(o){
-      var d='',pen=false;
-      o.s.pts.forEach(function(p){
-        if(p.v>0){ d+=(pen?'L':'M')+xP(p.i).toFixed(1)+','+yP(p.v).toFixed(1)+' '; pen=true; }
-        else { pen=false; droppedAny=true; }
-      });
-      if(d)svg+='<path d="'+d.trim()+'" fill="none" stroke="'+o.color+'" stroke-width="'+o.w+'"'+(o.dash?' stroke-dasharray="'+o.dash+'"':'')+' opacity=".9"/>';
-    });
-  }
-  drawn.forEach(function(o){
-    o.s.pts.forEach(function(p){
-      if(p.v>0)svg+='<circle cx="'+xP(p.i)+'" cy="'+yP(p.v)+'" r="'+o.r+'" fill="'+o.color+'" stroke="#0f0f0f" stroke-width="1.5"/>';
-    });
-  });
-  var lblBaseY=pT+plotH+18,lblRow2Y=pT+plotH+30,lblMinGap=42,lblLastBaseX=-1e9;
-  data.forEach(function(d,i){
-    var lx=xP(i),ly=lblBaseY;
-    if(lx-lblLastBaseX<lblMinGap){ly=lblRow2Y;}else{lblLastBaseX=lx;}
-    svg+='<text x="'+lx+'" y="'+ly+'" fill="#999" font-size="10" text-anchor="middle" font-family="DM Sans">'+d.label+'</text>';
-  });
-  var lgNames={rep:'REP',ic:'IC',nta:'NTA'};
-  var lgx0=pL+2,lgy=pT-13,lgStep=64;
-  drawn.forEach(function(o,j){
-    var lx=lgx0+j*lgStep;
-    svg+='<line x1="'+lx+'" y1="'+lgy+'" x2="'+(lx+16)+'" y2="'+lgy+'" stroke="'+o.color+'" stroke-width="'+o.w+'"'+(o.dash?' stroke-dasharray="'+o.dash+'"':'')+'/>';
-    svg+='<text x="'+(lx+20)+'" y="'+(lgy+4)+'" fill="#999" font-size="9" font-family="DM Sans">'+lgNames[o.key]+'</text>';
-  });
-  svg+='</svg>';
-  var omitted=series.filter(function(o){return !o.s.ok;});
-  var notes=[];
-  if(omitted.length>0){
-    notes.push(omitted.map(function(o){return '<strong>'+lgNames[o.key]+'</strong> not indexed';}).join('; ')+' \u2014 no positive value to set a 100 base (negative or zero throughout)');
-  }
-  if(droppedAny){
-    notes.push('line gaps mark periods where a series fell to \u2264 0 (off a log scale)');
-  }
-  var note='';
-  if(notes.length>0){
-    note='<div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin-top:6px;padding:7px 10px;background:var(--card2);border-left:3px solid var(--text3);border-radius:0 6px 6px 0">'+notes.join('. ')+'. Absolute figures are in the Capital Base block above and the per-year table below.</div>';
-  }
-  return svg+note;
+  EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_caXByDate(g,te);
+    s+='<line x1="'+ex.toFixed(1)+'" y1="'+padT+'" x2="'+ex.toFixed(1)+'" y2="'+(padT+innerH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
+    s+='<text x="'+ex.toFixed(1)+'" y="'+(padT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';});
+  YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
+  function line(k){var sr=SER[k],yf=sr.axis==='L'?yL:yR;var p='',started=false;
+    sr.data.forEach(function(v,i){ if(v==null||!isFinite(v)){started=false;return;} p+=(started?'L':'M')+x(i).toFixed(1)+','+yf(v).toFixed(1)+' '; started=true; });
+    var out=p?'<path d="'+p+'" fill="none" stroke="'+sr.color+'" stroke-width="2.4"/>':'';
+    sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; out+='<circle cx="'+x(i).toFixed(1)+'" cy="'+yf(v).toFixed(1)+'" r="3.1" fill="'+sr.color+'"/>';});
+    if(_caShowPts){var dy=(sr.axis==='R')?13:-7; sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; out+='<text x="'+x(i).toFixed(1)+'" y="'+(yf(v)+dy).toFixed(1)+'" fill="'+sr.color+'" font-size="8" text-anchor="middle" font-family="JetBrains Mono">'+(v/1000).toFixed(1)+'</text>';});}
+    return out;}
+  keys.filter(function(k){return SER[k].axis==='L';}).forEach(function(k){s+=line(k);});
+  keys.filter(function(k){return SER[k].axis==='R';}).forEach(function(k){s+=line(k);});
+  var el=document.getElementById('caChart'); if(el)el.innerHTML=s;
+}
+function _caDrawCtx(keys){
+  var el=document.getElementById('caCtxRead'); if(!el)return;
+  if(!_caShowRead){el.style.display='none';return;}
+  var SER=_caData.SER,i=_caData.YEARS.length-1;
+  var rep=SER.rep.data[i],rev=SER.rev.data[i],ic=SER.ic.data[i],nta=SER.nta.data[i];
+  var lab=_caData.YEARS[i];
+  function on(k){return keys.indexOf(k)>=0;}
+  var okRep=(rep!=null&&isFinite(rep)),okRev=(rev!=null&&rev>0),okIC=(ic!=null&&ic>0),okNTA=(nta!=null&&nta>0);
+  var html='';
+  if(on('rep')&&on('rev')&&on('ic')&&okRep&&okRev&&okIC)html='Latest ('+lab+'): margin <b>'+pct(rep/rev,1)+'</b> \u00d7 turnover <b>'+_caMult(rev/ic)+'</b> = Real ROIC <b>'+pct(rep/ic,1)+'</b>';
+  else if(on('rev')&&on('ic')&&okRev&&okIC)html='Capital turnover ('+lab+'): <b>'+_caMult(rev/ic)+'</b> \u2014 '+(rev/ic).toFixed(2)+' of revenue per $1 of invested capital.';
+  else if(on('rep')&&on('ic')&&okRep&&okIC)html='Real ROIC ('+lab+'): <b>'+pct(rep/ic,1)+'</b> \u2014 REP per $1 of invested capital.';
+  else if(on('rep')&&on('rev')&&okRep&&okRev)html='Real margin ('+lab+'): <b>'+pct(rep/rev,1)+'</b> \u2014 REP per $1 of revenue.';
+  else if(on('rep')&&on('nta')&&okRep&&okNTA)html='Return on NTA ('+lab+'): <b>'+pct(rep/nta,1)+'</b> \u2014 REP per $1 of net tangible assets.';
+  else {el.style.display='none';return;}
+  el.style.display='block'; el.innerHTML=html;
 }
 
-function renderRoiicRollingChart(data, opts){
-  opts=opts||{};
-  // index189: "trend-first" rolling ROIIC. The 1-year window is a ratio of single-year differences
-  // (dREP/dIC) and is pathologically noisy -- tiny or sign-flipping dIC blows it up, and a couple of
-  // outliers used to stretch the shared auto-scale and crush the 3yr/5yr trend lines into a flat band
-  // (the "scatter cloud", e.g. AVGO). Fix: the y-axis now tracks ONLY the 3- and 5-year windows (the actual
-  // smoothed trend); the 1-year line is off by default and available via a toggle. When shown, 1-year points
-  // outside the trend band are clipped from the line and marked as off-scale triangles (value labelled) rather
-  // than rescaling the chart. If a history is too short for any 3/5yr line, 1-year is shown as a fallback.
-  var cW=700,cH=250,pL=50,pR=20,pT=28,pB=35;
-  var plotW=cW-pL-pR,plotH=cH-pT-pB;
-  var n=data.length;
-  var colors={1:'#2ecc71',3:'#9b59b6',5:'#e74c3c'};
-  var opacities={1:'.55',3:'.9',5:'.9'};
-  function vals(w){var a=[];data.forEach(function(d){var v=d['roiic'+w];if(v!=null&&isFinite(v))a.push(v);});return a;}
-  var have={1:vals(1),3:vals(3),5:vals(5)};
-  var trendDrawable=(have[3].length>=2)||(have[5].length>=2);
-  var show1y=(opts.show1y===true)||!trendDrawable;     // force 1yr only when no trend line is possible
-  var scaleSrc=trendDrawable?have[3].concat(have[5]):have[1].concat(have[3]).concat(have[5]);
-  if(scaleSrc.length===0)return '<div style="color:var(--text3);font-size:.85rem;padding:20px">Not enough data for rolling ROIIC. Need at least 2 years.</div>';
-  var ext=[Math.min.apply(null,scaleSrc),Math.max.apply(null,scaleSrc)];
-  var pad=Math.max(Math.abs(ext[1]-ext[0])*.15,.05);
-  var yMin=Math.min(ext[0]-pad,-0.05);
-  var yMax=Math.max(ext[1]+pad,0.05);
-  var yRange=yMax-yMin;if(yRange===0)yRange=1;
-  var xDates=data.map(function(d){return d.endDate?new Date(d.endDate).getTime():NaN});
-  var finiteDates=xDates.filter(function(t){return isFinite(t)});
-  var dMin=finiteDates.length?Math.min.apply(null,finiteDates):NaN;
-  var dMax=finiteDates.length?Math.max.apply(null,finiteDates):NaN;
-  var dSpan=dMax-dMin;
-  function xP(i){
-    if(n<=1)return pL+plotW/2;
-    if(!(dSpan>0)||!isFinite(xDates[i]))return pL+(i/(n-1))*plotW;
-    return pL+((xDates[i]-dMin)/dSpan)*plotW;
-  }
-  function yP(val){return pT+plotH-((val-yMin)/yRange*plotH)}
-  var svg='<svg viewBox="0 0 '+cW+' '+cH+'" style="width:100%;height:auto;overflow:visible">';
-  for(var g=0;g<=5;g++){
-    var gy=pT+(plotH/5)*g;
-    var gv=yMax-((yMax-yMin)/5)*g;
-    var sw=Math.abs(gv)<0.005?'1.5':'0.5';
-    svg+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(cW-pR)+'" y2="'+gy+'" stroke="#333" stroke-width="'+sw+'"/>';
-    svg+='<text x="'+(pL-6)+'" y="'+(gy+4)+'" fill="#999" font-size="9" text-anchor="end" font-family="JetBrains Mono">'+(gv*100).toFixed(0)+'%</text>';
-  }
-  var drawWindows=show1y?[1,3,5]:[3,5];
-  var anyOff=false;
-  drawWindows.forEach(function(w){
-    var pts=[];
-    data.forEach(function(d,i){var v=d['roiic'+w];if(v!=null&&isFinite(v))pts.push({i:i,v:v});});
-    if(pts.length<2)return;
-    var dPath='',pen=false;
-    pts.forEach(function(p){
-      var inBand=(p.v>=yMin&&p.v<=yMax);
-      if(inBand){dPath+=(pen?'L':'M')+xP(p.i).toFixed(1)+','+yP(p.v).toFixed(1)+' ';pen=true;}
-      else{pen=false;}
-    });
-    if(dPath)svg+='<path d="'+dPath.trim()+'" fill="none" stroke="'+colors[w]+'" stroke-width="'+(w===1?'1.5':'2.5')+'" opacity="'+opacities[w]+'"/>';
-    pts.forEach(function(p){
-      if(p.v>=yMin&&p.v<=yMax){
-        svg+='<circle cx="'+xP(p.i)+'" cy="'+yP(p.v)+'" r="2.2" fill="'+colors[w]+'" stroke="none" opacity="'+opacities[w]+'"/>';
-      }else{
-        var x=xP(p.i),top=(p.v>yMax),my=top?(pT+6):(pT+plotH-6);
-        var tri=top?('M'+x.toFixed(1)+','+(my-5)+' L'+(x-4).toFixed(1)+','+(my+3)+' L'+(x+4).toFixed(1)+','+(my+3)+' Z')
-                    :('M'+x.toFixed(1)+','+(my+5)+' L'+(x-4).toFixed(1)+','+(my-3)+' L'+(x+4).toFixed(1)+','+(my-3)+' Z');
-        svg+='<path d="'+tri+'" fill="'+colors[w]+'" opacity="'+opacities[w]+'"/>';
-        svg+='<text x="'+x.toFixed(1)+'" y="'+(top?(my+13):(my-8))+'" fill="'+colors[w]+'" font-size="8" text-anchor="middle" font-family="JetBrains Mono" opacity="'+opacities[w]+'">'+(p.v*100).toFixed(0)+'%</text>';
-        anyOff=true;
-      }
-    });
-  });
-  var lblBaseY=pT+plotH+18,lblRow2Y=pT+plotH+30,lblMinGap=42,lblLastBaseX=-1e9;
-  data.forEach(function(d,i){
-    var lx=xP(i),ly=lblBaseY;
-    if(lx-lblLastBaseX<lblMinGap){ly=lblRow2Y;}else{lblLastBaseX=lx;}
-    svg+='<text x="'+lx+'" y="'+ly+'" fill="#999" font-size="10" text-anchor="middle" font-family="DM Sans">'+d.label+'</text>';
-  });
-  drawWindows.forEach(function(w,j){
-    var lx=cW-pR-150,ly=pT-12+j*14;
-    svg+='<line x1="'+lx+'" y1="'+ly+'" x2="'+(lx+20)+'" y2="'+ly+'" stroke="'+colors[w]+'" stroke-width="2.5" opacity="'+opacities[w]+'"/>';
-    svg+='<text x="'+(lx+25)+'" y="'+(ly+4)+'" fill="#999" font-size="9">'+w+'-Year Rolling</text>';
-  });
-  svg+='</svg>';
-  var control='';
-  if(trendDrawable&&have[1].length>=2){
-    var on=(opts.show1y===true);
-    control='<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">'+
-      '<span style="font-size:.66rem;color:var(--text3);font-family:JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:.5px">Axis tracks 3/5yr trend</span>'+
-      '<button onclick="setRoiicShow1y('+(on?'false':'true')+')" style="font-family:JetBrains Mono,monospace;font-size:.68rem;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid '+(on?'#2ecc71':'var(--border)')+';background:'+(on?'#2ecc71':'transparent')+';color:'+(on?'#0f0f0f':'var(--text3)')+'">'+(on?'1-year: shown':'+ show 1-year (noisy)')+'</button>'+
-      '</div>';
-  }
-  var foot='';
-  if(anyOff){
-    foot='<div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin-top:6px;padding:7px 10px;background:var(--card2);border-left:3px solid var(--text3);border-radius:0 6px 6px 0">Triangles mark 1-year points that fall off the trend scale (value shown) \u2014 the axis tracks the 3- and 5-year windows so a single-year spike can\u2019t compress the trend. A 1-year ROIIC is a ratio of single-year changes (\u0394REP \u00f7 \u0394IC) and swings hard where capital barely moved or profit changed sign.</div>';
-  }
-  return control+svg+foot;
+// Tab 2 -- Ratios & ROIIC (static): decomposition identity + Rolling ROIIC strip (jagged chart retired).
+function _caRatiosHtml(roiicData){
+  var last=roiicData[roiicData.length-1];
+  var rep=last.rep,rev=last.revenue,ic=last.ic,lab=last.label;
+  var okRev=(rev!=null&&rev>0),okIC=(ic!=null&&ic>0),okRep=(rep!=null&&isFinite(rep));
+  var marginV=(okRep&&okRev)?pct(rep/rev,1):'\u2014', turnV=(okRev&&okIC)?_caMult(rev/ic):'\u2014', roicV=(okRep&&okIC)?pct(rep/ic,1):'\u2014';
+  var decomp=
+    '<div class="ca-dchip"><div class="v" style="color:var(--green)">'+marginV+'</div><div class="l">Margin \u00b7 REP/Revenue</div></div>'+
+    '<div class="ca-dop">\u00d7</div>'+
+    '<div class="ca-dchip"><div class="v" style="color:var(--blue)">'+turnV+'</div><div class="l">Turnover \u00b7 Revenue/IC</div></div>'+
+    '<div class="ca-dop">=</div>'+
+    '<div class="ca-dchip"><div class="v" style="color:var(--accent2)">'+roicV+'</div><div class="l">Real ROIC \u00b7 REP/IC</div></div>';
+  var wins=[1,3,5],stars={1:'',3:' \u2605',5:''};
+  var strip=wins.map(function(w){
+    var r=last['roiic'+w]; var v,c='v';
+    if(r==null||!isFinite(r)){v='\u2014';}
+    else if(Math.abs(r)>1.5){v='n/m';c='v nm';}
+    else{v=pct(r,1);}
+    return '<div class="ca-cell"><div class="'+c+'">'+v+'</div><div class="l">'+w+'-yr<span class="star">'+stars[w]+'</span></div></div>';
+  }).join('');
+  var negIC=okIC?'':'<div class="ca-subcap" style="color:var(--orange)">Invested Capital is floored at $0 (negative book equity), so turnover and Real ROIC aren\u2019t meaningful for the latest period.</div>';
+  return '<div class="ca-lbl">Decomposition \u2014 latest period ('+lab+')</div>'
+    +'<div class="ca-ident">Real ROIC<span class="op">=</span>Margin<span class="op">\u00d7</span>Turnover</div>'
+    +'<div class="ca-decomp" id="caDecomp">'+decomp+'</div>'
+    +'<div class="ca-subcap">Period-end IC basis throughout, so the identity reconciles exactly. Turnover is a multiple (revenue per $1 capital); margin and ROIC are percents.</div>'
+    +negIC
+    +'<div class="ca-roiic">'
+    +'<div class="hd">Rolling ROIIC \u2014 \u0394REP \u00f7 \u0394IC</div>'
+    +'<div class="sub">Incremental return on recent capital, over 1/3/5-yr windows \u2014 kept as numbers, the old jagged chart retired. Reads <b>n/m</b> across a window where REP changes sign (e.g. the loss years). 3-yr \u2605 is the canonical read feeding the r-anchor.</div>'
+    +'<div class="ca-strip" id="caRoiicStrip">'+strip+'</div>'
+    +'</div>';
 }
 
 // index97: Capital-allocation view ("what management did with the money"), replacing the prior REP-stacked
