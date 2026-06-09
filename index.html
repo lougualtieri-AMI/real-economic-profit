@@ -447,7 +447,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-06-08';
-  var buildId='v4.24.0';
+  var buildId='v4.25.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -1184,7 +1184,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index238 \u00b7 v4.24.0';
+const REPA_DATA_BUILD='index239 \u00b7 v4.25.0';
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
@@ -9116,7 +9116,7 @@ function calculate(opts){opts=opts||{};
       var y=(P>0)?E/P:null;
       var bd=pin==='pe'?'var(--blue)':pin==='real'?'var(--accent)':'transparent';
       var bg=pin==='pe'?'rgba(52,152,219,.13)':pin==='real'?'rgba(212,160,37,.14)':'transparent';
-      var tag=pin==='pe'?'<div style="font-size:.58rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--blue);margin-bottom:3px">Wall St P/E</div>'
+      var tag=pin==='pe'?'<div style="font-size:.58rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--blue);margin-bottom:3px">Wall Street yield</div>'
             :pin==='real'?'<div style="font-size:.58rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:3px">Real yield</div>':'';
       return '<td style="padding:7px 0 7px 10px;vertical-align:middle"><div style="border:1px solid '+bd+';background:'+bg+';border-radius:7px;padding:6px 9px">'
         +tag
