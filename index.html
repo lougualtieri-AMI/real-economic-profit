@@ -446,8 +446,8 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-06-08';
-  var buildId='v4.25.0';
+  var buildDate='2026-06-09';
+  var buildId='v4.26.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -1184,7 +1184,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index239 \u00b7 v4.25.0';
+const REPA_DATA_BUILD='index240 \u00b7 v4.26.0';
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
@@ -6987,6 +6987,38 @@ function exportBrief(){
     h+='<div class="narrative"><strong>What this means:</strong> at these assumptions you would compound at about '+pct(_FY.k,1)+' a year — '+((_FY.spread||0)>=0?'reinvestment is adding to what a pure payout would give':'reinvestment is currently subtracting from what a pure payout would give')+'. The figure lives or dies on r, b, and the multiple holding.</div>';
   }
 
+  // ===== Historical k (realized) in Export — Item 13 =====
+  // Backward-looking counterpart of the forward k above. Reuses the live realized-k engine and window
+  // the on-screen History / "Model vs reality" panel uses (_realizedKWindow / _rkWin / _rkNowMode), so the
+  // brief reconciles with the UI by construction. Only emitted when there is a usable annual read (>=2 annual
+  // periods, positive REP at both endpoints) — matching the on-screen panel's own gate.
+  var _rkB6=null; try{ _rkB6=_realizedKWindow(_rkWin); }catch(e){ _rkB6=null; }
+  if(_rkB6&&_rkB6.ok){
+    var _fwdK6=(_repaFyLast&&_repaFyLast.k!=null)?_repaFyLast.k:null;
+    var _gap6=(_fwdK6!=null)?(_fwdK6-_rkB6.k):null;
+    h+='<h2>Historical k — What the Business Actually Compounded</h2>';
+    h+='<div class="narrative">The backward-looking, backtested counterpart of the Future Total Return <strong>k</strong> above — measured on real REP history rather than projected. It runs the same identity in reverse: had you entered '+_rkB6.actualWin+' year'+(_rkB6.actualWin===1?'':'s')+' ago (in '+_rkB6.fromLabel+') at the prevailing market price, this is the annual total return the business has since delivered.</div>';
+    h+='<div style="font-size:1.35rem;font-weight:700;margin:6px 0 10px">Historical k = '+pct(_rkB6.k,1)+' <span style="font-size:.78rem;font-weight:400;color:#888">('+_rkB6.actualWin+'-year realized, '+_rkB6.fromLabel+' \u2192 '+(_rkB6.override?_rkB6.nowLabel:_rkB6.toYr)+')</span></div>';
+    h+='<table style="max-width:580px"><tr><th style="text-align:left">Component</th><th>Value</th><th style="text-align:left">Meaning</th></tr>';
+    h+='<tr><td style="text-align:left">realized REP growth (g)</td><td>'+pct(_rkB6.g)+'</td><td style="text-align:left">CAGR of REP, '+_rkB6.fromLabel+' \u2192 now</td></tr>';
+    h+='<tr><td style="text-align:left">entry yield</td><td>'+pct(_rkB6.yMkt)+'</td><td style="text-align:left">REP \u00f7 market cap in the entry year</td></tr>';
+    h+='<tr><td style="text-align:left">b — share of profit reinvested</td><td>'+pct(_rkB6.b)+'</td><td style="text-align:left">same profit-weighted b the forward k uses</td></tr>';
+    h+='</table>';
+    h+='<p><strong>Identity:</strong> Historical k = (1 \u2212 b)\u00b7entry yield + realized g — the cash collected at yield-on-cost plus what REP actually compounded.</p>';
+    if(_rkB6.override){
+      h+='<p class="section-note">Endpoint basis: '+_rkB6.nowLabel+' (hypothetical — a normalized &ldquo;profit now&rdquo; was chosen in the History panel rather than the latest annual REP, so every realized g / k is measured against that basis).</p>';
+    }
+    if(_gap6!=null){
+      var _gapPP6=(_gap6*100), _gapAbs6=Math.abs(_gapPP6);
+      var _gapMsg6 = (_gapAbs6<2)
+        ? 'Your forward <strong>k</strong> ('+pct(_fwdK6,1)+') lines up with the realized '+_rkB6.actualWin+'-year record — the forecast is grounded in what just happened.'
+        : (_gap6>0
+          ? 'Your forward <strong>k</strong> ('+pct(_fwdK6,1)+') sits <strong>'+_gapPP6.toFixed(1)+' pp above</strong> the realized '+_rkB6.actualWin+'-year record — you are betting the business does better than it just did.'
+          : 'Your forward <strong>k</strong> ('+pct(_fwdK6,1)+') sits <strong>'+_gapAbs6.toFixed(1)+' pp below</strong> the realized '+_rkB6.actualWin+'-year record — conservative versus the track record.');
+      h+='<div class="narrative"><strong>Model vs. reality:</strong> '+_gapMsg6+'</div>';
+    }
+  }
+
   // ===== Buyback Return Tracker in Export =====
   // Use ALL years to match live app behavior
   var allBBKeys=getSortedYearKeys();
@@ -7362,6 +7394,30 @@ function exportBrief(){
   scriptInsert+='var _ticker='+JSON.stringify(ticker)+';';
   scriptInsert+='function downloadHTML(){var b=new Blob([document.documentElement.outerHTML],{type:"text/html"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download=_ticker+"_Real_Economic_Profit_Brief.html";a.click();URL.revokeObjectURL(u);}';
   scriptInsert+='function downloadMD(){var b=new Blob([_md],{type:"text/markdown"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download=_ticker+"_Real_Economic_Profit_Brief.md";a.click();URL.revokeObjectURL(u);}';
+  // Item 14: self-contained floating "Jump to" nav. Auto-discovers the brief's <h2> sections at load
+  // (assigning ids on the fly), so company-varying / conditional sections are handled for free. Idempotent
+  // (rebuilds on reopen of a re-downloaded copy); no-print so it never shows in print/PDF. Written with only
+  // single quotes + zero backslashes internally so it embeds cleanly in these double-quoted app strings.
+  scriptInsert+="(function(){function rbN(){";
+  scriptInsert+="var prev=document.getElementById('repaBriefNav');if(prev)prev.parentNode.removeChild(prev);";
+  scriptInsert+="var hs=[].slice.call(document.querySelectorAll('h2'));if(hs.length<2)return;";
+  scriptInsert+="var wrap=document.createElement('div');wrap.id='repaBriefNav';wrap.className='no-print';";
+  scriptInsert+="wrap.style.cssText='position:fixed;right:18px;bottom:18px;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,sans-serif';";
+  scriptInsert+="var menu=document.createElement('div');menu.id='repaBriefNavMenu';";
+  scriptInsert+="menu.style.cssText='display:none;position:absolute;right:0;bottom:52px;width:256px;max-height:62vh;overflow:auto;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.25);padding:6px';";
+  scriptInsert+="hs.forEach(function(hh,i){";
+  scriptInsert+="if(!hh.id)hh.id='sec-'+(hh.textContent||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')+'-'+i;";
+  scriptInsert+="var item=document.createElement('div');item.textContent=(hh.textContent||'').trim();";
+  scriptInsert+="item.style.cssText='padding:9px 11px;border-radius:8px;font-size:.84rem;color:#333;cursor:pointer;line-height:1.3';";
+  scriptInsert+="item.onmouseover=function(){this.style.background='#f0f0f0';};item.onmouseout=function(){this.style.background='transparent';};";
+  scriptInsert+="item.onclick=function(){menu.style.display='none';var t=document.getElementById(hh.id);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});};";
+  scriptInsert+="menu.appendChild(item);});";
+  scriptInsert+="var btn=document.createElement('button');btn.type='button';btn.innerHTML='&#8801; Jump to';btn.title='Jump to a section';";
+  scriptInsert+="btn.style.cssText='display:flex;align-items:center;gap:7px;background:#1a1a1a;color:#fff;border:none;border-radius:24px;padding:11px 17px;font-size:.84rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)';";
+  scriptInsert+="btn.onclick=function(e){e.stopPropagation();menu.style.display=(menu.style.display==='block')?'none':'block';};";
+  scriptInsert+="wrap.appendChild(menu);wrap.appendChild(btn);document.body.appendChild(wrap);";
+  scriptInsert+="document.addEventListener('click',function(e){if(!wrap.contains(e.target))menu.style.display='none';});}";
+  scriptInsert+="if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',rbN);else rbN();})();";
   scriptInsert+='<\/script>';
   h=h.replace('</body>',scriptInsert+'</body>');
 
@@ -7681,6 +7737,39 @@ function exportDataMarkdown(){
     nl('- non_operating_securities_held: '+m$(_piShow)+'  [netted out of invested capital; credited zero return in k; any compounding is upside not captured in these numbers]');
     nl('');
   }
+
+  // ===== 6b. Realized k (Historical) — Item 13 =====
+  // Backward-looking counterpart of Section 6's forward k. Reuses the same realized-k engine + window
+  // (_realizedKWindow / _rkWin / _rkNowMode) the on-screen History / "Model vs reality" panel uses, so
+  // these reconcile with the UI by construction. Independent of _repaFyLast (depends on annual history).
+  nl('## 6b. Realized k (Historical)');
+  nl('');
+  nl('- Backward-looking counterpart of Section 6: what REP actually compounded at, scored on real annual history (entry at the prevailing market price). Same engine and trailing window the on-screen History / Model-vs-reality panel uses, so it reconciles with the UI exactly.');
+  var _rkD=null; try{ _rkD=_realizedKWindow(_rkWin); }catch(e){ _rkD=null; }
+  nl('- window_setting: '+_rkWin+'y  [the realized-k trailing window selector]');
+  nl('- endpoint_basis: '+((_rkD&&_rkD.nowLabel)?_rkD.nowLabel:(_rkNowMode==='avg3'?'3-yr avg':(_rkNowMode==='ttm'?'TTM':'Latest year')))+((_rkD&&_rkD.override)?'  [HYPOTHETICAL — normalized "profit now" chosen in the History panel, not the latest annual REP]':'  [latest annual REP]'));
+  if(_rkD&&_rkD.ok){
+    var _fk6b=(FY&&FY.k!=null&&isFinite(FY.k))?FY.k:null;
+    var _gp6b=(_fk6b!=null)?(_fk6b-_rkD.k):null;
+    nl('- realized_window: '+_rkD.actualWin+'y  ('+_rkD.fromLabel+' \u2192 '+(_rkD.override?_rkD.nowLabel:_rkD.toYr)+')  [bounded by available annual history]');
+    nl('- realized_rep_growth_g: '+p2(_rkD.g)+'  [CAGR of REP, entry year \u2192 now]');
+    nl('- entry_yield: '+p2(_rkD.yMkt)+'  [REP \u00f7 market cap in the entry year]');
+    nl('- b_reinvested: '+p2(_rkD.b)+'  [profit-weighted, same b feeding Section 6]');
+    nl('- historical_k: '+p2(_rkD.k)+'  [k = (1 \u2212 b)\u00b7entry yield + realized g]');
+    nl('- forward_k (Section 6): '+(_fk6b!=null?p2(_fk6b):'n/a'));
+    if(_gp6b!=null){
+      var _gpPP=(_gp6b*100);
+      var _gpNote=(Math.abs(_gpPP)<2)?'forward k is grounded in the realized record'
+        :(_gp6b>0?'forward k bets the business does better than it just did'
+                 :'forward k is conservative versus the track record');
+      nl('- model_vs_reality_gap (forward \u2212 realized): '+(_gpPP>=0?'+':'')+_gpPP.toFixed(1)+' pp  ['+_gpNote+']');
+    } else {
+      nl('- model_vs_reality_gap: n/a  [no forward k computed this period]');
+    }
+  } else {
+    nl('- (Not enough annual history for a realized read \u2014 needs \u22652 annual periods with positive REP at both endpoints.)');
+  }
+  nl('');
 
   // ===== 7. Buybacks =====
   // Mirrors renderBuybackRoi: 10-K annual years only (interim/TTM excluded); REP from computeMetrics.
