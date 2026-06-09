@@ -447,7 +447,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
   var buildDate='2026-06-08';
-  var buildId='v4.21.0';
+  var buildId='v4.22.0';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
   el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
@@ -872,6 +872,13 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
         <div style="font-size:.7rem;color:var(--text3);margin-top:3px">Cost on the part funded beyond earnings (only when b &gt; 1). <span onclick="_fyReset('f')" style="color:var(--accent2);cursor:pointer;white-space:nowrap">&#8635; default: <span id="fyFDefault">&mdash;</span></span></div>
       </div>
     </div>
+    <!-- index236 (Item 5): browser-local save/restore of a custom r/b/f scenario. Save action + on-demand reload + a light "saved scenario available" affordance. Stored in its OWN localStorage key (never on portfolio[ticker]), so it does NOT travel in Share/Backup. Default — not saved — is always the open state; reload pulls the saved scenario only on click. Per-field "↺ default" links are unchanged. -->
+    <div id="fyScnRow" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 14px">
+      <button onclick="_fyScnSave()" title="Save the current r / b / f (and r_cash) as a private scenario for this company, in this browser only." style="background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:6px 12px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer">💾 Save this r / b / f scenario</button>
+      <button id="fyScnRestoreBtn" onclick="_fyScnRestore()" disabled title="Pull your saved scenario back into the inputs above." style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 12px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:default;opacity:.4">&#8617; Reload saved scenario</button>
+      <span id="fyScnStatus" style="font-size:.7rem;color:var(--text3)"></span>
+      <span style="font-size:.66rem;color:var(--text3);font-style:italic">&mdash; saved in this browser only; never part of Share / Backup, and the panel always opens on the defaults</span>
+    </div>
     <div id="fyAnchorStrip" style="margin-bottom:14px;padding-top:10px;border-top:1px dashed var(--border)">
       <div id="fyRAnchors" style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:6px"></div>
       <div id="fyBAnchors" style="display:flex;flex-wrap:wrap;align-items:center;gap:5px"></div>
@@ -1177,7 +1184,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index235 \u00b7 v4.21.0';
+const REPA_DATA_BUILD='index236 \u00b7 v4.22.0';
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
@@ -2038,6 +2045,41 @@ var _fyBAnchors={};
 function _fyPickB(k){var v=_fyBAnchors[k];if(v==null||!isFinite(v))return;var el=document.getElementById('fyB');if(el){el.value=(v*100).toFixed(1);renderForwardYield();}}
 function _fyMultReset(){var s=document.getElementById('fyMultSlider');if(s&&s.dataset.today){s.value=s.dataset.today;renderForwardYield();}}
 var _fySeeds={r:null,b:null,rcash:null,f:null}; // current defaults, refreshed each render (for snap-back)
+// index236 (Item 5): browser-local save/restore of the FTR r/b/f scenario.
+// Stored under its OWN localStorage key (a ticker-keyed map) — deliberately NOT on portfolio[ticker],
+// so shareCompany()/downloadPortfolio() (which serialize the whole portfolio[ticker]) can never carry it.
+// These are private what-if notes, not the audit record. The reSeed logic (renderForwardYield) is untouched,
+// so company/period/view switches and reloads always open on the seeded defaults; a saved scenario is loaded
+// back into the inputs ONLY when the user clicks "Reload saved scenario."
+var REPA_FTR_SCN_KEY='repa_ftr_scenarios';
+var _fyTicker='';                  // set each render so the save/restore handlers know the active company
+function _fyScnReadAll(){try{var m=JSON.parse(localStorage.getItem(REPA_FTR_SCN_KEY));return (m&&typeof m==='object'&&!Array.isArray(m))?m:{};}catch(e){return {};}}
+function _fyScnGet(t){if(!t)return null;var s=_fyScnReadAll()[t];return (s&&typeof s==='object')?s:null;}
+function _fyScnSave(){
+  if(!_fyTicker)return;
+  var g=function(id){var el=document.getElementById(id);if(!el)return null;var v=parseFloat(el.value);return isNaN(v)?null:v;};
+  var m=_fyScnReadAll();
+  m[_fyTicker]={r:g('fyR'),b:g('fyB'),f:g('fyF'),rcash:g('fyRcash'),savedAt:new Date().toISOString()};
+  try{localStorage.setItem(REPA_FTR_SCN_KEY,JSON.stringify(m));}catch(e){}
+  _fyScnUpdateUI(true);
+}
+function _fyScnRestore(){
+  var scn=_fyScnGet(_fyTicker); if(!scn)return;
+  var set=function(id,v){var el=document.getElementById(id);if(el&&v!==null&&v!==undefined&&isFinite(v))el.value=(+v).toFixed(1);};
+  set('fyR',scn.r); set('fyB',scn.b); set('fyF',scn.f); set('fyRcash',scn.rcash);
+  // sig is unchanged (same ticker/period/view), so reSeed won't overwrite these on the repaint.
+  renderForwardYield();
+}
+function _fyScnUpdateUI(justSaved){
+  var status=document.getElementById('fyScnStatus'), btn=document.getElementById('fyScnRestoreBtn');
+  var scn=_fyScnGet(_fyTicker);
+  if(btn){btn.disabled=!scn;btn.style.opacity=scn?'1':'.4';btn.style.cursor=scn?'pointer':'default';}
+  if(status){
+    if(justSaved){status.textContent='\u2713 scenario saved (this browser only)';}
+    else if(scn){status.textContent='saved scenario available'+(scn.savedAt?(' \u00b7 '+String(scn.savedAt).slice(0,10)):'');}
+    else{status.textContent='no saved scenario yet';}
+  }
+}
 function _fySetView(v){
   _fyView=v;
   var c=document.getElementById('forwardYieldCard');
@@ -2160,6 +2202,7 @@ function renderForwardYield(){
 
   // Seed / persist inputs. Re-seed on company, period, or view change.
   var sig=(d.ticker||'')+'|'+latestKey+'|'+_fyView;
+  _fyTicker=(d.ticker||''); // index236 (Item 5): active company for scenario save/restore
   var reSeed=(card.dataset.fySeedSig!==sig);
   var rIn=document.getElementById('fyR'),bIn=document.getElementById('fyB'),
       rcIn=document.getElementById('fyRcash'),fIn=document.getElementById('fyF');
@@ -2548,6 +2591,9 @@ function renderForwardYield(){
       privInv:{hold:_invHold, ncSec:(mL.ncSec||0)}
     };
   })();
+
+  // index236 (Item 5): reflect this company's saved-scenario state (button enable + status text).
+  try{ _fyScnUpdateUI(); }catch(e){}
 
   // index89: year-by-year trajectory sub-section (compounding ceiling + linear floor), driven by FY's b/r + lag.
   try{ renderFyTrajectory(repL, ev, b, r, k, f); }catch(e){ console.warn('trajectory error:',e); }
