@@ -443,14 +443,14 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
+var REPA_BUILD_TAG='index243 \u00b7 v4.27.2'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
-  var buildDate='2026-06-09';
-  var buildId='v4.27.1';
+  var buildDate='2026-06-10';
   var lines=document.documentElement.outerHTML.split('\n').length;
   var size=(new Blob([document.documentElement.outerHTML]).size/1024).toFixed(1);
-  el.textContent=buildId+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
+  el.textContent=REPA_BUILD_TAG+' • '+buildDate+' • '+lines+' lines • '+size+' KB';
 })();
 </script>
 
@@ -1198,7 +1198,7 @@ const PORTFOLIO_KEY='rep_portfolio';
 // ~T-bill reference rate (~4.3%), single-sourced: used by calculate() risk-free flags and the Future Total Return private-investments callout.
 const TBILL_REF=0.043;
 // Build stamp emitted in the Markdown data-export metadata header. Bump the indexN on every build so the .md self-identifies which app build produced it (audit provenance). Version held at v4.16.0 unless released.
-const REPA_DATA_BUILD='index242 \u00b7 v4.27.1';
+const REPA_DATA_BUILD=REPA_BUILD_TAG; // index243: single source = REPA_BUILD_TAG (declared with the on-screen build stamp). On-screen stamp and export header now stay in lockstep automatically.
 
 function getPortfolio(){
   try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
