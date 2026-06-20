@@ -653,7 +653,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index290 \u00b7 v4.62.0'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index295 \u00b7 v4.67.0'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -743,7 +743,30 @@ var REPA_BUILD_TAG='index290 \u00b7 v4.62.0'; // single source of truth for buil
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 12px;padding:0 14px">
   <button class="pb-btn" onclick="comparePortfolio()" title="Side-by-side cross-ticker comparison. Reads each ticker's saved current price (set via 'Save current'). For freshest comparison, run 'Save current' on each ticker after a Live Price fetch.">📊 Compare</button>
+  <button class="pb-btn" onclick="repaNotesOpen()" title="Per-ticker notes and reference links (audit reports, etc.). Display-only; saved per ticker and included in Backup.">📝 Notes and links</button>
   <button class="pb-btn" onclick="openGlossary()" title="Definitions and explanations of all REPA metrics">📖 Glossary</button>
+</div>
+
+<!-- index293: Notes overlay (opens from the top-bar Notes button, Compare-style). Per-ticker free text + reference links. Display-only; own localStorage key; travels with Backup. Real unicode / HTML entities only in this markup (no backslash-u escapes in HTML). -->
+<div class="compare-overlay" id="repaNotesOverlay" onclick="if(event.target===this)repaNotesClose()">
+  <div class="compare-panel" style="max-width:640px">
+    <button class="compare-close" onclick="repaNotesClose()">&times;</button>
+    <h3>📝 Notes and links <span id="repaNotesWho" style="color:var(--text3);font-weight:400;font-size:.9rem">&mdash; load a ticker first</span></h3>
+    <p class="section-note" style="margin-top:-8px">Your dated notes and reference links for this ticker &mdash; slider rationale, observations, audit-report links, anything you don't want to forget. Display-only; never touches any calculation. Saved per ticker and included in Backup.</p>
+    <div style="display:flex;align-items:center;gap:12px;margin:6px 0 8px">
+      <button onclick="repaNotesStamp()" style="background:var(--card2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 10px;font-size:.74rem;cursor:pointer">+ date</button>
+      <span id="repaNotesSaved" style="font-size:.74rem;color:var(--green)"></span>
+    </div>
+    <textarea id="repaNotesArea" oninput="repaNotesSave()" placeholder="Write a note&hellip;" disabled style="width:100%;min-height:140px;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.84rem;line-height:1.5;resize:vertical"></textarea>
+    <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin:16px 0 6px">Links / reports</div>
+    <div id="repaNotesLinks"></div>
+    <div id="repaNotesLinkAdd" style="display:none;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <input id="repaNotesLinkLabel" type="text" placeholder="Label (optional)" style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:.78rem">
+      <input id="repaNotesLinkUrl" type="text" placeholder="https://&hellip; (Drive, web)" style="flex:2;min-width:170px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text);font-size:.78rem">
+      <button onclick="repaNotesAddLink()" style="background:var(--accent2);border:none;color:#1a1a1a;border-radius:6px;padding:6px 14px;font-size:.78rem;font-weight:600;cursor:pointer">+ link</button>
+    </div>
+    <div style="font-size:.66rem;color:var(--text3);margin-top:8px">Web URLs (Google Drive, etc.) open in a new tab. Local file paths can be saved for reference, but browsers block opening them from a hosted page.</div>
+  </div>
 </div>
 
 <button class="secondary" onclick="openImport()" title="Paste structured JSON from Gemini/NotebookLM to load a company's financial data for one fiscal year">📋 Import Data from Gemini (10-K / 10-Q)</button>
@@ -1529,6 +1552,67 @@ function repaReadCurve(){try{var v=JSON.parse(localStorage.getItem(REPA_TC_KEY))
 function repaAttachCurve(obj){var c=repaReadCurve();if(c)obj[REPA_TC_EXPORT]={m3:c.m3,y2:c.y2,y10:c.y10,asof:c.asof};return obj;}
 function repaExtractCurve(imported){var c=imported&&imported[REPA_TC_EXPORT];if(imported)delete imported[REPA_TC_EXPORT];if(c&&typeof c==='object'){try{localStorage.setItem(REPA_TC_KEY,JSON.stringify({m3:c.m3,y2:c.y2,y10:c.y10,asof:c.asof}));}catch(e){}if(window.repaTreasuryRefresh)window.repaTreasuryRefresh();return true;}return false;}
 
+// ============ index293: per-ticker analyst Notes + reference links (display-only, never enters calculate()) ============
+// Opens from the top-bar Notes button into a Compare-style overlay. Per-ticker free text + a list of links
+// (e.g. audit reports). Own localStorage key; travels with Backup/Restore via a reserved key. Per-ticker value
+// is {text, links:[{label,url}]}; legacy plain-string values are read as {text:str, links:[]} for back-compat.
+var REPA_NOTES_KEY='repa_notes', REPA_NOTES_EXPORT='__repaNotes__';
+function repaNotesReadAll(){try{var s=JSON.parse(localStorage.getItem(REPA_NOTES_KEY));return (s&&typeof s==='object'&&!Array.isArray(s))?s:{};}catch(e){return {};}}
+function repaNotesWriteAll(o){try{localStorage.setItem(REPA_NOTES_KEY,JSON.stringify(o));}catch(e){}}
+function repaNotesTicker(){var el=document.getElementById('ticker');return el?(el.value||'').trim().toUpperCase():'';}
+function repaNotesNorm(v){if(v==null)return {text:'',links:[]};if(typeof v==='string')return {text:v,links:[]};return {text:(v.text||''),links:Array.isArray(v.links)?v.links:[]};}
+function repaNotesGet(t){var all=repaNotesReadAll();return repaNotesNorm(t?all[t]:null);}
+function repaNotesPut(t,obj){if(!t)return;var all=repaNotesReadAll();var clean={text:(obj.text||''),links:(obj.links||[]).filter(function(l){return l&&l.url;})};if(!clean.text.trim()&&clean.links.length===0){delete all[t];}else{all[t]=clean;}repaNotesWriteAll(all);}
+function repaNotesEsc(s){return String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
+function repaNotesSavedFlash(){var s=document.getElementById('repaNotesSaved');if(s){s.textContent='\u2713 saved';clearTimeout(window._repaNotesT);window._repaNotesT=setTimeout(function(){var x=document.getElementById('repaNotesSaved');if(x)x.textContent='';},1100);}}
+function repaNotesOpen(){var ov=document.getElementById('repaNotesOverlay');if(!ov)return;ov.classList.add('active');repaNotesRefresh();var ta=document.getElementById('repaNotesArea');if(ta&&!ta.disabled)ta.focus();}
+function repaNotesClose(){var ov=document.getElementById('repaNotesOverlay');if(ov)ov.classList.remove('active');}
+function repaNotesRefresh(){
+  var ta=document.getElementById('repaNotesArea');if(!ta)return;
+  var t=repaNotesTicker(),g=repaNotesGet(t);
+  ta.value=g.text;ta.disabled=!t;
+  var who=document.getElementById('repaNotesWho');if(who)who.textContent=t?('\u2014 '+t):'\u2014 load a ticker first';
+  var add=document.getElementById('repaNotesLinkAdd');if(add)add.style.display=t?'flex':'none';
+  repaNotesRenderLinks(t,g.links);
+}
+function repaNotesRenderLinks(t,links){
+  var box=document.getElementById('repaNotesLinks');if(!box)return;
+  if(!t){box.innerHTML='';return;}
+  if(!links||!links.length){box.innerHTML='<div style="font-size:.74rem;color:var(--text3);padding:4px 0">No links yet \u2014 add an audit report or reference URL below.</div>';return;}
+  var h='';
+  for(var i=0;i<links.length;i++){
+    var l=links[i],isUrl=/^https?:\/\//i.test(l.url||''),lab=repaNotesEsc(l.label||l.url||'link');
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">';
+    if(isUrl){h+='<a href="'+repaNotesEsc(l.url)+'" target="_blank" rel="noopener" style="color:var(--accent2);text-decoration:none;font-size:.8rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\ud83d\udd17 '+lab+'</a>';}
+    else{h+='<span title="'+repaNotesEsc(l.url||'')+'" style="color:var(--text2);font-size:.8rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\ud83d\udcce '+lab+' <span style="color:var(--text3);font-size:.68rem">(not a web link)</span></span>';}
+    h+='<button onclick="repaNotesDelLink('+i+')" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:0 4px">\u00d7</button>';
+    h+='</div>';
+  }
+  box.innerHTML=h;
+}
+function repaNotesSave(){var ta=document.getElementById('repaNotesArea');if(!ta)return;var t=repaNotesTicker();if(!t)return;var g=repaNotesGet(t);g.text=ta.value;repaNotesPut(t,g);repaNotesSavedFlash();}
+function repaNotesStamp(){
+  var ta=document.getElementById('repaNotesArea');if(!ta||ta.disabled)return;
+  var d=new Date(),ds=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var sep=(ta.value&&ta.value.slice(-1)!=='\n')?'\n':'';
+  ta.value=ta.value+sep+'['+ds+'] ';ta.focus();repaNotesSave();
+}
+function repaNotesAddLink(){
+  var t=repaNotesTicker();if(!t)return;
+  var urlEl=document.getElementById('repaNotesLinkUrl'),labEl=document.getElementById('repaNotesLinkLabel');
+  var url=((urlEl&&urlEl.value)||'').trim();if(!url)return;
+  var label=((labEl&&labEl.value)||'').trim()||url;
+  var g=repaNotesGet(t);g.links=g.links||[];g.links.push({label:label,url:url});repaNotesPut(t,g);
+  if(urlEl)urlEl.value='';if(labEl)labEl.value='';
+  repaNotesRenderLinks(t,repaNotesGet(t).links);repaNotesSavedFlash();
+}
+function repaNotesDelLink(i){
+  var t=repaNotesTicker();if(!t)return;
+  var g=repaNotesGet(t);if(g.links&&i>=0&&i<g.links.length){g.links.splice(i,1);repaNotesPut(t,g);repaNotesRenderLinks(t,repaNotesGet(t).links);repaNotesSavedFlash();}
+}
+function repaNotesAttach(obj){var all=repaNotesReadAll();if(all&&Object.keys(all).length)obj[REPA_NOTES_EXPORT]=all;return obj;}
+function repaNotesExtract(imported){var n=imported&&imported[REPA_NOTES_EXPORT];if(imported)delete imported[REPA_NOTES_EXPORT];if(n&&typeof n==='object'){var all=repaNotesReadAll();for(var k in n){all[k]=n[k];}repaNotesWriteAll(all);if(typeof repaNotesRefresh==='function')repaNotesRefresh();return true;}return false;}
+
 function refreshPortfolioSelect(){
   var sel=document.getElementById('portfolioSelect');
   var p=getPortfolio();
@@ -1720,6 +1804,7 @@ function downloadPortfolio(){
   var p=getPortfolio();
   if(Object.keys(p).length===0){alert('Portfolio is empty — nothing to download.');return;}
   var out=repaAttachCurve(Object.assign({},p));
+  out=repaNotesAttach(out);
   var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;
@@ -1742,6 +1827,7 @@ function restorePortfolio(evt){
         alert('File does not contain a valid portfolio object.');return;
       }
       repaExtractCurve(imported); // pull Treasury curve into its own store and drop the reserved key; never enters the ticker map
+      repaNotesExtract(imported); // pull analyst notes into their own store and drop the reserved key; never enters the ticker map
       var keys=Object.keys(imported);
       if(keys.length===0){alert('Portfolio file contains no companies.');return;}
       var p=getPortfolio();
@@ -3485,14 +3571,14 @@ function renderBuybackTracker(){
     var buybackShares=fd.buyback_shares||0;
     var label=yr.fiscal_year_label||keys[i];
     if(repurch>0||divs>0)hasBuybackData=true;
-    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice,buybackShares:buybackShares});
+    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice,buybackShares:buybackShares,endPrice:(fd.end_of_period_price||0)});
   }
 
   // index211: split-normalize the per-year diluted-share series ONCE (latest basis) so a
   // stock split is not read as net dilution. This single rebase corrects the Net Share Count
   // Change headline, the per-year delta bars (chart + table), and the share-count line.
   // buybackShares (shares retired, same-year basis) is intentionally left raw.
-  (function(){var _bbAdj=repaSplitAdjust(rows.map(function(r){return r.shares;}));for(var _bi=0;_bi<rows.length;_bi++)rows[_bi].shares=_bbAdj[_bi];})();
+  (function(){var _raw=rows.map(function(r){return r.shares;});var _bbAdj=repaSplitAdjust(_raw);var _mult=repaSplitMult(_raw);for(var _bi=0;_bi<rows.length;_bi++){rows[_bi].shares=_bbAdj[_bi];rows[_bi].splitMult=_mult[_bi]||1;}})();
 
   // index227 (Item 7): also show the card for SBC-but-no-buyback names (AMZN, pre-dividend GOOGL). The share-count / SBC-dilution chart already renders here (rising share line + red SBC bars, no green) — it was only gated off. Full hide stays only when there is neither capital return NOR a usable SBC+share series.
   var hasDilutionData=(rows.length>=2&&rows.every(function(r){return r.shares>0;})&&rows.some(function(r){return r.realSBC>0;}));
@@ -3646,6 +3732,46 @@ function renderBuybackTracker(){
       function barH(val){return (val/barMax)*barHalfH;}
       var _bbXs=chartRows.map(function(c,i){return xPos(i);});
       var _bbBw=cc8BarWidths(_bbXs,Math.min(36,plotW/n*0.55));
+
+      // index292: cumulative share-issuance reconciliation, split-aligned to the latest basis.
+      // Identity (exact, in shares): gross issued (all sources) = net share change + buybacks retired.
+      // SBC shares are estimated as realSBC$ / period-end price; buybacks AND the SBC estimate are put on the
+      // SAME latest-split basis as the diluted-share series (rows[].splitMult) so a split (e.g. GOOGL 20:1)
+      // cannot corrupt it. The gross-issued and net lines are exact; the SBC/other split is an ESTIMATE.
+      (function(){
+        if(netShareChange===null)return;
+        var cumBB=0, cumSBCsh=0, missingPx=false, repurchNoSh=false;
+        for(var _i=0;_i<rows.length;_i++){
+          var rr=rows[_i], mm=rr.splitMult||1;
+          if(rr.buybackShares>0){cumBB+=rr.buybackShares*mm;}
+          else if(rr.repurch>0){repurchNoSh=true;}
+          if(rr.realSBC>0){
+            var px=rr.endPrice>0?rr.endPrice:(rr.avgBuyPrice>0?rr.avgBuyPrice:0);
+            if(px>0){cumSBCsh+=(rr.realSBC/px)*mm;}else{missingPx=true;}
+          }
+        }
+        var grossIssued=netShareChange+cumBB;     // M shares, latest basis (exact given buyback shares)
+        var otherIssued=grossIssued-cumSBCsh;      // non-SBC issuance (estimate)
+        var shf=function(x){return (x*shrMult).toFixed(1)+' '+shrUnit;};
+        var span=rows[0].label+'\u2013'+rows[rows.length-1].label;
+        var base=Math.abs(firstShares)>0?Math.abs(firstShares):1;
+        var otherPct=otherIssued/base;
+        var issuerBeyondSBC=(otherIssued>0 && otherPct>0.01);
+        // index294: only surface this when there IS material non-SBC issuance; otherwise render nothing.
+        // (The chart's net dilution/shrinkage pill already covers the ordinary case.) Low-profile, lighter red.
+        if(issuerBeyondSBC){
+          var LR='#ef9a9a'; // lighter red — far more legible on the dark card than the deep --red
+          h+='<div style="background:rgba(239,154,154,.055);border:1px solid rgba(239,154,154,.22);border-left:3px solid '+LR+';border-radius:6px;padding:9px 12px;margin-bottom:16px">';
+          h+='<div style="font-size:.77rem;font-weight:600;color:'+LR+';margin-bottom:3px">Issuing shares beyond employee comp \u2014 '+span+'</div>';
+          h+='<div style="font-size:.75rem;color:var(--text2);line-height:1.5;font-family:\'JetBrains Mono\',monospace">\u2248 <b style="color:'+LR+'">'+shf(otherIssued)+'</b> non-SBC issuance ('+pct(otherPct,1)+' of base) \u00b7 <span style="color:var(--text3)">issued '+shf(grossIssued>0?grossIssued:0)+' all-in, \u2248'+shf(cumSBCsh)+' of it SBC</span></div>';
+          var caveats=[];
+          if(missingPx)caveats.push('period-end price missing for some years, so the SBC estimate is partial');
+          if(repurchNoSh)caveats.push('buyback $ present but share count not entered for some years, so gross issuance is understated');
+          var cavTxt=caveats.length?(' '+caveats.join('; ')+'.'):'';
+          h+='<div style="font-size:.66rem;color:var(--text3);margin-top:5px">Estimated (SBC shares = SBC$ \u00f7 period-end price). Look for secondary offerings or acquisition stock.'+cavTxt+'</div>';
+          h+='</div>';
+        }
+      })();
 
       h+='<div style="margin-bottom:16px">';
       // Title row
@@ -5299,6 +5425,32 @@ function repaSplitAdjust(sharesArr){
   var out=new Array(n);
   for(var j=0;j<n;j++) out[j]=(sharesArr[j]||0)*mult[j];
   return out;
+}
+
+// index292: same split detection as repaSplitAdjust, but returns the per-year cumulative MULTIPLIER
+// (to bring each year onto the latest basis) instead of the rebased series. Lets buybacks and the
+// SBC-share estimate be put on the SAME split basis as the diluted-share series before reconciling
+// issuance, so a stock split (e.g. GOOGL 20:1) can't corrupt the per-year math. Mirrors repaSplitAdjust.
+function repaSplitMult(sharesArr){
+  var n=(sharesArr||[]).length;
+  if(n<2) return (sharesArr||[]).map(function(){return 1;});
+  var CANDS=[2,3,4,5,6,7,8,10,15,20];
+  function snap(r){
+    if(!(r>0)) return null;
+    var up=(r>=2.5), down=(r<=0.4);
+    if(!up&&!down) return null;
+    var rr=up?r:(1/r), best=null, bestErr=1e9;
+    for(var i=0;i<CANDS.length;i++){var e=Math.abs(rr/CANDS[i]-1);if(e<bestErr){bestErr=e;best=CANDS[i];}}
+    if(best===null||rr/best<0.7||rr/best>1.4) return null;
+    return up?best:(1/best);
+  }
+  var mult=new Array(n); mult[n-1]=1;
+  for(var i=n-2;i>=0;i--){
+    var a=sharesArr[i], b=sharesArr[i+1];
+    var f=(a>0&&b>0)?snap(b/a):null;
+    mult[i]= f? mult[i+1]*f : mult[i+1];
+  }
+  return mult;
 }
 
 // index212: pure trailing-average over the last `n` entries of a chronological (oldest-first)
@@ -10839,6 +10991,8 @@ function calculate(opts){opts=opts||{};
   // Buyback Return Tracker
   try{renderBuybackTracker();}catch(e){console.warn('Buyback tracker error:',e);}
   try{renderBuybackRoi();}catch(e){console.warn('Buyback ROI error:',e);}
+  // index291: load this ticker's analyst notes (display-only)
+  try{repaNotesRefresh();}catch(e){console.warn('Notes refresh error:',e);}
 
   // Render trend
   try{renderTrend();}catch(e){console.warn('Trend error:',e);}
