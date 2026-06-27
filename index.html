@@ -52,8 +52,70 @@ h1{font-size:1.6rem;font-weight:700;color:var(--accent2);text-align:center;margi
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
 .card h2{font-size:1.05rem;font-weight:600;color:var(--accent);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 /* index248: live-k chip in the FTR header. Base = the approved expanded look; .fyk-collapsed grows it so the verdict reads boldly when the panel body is hidden. */
-#fyHeadK{float:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);font-size:.95rem;transition:font-size .12s ease}
+#fyHeadK{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);font-size:.95rem;transition:font-size .12s ease}
 #fyHeadK.fyk-collapsed{font-size:1.55rem;line-height:1}
+/* index314: prominent projected-return headline at the top of the EXPANDED FTR body (mock v3 .head). Makes the expanded panel lead with the big k so it dominates the smaller collapsed #fyHeadK chip (the fix for "collapsed bigger than expanded"). Painted by _fyHeadline() in the render wrapper chain; display-layer only, id-scoped to avoid any class collision. */
+#fyHeadline{background:linear-gradient(180deg,rgba(46,204,113,.07),rgba(46,204,113,0));border:1px solid rgba(46,204,113,.25);border-radius:12px;padding:18px 18px 16px;margin-bottom:16px}
+#fyHeadline .fyhl-lab{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600}
+#fyHeadline .fyhl-big{font-family:'JetBrains Mono',monospace;font-size:3.2rem;font-weight:700;color:var(--green);line-height:1.05;margin:2px 0 4px}
+#fyHeadline .fyhl-def{font-size:.8rem;color:var(--text2);line-height:1.5;max-width:52ch}
+#fyHeadline .fyhl-sym{font-size:.8em;color:var(--text3);font-weight:400}
+/* index317: forward-vs-history sanity strip (mock v3 step 2) — the guardrail on any asserted g. Two tiles (g vs history, k vs history) + a departure note. Painted by _fySanity() from the frozen snapshot + _fyrGReal() + _realizedKWindow(); display-layer only, id-scoped. */
+#fySanity{margin:-2px 0 16px}
+#fySanity .fysan-row{display:flex;gap:10px;flex-wrap:wrap}
+#fySanity .fysan-cell{flex:1;min-width:150px;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+#fySanity .fysan-t{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:600}
+#fySanity .fysan-v{font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;margin-top:2px}
+#fySanity .fysan-h{color:var(--text3)}
+#fySanity .fysan-arr{color:var(--text3);margin:0 4px}
+#fySanity .fysan-f{color:var(--text)}
+#fySanity .fysan-note{font-size:.68rem;margin-top:8px;line-height:1.45}
+#fySanity .fysan-note.ok{color:var(--text3)}
+#fySanity .fysan-note.warn{color:var(--orange)}
+#fySanity .fysan-basis{font-size:.6rem;color:var(--text3);margin-top:6px;letter-spacing:.02em}
+#fySanity .fysan-win{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:7px}
+/* index319: primary forward-g slider — the spine. Native range driving the engine via _fySetG()/_fyrSetR() back-solve; a pinned dashed tick marks realized history on the track, with an always-visible "history X%" readout. Display-layer; id-scoped. */
+#fyGControl{margin:0 0 18px}
+#fyGControl .fygc-lab{font-size:.85rem;font-weight:600;color:var(--text2);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+#fyGControl .fygc-live{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green)}
+#fyGControl .fygc-reset{margin-left:auto;color:var(--accent2);cursor:pointer;font-size:.72rem;font-weight:400;white-space:nowrap}
+#fyGControl .fygc-wrap{position:relative;padding-top:3px}
+#fyGControl input[type=range]{width:100%;accent-color:var(--green);cursor:pointer;margin:0;display:block}
+#fyGControl .fygc-hist{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--accent2);pointer-events:none}
+#fyGControl .fygc-histline{font-size:.66rem;color:var(--accent2);margin-top:6px}
+#fyGControl .fygc-help{font-size:.68rem;color:var(--text3);line-height:1.45;margin-top:6px}
+/* index320: the locked definition of the kept slice, under the decomposition split. Reserves "yield" for the earnings yield; defines (1−b)y by what it's exempt from (the growth engine), not by where it goes. */
+.fyk-keepwords{font-size:.72rem;color:var(--text2);line-height:1.55;margin:13px 0 2px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 7px 7px 0}
+/* index321: low-profile year-by-year compounding proof (the Phase-5 1%/10% walk, on real company numbers). Collapsed by default; painted live by _fyDecompTable() so it re-solves as g moves. Shows owned earnings growing at g=b·r, split into the cash you keep (1−b) and the reinvested slice (b), with g-vs-k underneath. */
+.fyk-proof{margin-top:13px;border-top:1px dashed var(--border);padding-top:10px}
+.fyk-proof>summary{cursor:pointer;font-size:.74rem;font-weight:600;color:var(--text2);list-style:none;user-select:none}
+.fyk-proof>summary::-webkit-details-marker{display:none}
+.fyk-proof>summary::before{content:'\25B8  ';color:var(--text3)}
+.fyk-proof[open]>summary::before{content:'\25BE  '}
+.fyk-proof-setup{font-size:.7rem;color:var(--text2);line-height:1.55;margin:10px 0}
+.fyk-proof table{width:100%;border-collapse:collapse;font-size:.72rem;margin-top:2px}
+.fyk-proof th{font-size:.58rem;text-transform:uppercase;letter-spacing:.03em;color:var(--text3);font-weight:600;text-align:right;padding:5px 6px;border-bottom:1px solid var(--border)}
+.fyk-proof th:first-child{text-align:left}
+.fyk-proof td{text-align:right;padding:5px 6px;font-family:'JetBrains Mono',monospace;color:var(--text2)}
+.fyk-proof td:first-child{text-align:left;font-family:'DM Sans',sans-serif;color:var(--text3)}
+.fyk-proof tbody tr:not(:last-child) td{border-bottom:1px solid rgba(255,255,255,.04)}
+.fyk-proof-note{font-size:.68rem;color:var(--text3);line-height:1.55;margin-top:11px}
+.fyk-proof td.fyk-keepcol{color:var(--blue)}
+.fyk-proof td.fyk-growcol{color:var(--green)}
+.fyk-proof th.fyk-keepcol{color:var(--blue)}
+.fyk-proof th.fyk-growcol{color:var(--green)}
+.fyk-proof .fyk-sub{display:block;font-family:'DM Sans',sans-serif;font-size:.58rem;color:var(--text3);font-weight:400;margin-top:1px}
+.fyk-proof .fyk-subh{display:block;font-size:.52rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text3);margin-top:2px;opacity:.85}
+/* index327: "Adjust the building blocks" disclosure — folds the r/b sliders, view basis, scenario save and anchors under one collapsed dropdown, subordinate to the g spine above. */
+.fy-blocks{margin:4px 0 16px;border:1px solid var(--border);border-radius:10px;background:var(--card2)}
+.fy-blocks>summary{cursor:pointer;padding:12px 15px;font-size:.82rem;font-weight:700;color:var(--text);list-style:none;user-select:none}
+.fy-blocks>summary::-webkit-details-marker{display:none}
+.fy-blocks>summary::before{content:'\25B8  ';color:var(--text3)}
+.fy-blocks[open]>summary::before{content:'\25BE  '}
+.fy-blocks>summary .fy-blocks-sub{font-weight:400;color:var(--text3);font-size:.72rem}
+.fy-blocks-body{padding:2px 15px 15px}
+.fy-blocks-intro{font-size:.76rem;color:var(--text2);line-height:1.6;margin:8px 0 16px}
+.fy-blocks-intro b{color:var(--text)}
 /* index296: collapsed-header summary readout for the three big analysis panels (Cap-Alloc / Share Count / Historical). Always-visible one-line headline, mirrors the #fyHeadK idea without the collapse-zoom (multi-value lines would wrap). Pushed far-right via the flex header; arrow sits to its right. */
 .dd-headsum{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text);font-size:.82rem;white-space:nowrap} /* index297: bright neutral values (was accent2 — blended with the gold --accent h2 title); labels dimmed via .dim for a clear title/headline contrast */
 .dd-headsum .dim{color:var(--text3);font-weight:400}
@@ -122,7 +184,7 @@ h1{font-size:1.6rem;font-weight:700;color:var(--accent2);text-align:center;margi
 .fyk-legend{display:flex;justify-content:space-between;align-items:stretch;flex-wrap:wrap;gap:10px;margin-top:11px;padding:9px 12px;background:var(--card2);border:1px solid var(--border);border-radius:7px}
 .leg-defs{display:flex;flex-wrap:wrap;gap:3px 16px;align-content:center;font-size:.7rem;color:var(--text2)}
 .leg-defs span{white-space:nowrap}
-.leg-defs .sym{color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace}
+.leg-defs .sym{color:var(--text3);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.92em}
 .leg-defs .iv{color:var(--text);font-family:'JetBrains Mono',monospace}
 .leg-g{display:flex;gap:14px;align-items:center;padding:2px 11px;border-left:1px solid var(--border)}
 .leg-g .lg{display:flex;flex-direction:column;line-height:1.15}
@@ -1164,9 +1226,115 @@ var REPA_BUILD_TAG='index313 \u00b7 v4.74.1'; // single source of truth for buil
   </div>
 
   <div class="card" id="forwardYieldCard" style="display:none">
-    <h2 style="cursor:pointer;user-select:none" onclick="var el=document.getElementById('fyBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}var kc=document.getElementById('fyHeadK');if(kc)kc.classList.toggle('fyk-collapsed',el.style.display==='none');">🧭 Future Total Return <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:6px">▼</span> <span style="font-size:.82rem;color:#bbb;font-weight:400">— the return you collect at today's earnings yield, plus the growth it compounds at its reinvestment rate.</span> <span id="fyHeadK" title="Future Total Return (k) — live verdict, shown even when the panel is collapsed">k —</span></h2>
+    <h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('fyBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}var kc=document.getElementById('fyHeadK');if(kc)kc.classList.toggle('fyk-collapsed',el.style.display==='none');">🧭 Future Total Return <span id="fyHeadK" title="Future Total Return (k) — live verdict, shown even when the panel is collapsed">k —</span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
+    <!-- index315: descriptor moved out of the H2 to an always-visible sub-line (stays in the collapsed view). Rewritten to drop the reinvestment-only implication and nod to the assumptions set below. -->
+    <div class="fy-desc" style="font-size:.82rem;color:#bbb;font-weight:400;line-height:1.5;margin:-2px 0 14px">&mdash; the return you collect at today&rsquo;s earnings yield, plus your share of the profit&rsquo;s growth. The growth rests on assumptions you set and stress-test below.</div>
     <div id="fyBody">
-    <p style="font-size:.78rem;color:var(--accent-dim);margin-bottom:12px">We start from what the company has recently done and adjust: the return you expect on each reinvested dollar (r), how much of its profit it reinvests (b), and — when it reinvests beyond earnings — the financing cost (f). The headline updates as you set them.</p>
+    <!-- index314: prominent projected-return headline (mock v3 step 1). Leads the expanded body so the big k dominates; populated each render by _fyHeadline(). The plain-English descriptor stays in the H2 for the collapsed view. -->
+    <div id="fyHeadline">
+      <div class="fyhl-lab">Projected annual return <span class="fyhl-sym">(k)</span></div>
+      <div class="fyhl-big" id="fyHeadBig">&mdash;</div>
+      <div class="fyhl-def">The rate you&rsquo;d compound owning this &mdash; your share of the profit&rsquo;s growth, plus the earnings yield you keep on the price you paid. Holds only if the multiple doesn&rsquo;t change.</div>
+    </div>
+    <!-- index317: forward-vs-history sanity strip (mock v3 step 2). The guardrail on any asserted g: realized history beside the live forward number for both g and k, with a flag when forward g departs from history. Populated by _fySanity() in the render wrapper chain. -->
+    <div id="fySanity">
+      <div class="fysan-row">
+        <div class="fysan-cell">
+          <div class="fysan-t">Forward growth <span class="fyhl-sym">(g)</span> vs history</div>
+          <div class="fysan-v"><span class="fysan-h" id="fySanGH">&mdash;</span><span class="fysan-arr">&rarr;</span><span class="fysan-f" id="fySanGF">&mdash;</span></div>
+          <div class="fysan-basis" id="fySanGWin"></div>
+        </div>
+        <div class="fysan-cell">
+          <div class="fysan-t">Total return <span class="fyhl-sym">(k)</span> vs history</div>
+          <div class="fysan-v"><span class="fysan-h" id="fySanKH">&mdash;</span><span class="fysan-arr">&rarr;</span><span class="fysan-f" id="fySanKF">&mdash;</span></div>
+          <div class="fysan-win" id="fySanKWin"></div>
+        </div>
+      </div>
+      <div class="fysan-note" id="fySanNote"></div>
+    </div>
+    <!-- index319: primary forward-g slider (mock v3 step 3) — the spine. Writes its value into the engine-backing #fyGInput and calls _fySetG() (back-solves r = g/b through _fyrSetR), so the engine recomputes g = the set value with no frozen-function change. The dashed tick + readout pin realized history on the track. Painted each render by _fyGSlide(). -->
+    <div id="fyGControl">
+      <div class="fygc-lab">Forward profit growth <span class="fyhl-sym">(g)</span> <span class="fygc-live" id="fyGSlideVal">&mdash;</span> <span class="fygc-reset" id="fyGSlideReset" onclick="if(typeof _fyrSetAnchor==='function')_fyrSetAnchor();">&#8635; realized</span></div>
+      <div class="fygc-wrap">
+        <input type="range" id="fyGSlide" min="-5" max="50" step="0.5" value="0" oninput="_fyGSlideInput(this.value)">
+        <div class="fygc-hist" id="fyGHistMark"></div>
+      </div>
+      <div class="fygc-histline" id="fyGHistLine">history &mdash;</div>
+      <div class="fygc-help">This is the spine &mdash; set the growth you expect the profit to make. The building blocks <b>r</b> and <b>b</b> below rebuild to reproduce it; the strip above flags when you depart from history.</div>
+    </div>
+    <!-- index323: decomposition box (with the year-by-year proof inside) promoted to sit directly under the g slider, ahead of the r/b building blocks. Display-layer relocation only; painters attach by id. -->
+    <!-- index259 (item6): the k-headline as a live equation. Filled by display-layer _fyKHead() from _repaFyLast; decomposes the FROZEN engine's k as keep=(1−b)·y and grow=k−keep so the two boxes ALWAYS sum to the engine k. index268: step label moved outside the card; linear top line; defining legend (y/b/r + historic/forward g pair); grow box carries an above/below-historic flag. -->
+    <div class="fyk-steplabel" id="fyKStep" style="display:none">The headline it drives</div>
+    <div class="fyk-head" id="fyKHead" style="display:none">
+      <div class="fyk-topline">
+        <div class="fyk-big" id="fykBig">&mdash;</div>
+        <div class="fyk-lab">k &middot; Future Total Return</div>
+        <div class="fyk-basis" id="fykBasis"></div>
+      </div>
+      <div class="fyk-legend">
+        <div class="leg-defs">
+          <span>current earnings yield <span class="sym">y</span> <span class="iv" id="fykIvY"></span></span>
+          <span>reinvestment rate <span class="sym">b</span> <span class="iv" id="fykIvB"></span></span>
+          <span>reinvestment return <span class="sym">r</span> <span class="iv" id="fykIvR"></span></span>
+        </div>
+        <div class="leg-g" id="fykLegG">
+          <div class="lg lg-hist"><span class="lab">historic g</span><span class="num" id="fykIvHist"></span></div>
+          <div class="lg lg-fwd"><span class="lab">forward g</span><span class="num" id="fykIvFwd"></span></div>
+        </div>
+      </div>
+      <div class="leg-foot" id="fykLegFoot"></div>
+      <div class="fyk-split">
+        <div class="fyk-box keep"><div class="fyk-h">Yield kept out of growth</div><div class="fyk-nrow"><span class="fyk-n" id="fykKeepN"></span></div><div class="fyk-d" id="fykKeepD"></div></div>
+        <div class="fyk-op">+</div>
+        <div class="fyk-box grow"><div class="fyk-h">Forward growth</div><div class="fyk-nrow"><span class="fyk-n" id="fykGrowN"></span><span class="fyk-flag" id="fykGrowFlag"></span></div><div class="fyk-d" id="fykGrowD"></div></div>
+        <div class="fyk-op">=</div>
+        <div class="fyk-box res"><div class="fyk-h">Total return (k)</div><div class="fyk-nrow"><span class="fyk-n" id="fykResN"></span></div><div class="fyk-d" id="fykResD"></div></div>
+      </div>
+      <div class="fyk-keepwords">The share of your starting <b>earnings yield (y)</b> that isn&rsquo;t fed into the growth engine &mdash; owner-earnings that stay a claim on the existing profit base, whether the company pays them out, buys back stock, or just lets them accumulate.</div>
+      <div class="fyk-dbl" id="fykDbl"></div>
+      <details class="fyk-proof" id="fyDecompProof"><summary>Watch it compound &mdash; a year-by-year proof on $100</summary><div class="fyk-proof-body" id="fyDecompProofBody"></div></details>
+    </div>
+    <!-- index324: parked-securities teaser moved up to sit directly under the (now-promoted) k headline box, per design — shown only for above-threshold look-through names. -->
+    <!-- index262 (item7): parked-securities one-liner. Quiet teaser directly under the k headline; shown only for material names (same gate as the full #fyPrivInv box below). Populated by _fyParked() from _repaFyLast. -->
+    <div class="fyk-oneliner" id="fyParked" style="display:none"></div>
+    <!-- index326: doubling-clocks panel (#fyReRate) lifted up to sit directly under the decomposition box + parked teaser — both are "what your k means," so they belong together. The r/b building blocks and engine detail now follow below. Display-layer relocation; #fyMultLever (load-bearing) and #fyResults stay in place lower down. -->
+    <!-- index264 (item9): re-rating box (Multiple view). The .fyp-* PE slider drives the hidden #fyMultSlider; _fyReRate() reads _repaFyLast.lever{peNow,peEnd}+growthRate and shows value-doubling t=ln(2·peNow/peTgt)/ln(1+g). The Multiple|Equity-bond toggle + bond view = item 10 (next build). -->
+    <div class="fyp-box" id="fyReRate">
+      <hr class="fyp-div">
+      <div class="fyp-steplab">Doubling clocks — how fast does your money double?</div>
+      <div class="fyp-hint" style="margin-bottom:12px">Two clocks. The one that matters: how fast your <b style="color:var(--text)">investment</b> doubles — put $1,000 into this stock, how long until it&rsquo;s worth $2,000? That&rsquo;s your total return, <b style="color:var(--text)">k</b>. The second: how fast the company&rsquo;s <b style="color:var(--text)">profit</b> doubles — its growth rate, <b style="color:var(--text)">g</b>. Your money outpaces the profit because you also keep &mdash; indirectly &mdash; the entry earnings yield on the price you paid: your share of that first year&rsquo;s profit that isn&rsquo;t reinvested into growth.</div>
+      <div id="fyPeView">
+        <div class="dc-hero">
+          <div class="dc-hlab">Your investment doubles in</div>
+          <div class="dc-htop">
+            <span class="dc-hbig" id="invYrs">&mdash;</span><span class="dc-hunit">years</span>
+            <span class="dc-htwin"><span id="invYield">&mdash;</span><small>annual rate</small></span>
+          </div>
+          <div class="dc-hdecomp" id="invDecomp"></div>
+          <div class="dc-implied" id="invImplied"></div>
+          <div class="dc-gset" id="fyGsetBox" style="display:none">forward g <input type="number" id="fyGInput" step="0.5" oninput="_fySetG()"> %<span class="dc-greset" id="fyGReset">&#8635; realized</span><span class="dc-ghint" id="fyGHint"></span></div>
+        </div>
+        <div class="dc-clk2">
+          <div class="dc-n"><span id="profYrs">&mdash;</span> <small>yr</small></div>
+          <div class="dc-t"><b>The profit doubles</b> &mdash; and your yield-on-cost with it (a 3% entry yield becomes 6%). This is the <b>business</b>, not your money. If the P/E doesn&rsquo;t change, your share price doubles at this same rate &mdash; your money (above) doubles sooner because you also collect the yield.</div>
+        </div>
+        <div class="dc-slab">If the P/E re-rates over your hold <span class="dc-live" id="fypBig"></span></div>
+        <div class="dc-shint">Exit multiple vs. what you paid &mdash; left compresses (headwind), right expands (tailwind). The only thing that pulls your clock off the profit clock. <span id="fypYield"></span></div>
+        <div class="fyp-perow" style="justify-content:flex-end"><span class="fyp-reset" id="fypReset">&#8635; reset</span></div>
+        <div class="fyp-wrap"><div class="fyp-track" id="fypTrack"></div></div>
+        <div class="dc-rerate" id="fypMsg"></div>
+        <!-- index310 (Build D): "where does the kept share go?" redeploy sub-block. The (1-b)y you keep, put back into the stock vs held outside. Auto-quiets when little is kept (compounders); widens for big payers. No pocket/dividend wording. -->
+        <div class="dc-redeploy">
+          <div class="dc-rdlab">Where does the share you keep go? <span class="dc-rdp" id="rdKept"></span></div>
+          <div class="dc-chiprow" id="rdChips"></div>
+          <div class="dc-rdline" id="rdLine"></div>
+        </div>
+      </div>
+    </div>
+    <details class="fy-blocks" id="fyBlocks" ontoggle="if(this.open){try{renderForwardYield();}catch(e){}}">
+      <summary>Adjust the building blocks <span class="fy-blocks-sub">&mdash; r, b, and the view basis behind g</span></summary>
+      <div class="fy-blocks-body">
+        <p class="fy-blocks-intro">You set the spine &mdash; <b>forward growth (g)</b> &mdash; with the slider above. These are the knobs underneath it: the return you expect on each reinvested dollar (<b>r</b>) and the share of profit reinvested (<b>b</b>), with <b>g = b&middot;r</b> held live as you move them. The <b>view basis</b> picks which earnings yield (y) the headline builds on; the financing cost (f) appears only when b runs past 100%. The realized-history defaults stand unless you have a specific reason to depart.</p>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <label style="font-size:.78rem;font-weight:600;color:var(--text2)">View basis:</label>
       <select id="fyView" onchange="_fySetView(this.value)" style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem">
@@ -1220,37 +1388,8 @@ var REPA_BUILD_TAG='index313 \u00b7 v4.74.1'; // single source of truth for buil
       <div id="fyBAnchors" style="display:none"></div>
       <div id="fyAnchorGuide" style="margin-top:9px;font-size:.7rem;line-height:1.55"></div>
     </div>
-    <!-- index259 (item6): the k-headline as a live equation. Filled by display-layer _fyKHead() from _repaFyLast; decomposes the FROZEN engine's k as keep=(1−b)·y and grow=k−keep so the two boxes ALWAYS sum to the engine k. index268: step label moved outside the card; linear top line; defining legend (y/b/r + historic/forward g pair); grow box carries an above/below-historic flag. -->
-    <div class="fyk-steplabel" id="fyKStep" style="display:none">The headline it drives</div>
-    <div class="fyk-head" id="fyKHead" style="display:none">
-      <div class="fyk-topline">
-        <div class="fyk-big" id="fykBig">&mdash;</div>
-        <div class="fyk-lab">k &middot; Future Total Return</div>
-        <div class="fyk-basis" id="fykBasis"></div>
       </div>
-      <div class="fyk-legend">
-        <div class="leg-defs">
-          <span><span class="sym">y</span> current earnings yield <span class="iv" id="fykIvY"></span></span>
-          <span><span class="sym">b</span> reinvestment rate <span class="iv" id="fykIvB"></span></span>
-          <span><span class="sym">r</span> reinvestment return <span class="iv" id="fykIvR"></span></span>
-        </div>
-        <div class="leg-g" id="fykLegG">
-          <div class="lg lg-hist"><span class="lab">historic g</span><span class="num" id="fykIvHist"></span></div>
-          <div class="lg lg-fwd"><span class="lab">forward g</span><span class="num" id="fykIvFwd"></span></div>
-        </div>
-      </div>
-      <div class="leg-foot" id="fykLegFoot"></div>
-      <div class="fyk-split">
-        <div class="fyk-box keep"><div class="fyk-h">Yield you keep</div><div class="fyk-nrow"><span class="fyk-n" id="fykKeepN"></span></div><div class="fyk-d" id="fykKeepD"></div></div>
-        <div class="fyk-op">+</div>
-        <div class="fyk-box grow"><div class="fyk-h">Reinvested growth</div><div class="fyk-nrow"><span class="fyk-n" id="fykGrowN"></span><span class="fyk-flag" id="fykGrowFlag"></span></div><div class="fyk-d" id="fykGrowD"></div></div>
-        <div class="fyk-op">=</div>
-        <div class="fyk-box res"><div class="fyk-h">Total k</div><div class="fyk-nrow"><span class="fyk-n" id="fykResN"></span></div><div class="fyk-d" id="fykResD"></div></div>
-      </div>
-      <div class="fyk-dbl" id="fykDbl"></div>
-    </div>
-    <!-- index262 (item7): parked-securities one-liner. Quiet teaser directly under the k headline; shown only for material names (same gate as the full #fyPrivInv box below). Populated by _fyParked() from _repaFyLast. -->
-    <div class="fyk-oneliner" id="fyParked" style="display:none"></div>
+    </details>
     <div id="fyPrivInv" style="margin-bottom:14px"></div>
     <div id="fyRcashRow" style="margin-bottom:14px;display:none">
       <label style="font-size:.74rem;font-weight:600;color:var(--text2)">Cash rate r_cash (%) <span style="font-weight:400;color:var(--text3)">— money-market return on undeployed cash; also the floor for f</span></label>
@@ -1270,40 +1409,7 @@ var REPA_BUILD_TAG='index313 \u00b7 v4.74.1'; // single source of truth for buil
       </div>
       <div id="fyMultReadout" style="font-size:.8rem;color:var(--text2);line-height:1.5"></div>
     </div>
-    <!-- index264 (item9): re-rating box (Multiple view). The .fyp-* PE slider drives the hidden #fyMultSlider; _fyReRate() reads _repaFyLast.lever{peNow,peEnd}+growthRate and shows value-doubling t=ln(2·peNow/peTgt)/ln(1+g). The Multiple|Equity-bond toggle + bond view = item 10 (next build). -->
-    <div class="fyp-box" id="fyReRate">
-      <hr class="fyp-div">
-      <div class="fyp-steplab">Doubling clocks — how fast does your money double?</div>
-      <div class="fyp-hint" style="margin-bottom:12px">Two clocks. The one that matters: how fast your <b style="color:var(--text)">investment</b> doubles — put $1,000 into this stock, how long until it&rsquo;s worth $2,000? That&rsquo;s your total return, <b style="color:var(--text)">k</b>. The second: how fast the company&rsquo;s <b style="color:var(--text)">profit</b> doubles — its growth rate, <b style="color:var(--text)">g</b>. Your money outpaces the profit because you also keep &mdash; indirectly &mdash; the entry earnings yield on the price you paid: your share of that first year&rsquo;s profit that isn&rsquo;t reinvested into growth.</div>
-      <div id="fyPeView">
-        <div class="dc-hero">
-          <div class="dc-hlab">Your investment doubles in</div>
-          <div class="dc-htop">
-            <span class="dc-hbig" id="invYrs">&mdash;</span><span class="dc-hunit">years</span>
-            <span class="dc-htwin"><span id="invYield">&mdash;</span><small>annual rate</small></span>
-          </div>
-          <div class="dc-hdecomp" id="invDecomp"></div>
-          <div class="dc-implied" id="invImplied"></div>
-          <div class="dc-gset">forward g <input type="number" id="fyGInput" step="0.5" oninput="_fySetG()"> %<span class="dc-greset" id="fyGReset">&#8635; realized</span><span class="dc-ghint" id="fyGHint"></span></div>
-        </div>
-        <div class="dc-clk2">
-          <div class="dc-n"><span id="profYrs">&mdash;</span> <small>yr</small></div>
-          <div class="dc-t"><b>The profit doubles</b> &mdash; and your yield-on-cost with it (a 3% entry yield becomes 6%). This is the <b>business</b>, not your money. If the P/E doesn&rsquo;t change, your share price doubles at this same rate &mdash; your money (above) doubles sooner because you also collect the yield.</div>
-        </div>
-        <div class="dc-slab">If the P/E re-rates over your hold <span class="dc-live" id="fypBig"></span></div>
-        <div class="dc-shint">Exit multiple vs. what you paid &mdash; left compresses (headwind), right expands (tailwind). The only thing that pulls your clock off the profit clock. <span id="fypYield"></span></div>
-        <div class="fyp-perow" style="justify-content:flex-end"><span class="fyp-reset" id="fypReset">&#8635; reset</span></div>
-        <div class="fyp-wrap"><div class="fyp-track" id="fypTrack"></div></div>
-        <div class="dc-rerate" id="fypMsg"></div>
-        <!-- index310 (Build D): "where does the kept share go?" redeploy sub-block. The (1-b)y you keep, put back into the stock vs held outside. Auto-quiets when little is kept (compounders); widens for big payers. No pocket/dividend wording. -->
-        <div class="dc-redeploy">
-          <div class="dc-rdlab">Where does the share you keep go? <span class="dc-rdp" id="rdKept"></span></div>
-          <div class="dc-chiprow" id="rdChips"></div>
-          <div class="dc-rdline" id="rdLine"></div>
-        </div>
-      </div>
-    </div>
-    <div id="fyAxisBridge" style="display:none;font-size:.8rem;color:var(--text2);line-height:1.5;margin:12px 0 2px">The lever above moves the <strong>price</strong> you&rsquo;re paid for that profit; the trajectory below moves the <strong>profit</strong> itself — same 10-year window, the two forces behind your return.</div>
+    <!-- index314: dead #fyAxisBridge removed (was display:none; all frozen-engine refs to it are null-guarded, confirmed four-gate-clean). -->
     <div id="trajSub" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:none">
       <h3 style="color:var(--accent);font-size:.95rem;cursor:pointer;user-select:none;margin:0 0 6px" onclick="var el=document.getElementById('trajBody');var arr=this.querySelector('.ca');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📈 Year-by-year trajectory <span class="ca" style="font-size:.72rem;color:var(--text3);margin-left:4px">▶</span></h3>
       <p style="font-size:.74rem;color:var(--text3);margin:0 0 10px;line-height:1.5">The path behind the headline. k is the steady-state blended rate; this shows REP year by year between a <strong>compounding</strong> ceiling (the reinvestment opportunity scales) and a <span style="color:var(--orange)">linear</span> floor (the opportunity is bounded — a fixed dollar redeployed each year). Driven by the r and b set above, plus the payback lag.</p>
@@ -1325,7 +1431,7 @@ var REPA_BUILD_TAG='index313 \u00b7 v4.74.1'; // single source of truth for buil
     <details style="margin-top:8px;font-size:.8rem">
       <summary style="cursor:pointer;color:var(--text2);font-weight:600">What r, b, y, and g mean</summary>
       <div style="margin-top:8px;color:var(--text2);line-height:1.7">
-        <strong>y — current yield.</strong> What you’d earn each year right now if the company paid out all its real profit (REP ÷ enterprise value). The starting point.<br>
+        <strong>y — current earnings yield.</strong> What you’d earn each year right now if the company paid out all its real profit (REP ÷ enterprise value). The starting point.<br>
         <strong>r — return on profit reinvested.</strong> What you expect each dollar the company holds back and reinvests to earn going forward. The default is the company’s Real ROIC for the latest period — the return it has actually earned on its capital. Beside the input are one-click anchors — Real ROIC, rolling ROIIC over 1/3/5-year windows (the marginal return on recent capital; 3-year is the recommended read, ★), and Return on NTA (operating return with goodwill stripped, the better read for acquirers) — so you can set r to any of them and adjust from there.<br>
         <strong>b — % of profit reinvested.</strong> How much of its real profit the company plows back into growth (new plant, equipment, R&amp;D) instead of paying out. Above 100% means it spends more than it earns and funds the rest externally.<br>
         <strong>g — profit growth.</strong> = b·r; the forward default is realized g (the CAGR), since b·r runs hot when the capital base is shrinking.<br>
@@ -2788,6 +2894,63 @@ function _fySetG(){
   if(gh)gh.textContent='⇒ r = '+(r*100).toFixed(0)+'%';
   if(typeof _fyrSetR==='function')_fyrSetR(r*100);
 }
+// index319: the primary forward-g slider routes through the existing back-solve. Writing the slider value
+// into the engine-backing #fyGInput and calling _fySetG() keeps r/#fyR/_fyrState in sync; the engine then
+// recomputes g = the set value. No frozen-function change.
+function _fyGSlideInput(v){
+  var gin=document.getElementById('fyGInput');
+  if(gin){ gin.value=(+v).toFixed(1); }
+  if(typeof _fySetG==='function')_fySetG();
+}
+// paint the slider position, the pinned realized-history tick, and the readouts from the live snapshot.
+function _fyGSlide(){
+  var sl=document.getElementById('fyGSlide'); if(!sl) return;
+  var L=(typeof _repaFyLast!=='undefined'&&_repaFyLast)?_repaFyLast:{};
+  var gF=(typeof L.growthRate==='number'&&isFinite(L.growthRate))?L.growthRate*100:null;
+  var gHr=(typeof _fyrGReal==='function')?_fyrGReal():null;
+  var gH=(gHr!==null&&isFinite(gHr))?gHr*100:null;
+  var mn=parseFloat(sl.min), mx=parseFloat(sl.max);
+  function pos(x){ return Math.max(0,Math.min(100,(x-mn)/(mx-mn)*100)); }
+  if(gF!==null && document.activeElement!==sl){ sl.value=Math.max(mn,Math.min(mx,gF)); }
+  var live=document.getElementById('fyGSlideVal'); if(live)live.textContent=(gF===null?'\u2014':'forward '+gF.toFixed(1)+'%');
+  var mark=document.getElementById('fyGHistMark');
+  if(mark){ if(gH===null){ mark.style.display='none'; } else { mark.style.display='block'; mark.style.left=pos(gH)+'%'; } }
+  var hl=document.getElementById('fyGHistLine');
+  if(hl){ var onHist=(gF!==null&&gH!==null&&Math.abs(gF-gH)<0.3);
+    hl.textContent=(gH===null?'history \u2014':('history '+gH.toFixed(1)+'%'+(onHist?' \u00b7 forward sits here (the default anchor)':''))); }
+}
+// index321: the year-by-year compounding proof (Phase-5 walk, on real company numbers). On $100 invested,
+// owned earnings start at y*100 and grow at g=b*r; each year splits into the cash you keep (1-b) and the
+// reinvested slice (b) whose return r is exactly what makes the stream grow at b*r. Live — re-solves as g moves.
+function _fyDecompTable(){
+  var host=document.getElementById('fyDecompProofBody'); if(!host) return;
+  var L=(typeof _repaFyLast!=='undefined'&&_repaFyLast)?_repaFyLast:null;
+  if(!L||typeof L.y!=='number'||typeof L.b!=='number'||typeof L.k!=='number'||!isFinite(L.k)||typeof L.growthRate!=='number'||!isFinite(L.growthRate)){ host.innerHTML=''; return; }
+  var y=L.y, b=L.b, k=L.k, g=L.growthRate;
+  var r=(typeof L.r==='number'&&isFinite(L.r))?L.r:null;
+  var keep=(typeof L.keptY==='number'&&isFinite(L.keptY))?L.keptY:((b<=1)?(1-b)*y:0);
+  var P=function(x){return (x*100).toFixed(2)+'%';};
+  var P0=function(x){return Math.round(x*100)+'%';};
+  var D=function(x){return '$'+x.toFixed(2);};
+  if(b>1){ // reinvests beyond earnings — the clean (1-b) split doesn't apply
+    host.innerHTML='<div class="fyk-proof-note">This name reinvests beyond its earnings (b = '+P0(b)+'), so the simple "cash you keep" split doesn\u2019t apply \u2014 you keep none of the yield and the slice above 100% is financed. The year-by-year proof is shown only when b \u2264 100%.</div>';
+    return;
+  }
+  var N=5;
+  // Owned earnings on $100, rounded for display so every figure on screen reconciles to the penny.
+  var own=[]; for(var i=1;i<=N+1;i++){ own[i]=Math.round(y*100*Math.pow(1+g,i-1)*100)/100; } // own[1..N+1]
+  var setup='You buy <b>$100</b> at a <b>'+P(y)+'</b> earnings yield \u2014 the business earns <b>'+D(own[1])+'</b> for you in year 1. Each year\u2019s owned earnings split into the <b style="color:var(--blue)">yield you keep</b> (1\u2212b) and the <b style="color:var(--green)">slice you reinvest</b> (b)'+(r!==null?(', which earns <b>r = '+P0(r)+'</b>'):'')+' \u2014 and that reinvestment is what grows the stream the next year.';
+  var rows='';
+  for(var n=1;n<=N;n++){
+    var keepN=Math.round((1-b)*y*100*Math.pow(1+g,n-1)*100)/100, reinvN=Math.round((own[n]-keepN)*100)/100;
+    var gnext=Math.round((own[n+1]-own[n])*100)/100, gprev=Math.round((own[n]-own[n-1])*100)/100;
+    var ownCell='<b>'+D(own[n])+'</b><span class="fyk-sub">'+(n===1?('your entry &middot; '+P(y)+' of $100'):('= '+D(own[n-1])+' + '+D(gprev)+' growth'))+'</span>';
+    rows+='<tr><td>'+n+'</td><td>'+ownCell+'</td><td class="fyk-keepcol">'+D(keepN)+'</td><td class="fyk-growcol">'+D(reinvN)+'</td><td class="fyk-growcol">+'+D(gnext)+'</td></tr>';
+  }
+  var k1=Math.round((1-b)*own[1]*100)/100, rv1=Math.round((own[1]-k1)*100)/100, gr1=Math.round((own[2]-own[1])*100)/100;
+  var note='Two columns, two boxes. <b style="color:var(--blue)">Yield kept (1\u2212b)</b> is exactly the <b style="color:var(--blue)">Yield kept out of growth</b> box \u2014 year 1\u2019s '+D(k1)+' is '+P(keep)+' of your cost. <b style="color:var(--green)">Reinvested (b)</b> is what earns r and becomes next year\u2019s growth: year 1\u2019s '+D(rv1)+' reinvested slice earns r and lifts owned earnings by '+D(gr1)+', so year 2 '+D(own[2])+' = '+D(own[1])+' + that. Stacked up year after year, that\u2019s the <b style="color:var(--green)">Forward growth</b> box (g = '+P(g)+'). Year 1\u2019s kept '+P(keep)+' + that growth = the <b style="color:var(--accent2)">Total return</b> box (k = '+P(k)+').';
+  host.innerHTML='<div class="fyk-proof-setup">'+setup+'</div><table><thead><tr><th>Year</th><th>Owned earnings</th><th class="fyk-keepcol">Yield kept<span class="fyk-subh">(1\u2212b) &middot; keep box</span></th><th class="fyk-growcol">Reinvested<span class="fyk-subh">(b) &middot; earns r</span></th><th class="fyk-growcol">Grows next yr<span class="fyk-subh">reinvest \u00d7 r</span></th></tr></thead><tbody>'+rows+'</tbody></table><div class="fyk-proof-note">'+note+'</div>';
+}
 function _fybBuildTrack(){
   var t=document.getElementById('fybTrack');if(!t)return;t.innerHTML='';
   [0,50,100,150].forEach(function(g){t.insertAdjacentHTML('beforeend','<div class="fyb-grid" style="left:'+_fybPos(g)+'%"></div><div class="fyb-gridlab" style="left:'+_fybPos(g)+'%">'+g+'%</div>');});
@@ -2886,7 +3049,7 @@ function _fyParked(){
   if(!(ev>0 && ic>0 && ncSec>0 && (ncSec/ic)>=0.10 && !hasLT)){ el.style.display='none'; return; }
   var bps=Math.round(ncSec*TBILL_REF/ev*10000);
   el.style.display='block';
-  el.innerHTML='Parked securities \u2248 <b>'+fmtM(ncSec)+'</b> could add ~'+bps+' bps to the yield if credited at the T-bill rate \u2014 the full, adjustable read sits just below. <span style="opacity:.65">(shown only where it\u2019s material)</span>';
+  el.innerHTML='Parked securities \u2248 <b>'+fmtM(ncSec)+'</b> could add ~'+bps+' bps to the yield if credited at the T-bill rate \u2014 the full, adjustable read sits further down the panel. <span style="opacity:.65">(shown only where it\u2019s material)</span>';
 }
 // ===== index264 (item9): re-rating box — PE slider over the engine's lever. Doubling of VALUE (price = multiple·profit;
 // profit compounds at g, multiple re-rates peNow->peEnd): t = ln(2·peNow/peEnd)/ln(1+g). The visual .fyp- slider writes the
@@ -2930,7 +3093,7 @@ function _fyReRate(){
   var d=_fypDom(), domSig=d.vmin+'/'+d.vmax, t=document.getElementById('fypTrack');
   if(t&&(t.dataset.built!=='1'||t.dataset.domSig!==domSig)){ _fypBuildTrack(); if(t)t.dataset.domSig=domSig; }
   var big=document.getElementById('fypBig'); if(big)big.textContent=peEnd.toFixed(1)+'× P/E';
-  var yl=document.getElementById('fypYield'); if(yl)yl.textContent='today '+peNow.toFixed(1)+'× → exit '+peEnd.toFixed(1)+'× · implied yield '+pct(1/peEnd,1);
+  var yl=document.getElementById('fypYield'); if(yl)yl.textContent='today '+peNow.toFixed(1)+'× → exit '+peEnd.toFixed(1)+'× · implied earnings yield '+pct(1/peEnd,1);
   var rb=document.getElementById('fypReset'); if(rb){ rb.textContent='↺ today '+peNow.toFixed(1)+'×'; rb.onclick=function(){_fypReset();}; }
   var cur=document.getElementById('fypCur'), curLab=document.getElementById('fypCurLab');
   if(cur)cur.style.left=_fypPos(peNow)+'%';
@@ -2948,6 +3111,7 @@ function _fyReRate(){
   var msg=document.getElementById('fypMsg');
   if(kF===null){ if(msg)msg.innerHTML='Total return k not available yet — run the panel above.'; return; }
   var R=peEnd/peNow;
+  var held=Math.abs(R-1)<0.005;
   var divY=kF-gE;
   var priceCAGR=(1+gE)*Math.pow(R,1/HOLD)-1;
   var kRe=divY+priceCAGR;
@@ -2956,9 +3120,14 @@ function _fyReRate(){
   var ivl=document.getElementById('invYield'); if(ivl)ivl.textContent='≈ '+(kRe*100).toFixed(0)+'% / yr';
   var pfy=document.getElementById('profYrs'); if(pfy)pfy.textContent=fmtYr(tG);
   var dec=document.getElementById('invDecomp');
-  if(dec){ var yTxt=(yE!==null)?(' of the <b>'+(yE*100).toFixed(1)+'%</b> best-guess yield'):'';
-    dec.innerHTML='k ≈ <b>'+(kRe*100).toFixed(0)+'%</b>/yr = <b>'+(priceCAGR*100).toFixed(0)+'%</b> price growth (the profit’s rate, if the P/E holds) + your <b>'+(divY*100).toFixed(1)+'%</b> share'+yTxt+'.'; }
-  if(msg){ var held=Math.abs(R-1)<0.005;
+  // index325: clock-decomposition trim. The keep/grow=k box is promoted high and owns the decomposition; the
+  // re-rate story is owned by #fypMsg below. So this line no longer re-derives k — it lightly ties the clock
+  // back to k, and (when re-rated) names the bent rate so it agrees with the hero number above.
+  if(dec){
+    if(held){ dec.innerHTML='Your money compounds at <b>k = '+(kF*100).toFixed(0)+'%</b> \u2014 the Total return from the box above \u2014 so it doubles in <b>~'+fmtYr(tBase)+' yr</b>, a step ahead of the profit\u2019s own clock because you also keep the (1\u2212b)y yield.'; }
+    else { dec.innerHTML='Your money compounds at <b>k = '+(kF*100).toFixed(0)+'%</b> \u2014 the Total return from the box above. The exit re-rate (set below) bends your clock to <b>\u2248'+(kRe*100).toFixed(0)+'%/yr</b>.'; }
+  }
+  if(msg){
     if(held){ msg.innerHTML='If the <b>P/E doesn’t change</b>, your money and the profit double together — about <b>'+fmtYr(tBase)+' yr</b> (the yield you collect nudges yours just ahead). Move the knob to open the wedge.'; }
     else if(R>1){ msg.innerHTML='A re-rate to <b>'+peEnd.toFixed(1)+'×</b> over '+HOLD+' yr pulls your doubling in to <b>'+fmtYr(tInv)+' yr</b>, from <b>'+fmtYr(tBase)+' yr</b> if the P/E holds — a tailwind on top of the business.'; }
     else { msg.innerHTML='A re-rate to <b>'+peEnd.toFixed(1)+'×</b> over '+HOLD+' yr stretches your doubling out to <b>'+fmtYr(tInv)+' yr</b>, from <b>'+fmtYr(tBase)+' yr</b> if the P/E holds — a headwind the business must overcome.'; }
@@ -3046,6 +3215,46 @@ function _fyMathBox(){
     var k=(_repaFyLast&&typeof _repaFyLast.k==='number'&&isFinite(_repaFyLast.k))?_repaFyLast.k:null;
     el.textContent='k '+(k===null?'\u2014':(k*100).toFixed(1)+'%');
   }
+  // index314: paint the big projected-return headline at the top of the expanded body. Reads the same frozen-engine snapshot (_repaFyLast.k) as _ftrHeadSync, so the headline and the collapsed chip can never disagree.
+  function _fyHeadline(){
+    var el=document.getElementById('fyHeadBig');if(!el)return;
+    var k=(_repaFyLast&&typeof _repaFyLast.k==='number'&&isFinite(_repaFyLast.k))?_repaFyLast.k:null;
+    el.textContent=(k===null?'\u2014':(k*100).toFixed(1)+'%');
+  }
+  // index317: paint the forward-vs-history sanity strip. forward g/k from the frozen snapshot; history g from
+  // _fyrGReal() (durable full-history CAGR — the forward anchor) and history k from _realizedKWindow(_rkWin)
+  // (the same realized read the "model vs reality" embed uses). The note flags forward g departing from history.
+  function _fySanity(){
+    var L=_repaFyLast; if(!L) return;
+    function p(x){ return (x===null||typeof x!=='number'||!isFinite(x))?'\u2014':((x*100).toFixed(1)+'%'); }
+    var gF=(typeof L.growthRate==='number'&&isFinite(L.growthRate))?L.growthRate:null;
+    var kF=(typeof L.k==='number'&&isFinite(L.k))?L.k:null;
+    var gH=(typeof _fyrGReal==='function')?_fyrGReal():null;
+    var rk=(typeof _realizedKWindow==='function')?_realizedKWindow(typeof _rkWin!=='undefined'?_rkWin:99):null;
+    var kH=(rk&&rk.ok&&typeof rk.k==='number'&&isFinite(rk.k))?rk.k:null;
+    var e;
+    if(e=document.getElementById('fySanGH'))e.textContent=p(gH);
+    if(e=document.getElementById('fySanGF'))e.textContent=p(gF);
+    if(e=document.getElementById('fySanKH'))e.textContent=p(kH);
+    if(e=document.getElementById('fySanKF'))e.textContent=p(kF);
+    // g basis: fixed full-history span (earliest profitable annual -> latest annual), labeled so the
+    // start/end are visible even though they're not user-adjustable. k basis: the shared _rkWin chips
+    // (1|3|5|all) — same state as the lower model-vs-reality block, so changing either moves both.
+    var refs=(typeof _rkRefs==='function')?_rkRefs():null;
+    var gw=document.getElementById('fySanGWin');
+    if(gw){
+      var st=null; if(refs&&refs.ann){ for(var gi=0;gi<refs.ann.length;gi++){ if(refs.ann[gi].rep>0){ st=refs.ann[gi]; break; } } }
+      gw.textContent=(st&&refs.latestLabel)?('full history \u00b7 FY'+st.label+'\u2013FY'+refs.latestLabel):'full history';
+    }
+    var kw=document.getElementById('fySanKWin');
+    if(kw&&typeof _rkWinChips==='function'){ try{ kw.innerHTML=_rkWinChips(); }catch(_e){} }
+    var note=document.getElementById('fySanNote'); if(!note) return;
+    if(gF===null||gH===null){ note.className='fysan-note ok'; note.textContent=''; return; }
+    var gap=(gF-gH)*100;
+    if(Math.abs(gap)<0.3){ note.className='fysan-note ok'; note.textContent='Forward g sits on realized history \u2014 the neutral default.'; }
+    else if(gap>0){ note.className='fysan-note warn'; note.textContent='\u2691 Forward g is '+gap.toFixed(1)+'pp above what history delivered \u2014 needs a reason (runway, pricing, an accretive deal).'; }
+    else { note.className='fysan-note ok'; note.textContent='Forward g is '+Math.abs(gap).toFixed(1)+'pp below history \u2014 the cautious read.'; }
+  }
 
 // index270 (FTR de-bloat, scope = decomposition dedup ONLY): the engine block (#fyResults) restates the
 // k-headline CARD that sits above it \u2014 the big k, the keep/grow boxes, the "reinvest less/more" line, and the
@@ -3070,7 +3279,7 @@ function _fyDebloat270(){
     }
   }catch(e){}
 }
-  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);try{_ftrHeadSync();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fyDebloat270();}catch(e){}return out;};
+  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);try{_ftrHeadSync();}catch(e){}try{_fyHeadline();}catch(e){}try{_fySanity();}catch(e){}try{_fyGSlide();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyDecompTable();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fyDebloat270();}catch(e){}return out;};
 })();
 
 // REP for the active view. Full D&A = the conservative floor (m.realProfit).
@@ -6545,7 +6754,7 @@ function _histExpDraw(keys){
 var _rkData=null, _rkRange='all', _rkOpenGraph=null, _rkLog=false;
 // v4.21.0 (Item 9 embeds + endpoint normalization)
 var _rkNowMode='auto';   // History-panel endpoint basis: 'auto' (latest annual) | 'avg3' | 'ttm'
-var _rkWin=3;            // realized-k trailing window (years) for the FTR / Buybacks embeds: 1 | 3 | 5
+var _rkWin=99;            // index318: realized-k window — DEFAULT full history ('all', sentinel 99). Shared by the FTR sanity strip, the FTR model-vs-reality embed, and the Buybacks embed (one truth). Selectable 1|3|5|all in both the strip and the lower block.
 
 // ---- shared realized-k references: annual REP history + the three "profit now" endpoints ----
 // Single source for the History panel, both embeds, and the endpoint chooser, so a normalized
