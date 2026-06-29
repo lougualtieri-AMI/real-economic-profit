@@ -1035,6 +1035,8 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
 
 <div id="results">
   <div id="verdict" class="verdict"></div>
+  <!-- index329: relocated full Private Investments / parked-securities reference box. Static sibling of #verdict (never innerHTML-wiped), filled by the painter inside renderForwardYield via getElementById('fyPrivInv'). Sits directly under the Yield Ladder / BRK Look-Through — "what else this company owns," reference, not part of k's computation. The quiet #fyParked teaser up in FTR points here. -->
+  <div id="fyPrivInv" style="margin-bottom:14px"></div>
   <div class="card" id="waterfallCard"><h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('waterfallBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📉 Profit Waterfall <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
     <div id="waterfallBody">
     <div class="wf-intro">
@@ -1236,6 +1238,15 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
       <div class="fyhl-big" id="fyHeadBig">&mdash;</div>
       <div class="fyhl-def">The rate you&rsquo;d compound owning this &mdash; your share of the profit&rsquo;s growth, plus the earnings yield you keep on the price you paid. Holds only if the multiple doesn&rsquo;t change.</div>
     </div>
+    <!-- index333: view-basis selector pulled OUT of the building-blocks dropdown to top-level, directly under the k headline, so the basis the headline is computed on is never ambiguous (standing note: the first number seen should clearly be the Best-Guess case). Same #fyView select + _fySetView wiring — relocated only; exactly one #fyView in the DOM. -->
+    <div id="fyViewTop" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 14px;padding:8px 11px;background:var(--card2);border:1px solid var(--border);border-radius:8px">
+      <label style="font-size:.74rem;font-weight:600;color:var(--text2)">Headline basis</label>
+      <select id="fyView" onchange="_fySetView(this.value)" style="padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem">
+        <option value="fullda">Full D&amp;A (conservative floor)</option>
+        <option value="bestguess" selected>Best Guess (slider-calibrated central case)</option>
+      </select>
+      <span style="font-size:.68rem;color:var(--text3)">which earnings yield (y) the headline k builds on</span>
+    </div>
     <!-- index317: forward-vs-history sanity strip (mock v3 step 2). The guardrail on any asserted g: realized history beside the live forward number for both g and k, with a flag when forward g departs from history. Populated by _fySanity() in the render wrapper chain. -->
     <div id="fySanity">
       <div class="fysan-row">
@@ -1295,7 +1306,7 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
       <details class="fyk-proof" id="fyDecompProof"><summary>Watch it compound &mdash; a year-by-year proof on $100</summary><div class="fyk-proof-body" id="fyDecompProofBody"></div></details>
     </div>
     <!-- index324: parked-securities teaser moved up to sit directly under the (now-promoted) k headline box, per design — shown only for above-threshold look-through names. -->
-    <!-- index262 (item7): parked-securities one-liner. Quiet teaser directly under the k headline; shown only for material names (same gate as the full #fyPrivInv box below). Populated by _fyParked() from _repaFyLast. -->
+    <!-- index262 (item7): parked-securities one-liner. Quiet teaser directly under the k headline; shown only for material names (same gate as the full #fyPrivInv box, relocated up by the Yield Ladder). Populated by _fyParked() from _repaFyLast. -->
     <div class="fyk-oneliner" id="fyParked" style="display:none"></div>
     <!-- index326: doubling-clocks panel (#fyReRate) lifted up to sit directly under the decomposition box + parked teaser — both are "what your k means," so they belong together. The r/b building blocks and engine detail now follow below. Display-layer relocation; #fyMultLever (load-bearing) and #fyResults stay in place lower down. -->
     <!-- index264 (item9): re-rating box (Multiple view). The .fyp-* PE slider drives the hidden #fyMultSlider; _fyReRate() reads _repaFyLast.lever{peNow,peEnd}+growthRate and shows value-doubling t=ln(2·peNow/peTgt)/ln(1+g). The Multiple|Equity-bond toggle + bond view = item 10 (next build). -->
@@ -1332,17 +1343,11 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
       </div>
     </div>
     <details class="fy-blocks" id="fyBlocks" ontoggle="if(this.open){try{renderForwardYield();}catch(e){}}">
-      <summary>Adjust the building blocks <span class="fy-blocks-sub">&mdash; r, b, and the view basis behind g</span></summary>
+      <summary>Adjust the building blocks <span class="fy-blocks-sub">&mdash; r and b behind g</span></summary>
       <div class="fy-blocks-body">
-        <p class="fy-blocks-intro">You set the spine &mdash; <b>forward growth (g)</b> &mdash; with the slider above. These are the knobs underneath it: the return you expect on each reinvested dollar (<b>r</b>) and the share of profit reinvested (<b>b</b>), with <b>g = b&middot;r</b> held live as you move them. The <b>view basis</b> picks which earnings yield (y) the headline builds on; the financing cost (f) appears only when b runs past 100%. The realized-history defaults stand unless you have a specific reason to depart.</p>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <label style="font-size:.78rem;font-weight:600;color:var(--text2)">View basis:</label>
-      <select id="fyView" onchange="_fySetView(this.value)" style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem">
-        <option value="fullda">Full D&amp;A (conservative floor)</option>
-        <option value="bestguess" selected>Best Guess (slider-calibrated central case)</option>
-      </select>
-    </div>
-    <div style="font-size:.72rem;color:var(--text3);margin:-6px 0 14px;line-height:1.5">Each input can be nudged and snapped back with its “↺ default” link. To reset everything at once, <strong style="color:var(--accent2)">switch the view basis — that resets them all</strong> to fresh defaults.</div>
+        <p class="fy-blocks-intro">You set the spine &mdash; <b>forward growth (g)</b> &mdash; with the slider above. These are the knobs underneath it: the return you expect on each reinvested dollar (<b>r</b>) and the share of profit reinvested (<b>b</b>), with <b>g = b&middot;r</b> held live as you move them. The <b>view basis</b> (now at the top of the panel) picks which earnings yield (y) the headline builds on; the financing cost (f) appears only when b runs past 100%. The realized-history defaults stand unless you have a specific reason to depart.</p>
+    <!-- index333: view-basis selector relocated to top-level (directly under the k headline). It used to sit here in the dropdown. -->
+    <div style="font-size:.72rem;color:var(--text3);margin:-6px 0 14px;line-height:1.5">Each input can be nudged and snapped back with its “↺ default” link. To reset everything at once, <strong style="color:var(--accent2)">switch the view basis at the top of the panel — that resets them all</strong> to fresh defaults.</div>
     <!-- index249: FTR r-slider replaces the r number box (the box is kept hidden below as the engine-backing field). -->
     <div id="fyRSlider" style="margin-bottom:18px">
       <div class="fyr-lab">Return on reinvestment · r <span class="fyr-live" id="fyrLive">r —</span></div>
@@ -1390,12 +1395,16 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     </div>
       </div>
     </details>
-    <div id="fyPrivInv" style="margin-bottom:14px"></div>
+    <!-- index330: compact r/b sensitivity (effect-on-k). Replaces the prominent frozen two-box "How much r/b matters" grid in #fyResults (now hidden via the _fyDebloat270 signature). Two always-visible one-liners + a collapsed scenario detail, painted by _fySensCompact() from _repaFyLast.sens / .bRange — display-layer, snapshot-driven, no frozen change. Sits directly under the building-blocks dropdown. -->
+    <div id="fySensLite" style="display:none;margin:2px 0 14px"></div>
+    <!-- index329: #fyPrivInv relocated OUT of FTR, up to a static sibling directly after #verdict (under the Yield Ladder / Look-Through). Painter (inside frozen renderForwardYield) targets it by getElementById, so the move is display-layer only. -->
     <div id="fyRcashRow" style="margin-bottom:14px;display:none">
       <label style="font-size:.74rem;font-weight:600;color:var(--text2)">Cash rate r_cash (%) <span style="font-weight:400;color:var(--text3)">— money-market return on undeployed cash; also the floor for f</span></label>
       <input type="number" id="fyRcash" step="0.1" oninput="renderForwardYield()" style="width:80px;margin-left:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem"> <span onclick="_fyReset('rcash')" style="color:var(--accent2);cursor:pointer;font-size:.7rem;white-space:nowrap">&#8635; default: <span id="fyRcashDefault">&mdash;</span></span>
     </div>
     <div id="fyResults"></div>
+    <!-- index331: corrected "yield-on-cost ripens toward r" line + runway caveat, cloned out of the frozen #fyResults (originals hidden via _fyDebloat270 signatures). Option A: the ceiling is the reinvestment return r you set on the slider, NOT relabeled "ROIC" (which collided with the 48% Real ROIC in Capital Allocation). Painted by _fyRipenClone() from the snapshot (r, y, growthRate); same gates as the frozen originals. Display-layer; no frozen change. -->
+    <div id="fyRipenLite" style="display:none"></div>
     <!-- index123: multiple-sensitivity lever — makes the "if the multiple holds" caveat interactive. Static so dragging never re-creates the input; readout written by renderForwardYield. -->
     <div id="fyMultLever" style="display:none;margin:4px 0 4px;padding:11px 13px;background:var(--card2);border:1px solid var(--border);border-radius:8px">
       <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:2px">Multiple change &middot; re-rating effect</div>
@@ -1457,7 +1466,7 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     <h2>🎯 When Does This Investment Work?</h2>
     <button class="proj-toggle" id="projToggle" onclick="toggleProjections()">Model growth scenarios ▼</button>
     <div id="projInputArea" style="display:none;margin-top:12px">
-      <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">How fast does the business need to grow for today's price to make sense? Set your growth assumptions and target yield.</p>
+      <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">How fast does the business need to grow for today's price to make sense? Set your growth assumptions and target yield-on-cost.</p>
 
       <div class="proj-inputs" style="grid-template-columns:1fr 1fr 1fr">
         <div class="field"><label>Revenue Growth (%/yr)</label><input type="number" id="thesis_rev_growth" step="0.1" placeholder="e.g. 15"><div class="hint">Annual revenue growth rate</div></div>
@@ -1466,7 +1475,7 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
       </div>
 
       <div class="proj-inputs" style="grid-template-columns:1fr 1fr 1fr 1fr">
-        <div class="field"><label>Target Yield (%)</label><select id="thesis_target" style="padding:8px 10px;font-size:.82rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"><option value="10">10% — Good return</option><option value="15" selected>15% — Exceptional</option><option value="7">7% — Acceptable</option></select></div>
+        <div class="field"><label>Target yield-on-cost (%)</label><select id="thesis_target" style="padding:8px 10px;font-size:.82rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"><option value="10">10% — Good return</option><option value="15" selected>15% — Exceptional</option><option value="7">7% — Acceptable</option></select></div>
         <div class="field"><label>SBC Assumption</label><select id="thesis_sbc_mode" style="padding:8px 10px;font-size:.82rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"><option value="with_rev">Grows with revenue</option><option value="flat">Stays flat</option><option value="custom">Custom %/yr</option></select><div class="hint" id="thesis_sbc_hint"></div></div>
         <div class="field"><label>SBC Override ($M)</label><input type="number" id="thesis_sbc_override" step="1" placeholder="Current carries fwd"><div class="hint">Normalize anomalies (e.g. multi-year grants)</div></div>
         <div class="field" id="thesis_sbc_custom_field" style="display:none"><label>SBC Growth (%/yr)</label><input type="number" id="thesis_sbc_custom" step="0.1" placeholder="e.g. 8"><div class="hint">Annual SBC growth rate</div></div>
@@ -1488,7 +1497,7 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     <h2>💲 Target Price Calculator</h2>
     <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px">What price do you need for the yield you want? Flips the equation: instead of yield-at-price, price-at-yield.</p>
     <div class="row" style="margin-bottom:12px">
-      <div class="field"><label>Custom Target Yield (%)</label><input type="number" id="targetYieldCustom" step="0.1" placeholder="e.g. 6" oninput="renderTargetCalc()"></div>
+      <div class="field"><label>Custom target yield-on-cost (%)</label><input type="number" id="targetYieldCustom" step="0.1" placeholder="e.g. 6" oninput="renderTargetCalc()"></div>
       <div class="field"><label>View</label><select id="targetCalcView" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem" onchange="renderTargetCalc()"><option value="full_cost">Full D&A</option><option value="ex_amort">All Amortization Added Back (Depr Only)</option></select></div>
     </div>
     <div id="targetCalcContent"></div>
@@ -1599,7 +1608,7 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
       SBC Growth ÷ CFO Growth (year-over-year). Shows what fraction of cash flow improvement was absorbed by rising compensation vs. flowing to shareholders. <20% = good, 20–50% = meaningful, >50% = majority of growth consumed by SBC.</p>
 
       <p><strong style="color:var(--accent2)">Target Price Calculator</strong><br>
-      Inverts the yield equation: Target EV = REP ÷ Target Yield → Target Market Cap = Target EV − Debt + Cash → Target Price = Target Market Cap ÷ Shares. Shows what price you need for the yield you want.</p>
+      Inverts the yield equation: Target EV = REP ÷ target yield-on-cost → Target Market Cap = Target EV − Debt + Cash → Target Price = Target Market Cap ÷ Shares. Shows what price you need for the yield-on-cost you want.</p>
 
       <h4 style="color:var(--accent);margin:24px 0 10px;font-size:.95rem;border-bottom:1px solid var(--border);padding-bottom:6px">Capital & Growth</h4>
 
@@ -2512,13 +2521,13 @@ function runThesis(){
   h+='<div style="margin-top:12px;padding:12px;border-radius:8px;font-size:.85rem;';
   if(hitTarget&&hitTarget<=Math.ceil(horizon*0.6)){
     h+='background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:var(--green)">';
-    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you hit '+pct(targetYield,0)+' yield in Year '+hitTarget+'. The business grows into the valuation within a reasonable timeframe.';
+    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you hit '+pct(targetYield,0)+' yield-on-cost in Year '+hitTarget+'. The business grows into the valuation within a reasonable timeframe.';
   }else if(hitTarget&&hitTarget<=horizon){
     h+='background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);color:var(--orange)">';
-    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you hit '+pct(targetYield,0)+' yield in Year '+hitTarget+'. It works, but requires patience and sustained execution.';
+    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you hit '+pct(targetYield,0)+' yield-on-cost in Year '+hitTarget+'. It works, but requires patience and sustained execution.';
   }else{
     h+='background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red)">';
-    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you don\'t reach '+pct(targetYield,0)+' yield within '+horizon+' years. ';
+    h+='<strong>Verdict:</strong> At '+pct(g,0)+' revenue growth, you don\'t reach '+pct(targetYield,0)+' yield-on-cost within '+horizon+' years. ';
     if(hasLightView&&hitTargetLight&&hitTargetLight<=horizon){
       h+='The All Amortization Added Back view hits it in Year '+hitTargetLight+' — the gap is acquisition amortization. ';
     }
@@ -2931,25 +2940,27 @@ function _fyDecompTable(){
   var keep=(typeof L.keptY==='number'&&isFinite(L.keptY))?L.keptY:((b<=1)?(1-b)*y:0);
   var P=function(x){return (x*100).toFixed(2)+'%';};
   var P0=function(x){return Math.round(x*100)+'%';};
+  var P1=function(x){return (x*100).toFixed(1)+'%';}; // index335: 1-dp YoY growth %
   var D=function(x){return '$'+x.toFixed(2);};
   if(b>1){ // reinvests beyond earnings — the clean (1-b) split doesn't apply
     host.innerHTML='<div class="fyk-proof-note">This name reinvests beyond its earnings (b = '+P0(b)+'), so the simple "cash you keep" split doesn\u2019t apply \u2014 you keep none of the yield and the slice above 100% is financed. The year-by-year proof is shown only when b \u2264 100%.</div>';
     return;
   }
-  var N=5;
+  var N=10;
   // Owned earnings on $100, rounded for display so every figure on screen reconciles to the penny.
   var own=[]; for(var i=1;i<=N+1;i++){ own[i]=Math.round(y*100*Math.pow(1+g,i-1)*100)/100; } // own[1..N+1]
-  var setup='You buy <b>$100</b> at a <b>'+P(y)+'</b> earnings yield \u2014 the business earns <b>'+D(own[1])+'</b> for you in year 1. Each year\u2019s owned earnings split into the <b style="color:var(--blue)">yield you keep</b> (1\u2212b) and the <b style="color:var(--green)">slice you reinvest</b> (b)'+(r!==null?(', which earns <b>r = '+P0(r)+'</b>'):'')+' \u2014 and that reinvestment is what grows the stream the next year.';
+  var setup='You buy <b>$100</b> at a <b>'+P(y)+'</b> earnings yield \u2014 the business earns <b>'+D(own[1])+'</b> for you in year 1. Because your cost is exactly $100, that figure is also your <b>yield-on-cost</b> ('+D(own[1])+' = '+P(own[1]/100)+'), and it ripens at g \u2014 your entry yield compounding to <b>'+P(own[N]/100)+'</b> by year '+N+'. Each year\u2019s owned earnings split into the <b style="color:var(--blue)">yield you keep</b> (1\u2212b) and the <b style="color:var(--green)">slice you reinvest</b> (b)'+(r!==null?(', which earns <b>r = '+P0(r)+'</b>'):'')+' \u2014 and that reinvestment is what grows the stream the next year.';
   var rows='';
   for(var n=1;n<=N;n++){
     var keepN=Math.round((1-b)*y*100*Math.pow(1+g,n-1)*100)/100, reinvN=Math.round((own[n]-keepN)*100)/100;
     var gnext=Math.round((own[n+1]-own[n])*100)/100, gprev=Math.round((own[n]-own[n-1])*100)/100;
     var ownCell='<b>'+D(own[n])+'</b><span class="fyk-sub">'+(n===1?('your entry &middot; '+P(y)+' of $100'):('= '+D(own[n-1])+' + '+D(gprev)+' growth'))+'</span>';
-    rows+='<tr><td>'+n+'</td><td>'+ownCell+'</td><td class="fyk-keepcol">'+D(keepN)+'</td><td class="fyk-growcol">'+D(reinvN)+'</td><td class="fyk-growcol">+'+D(gnext)+'</td></tr>';
+    var gpctCell=(n===1)?'<span class="fyk-sub">&mdash;</span>':('<b>'+P1(own[n]/own[n-1]-1)+'</b>'); // index335: YoY growth of owned earnings (= g)
+    rows+='<tr><td>'+n+'</td><td>'+ownCell+'</td><td>'+gpctCell+'</td><td class="fyk-keepcol">'+D(keepN)+'</td><td class="fyk-growcol">'+D(reinvN)+'</td><td class="fyk-growcol">+'+D(gnext)+'</td></tr>';
   }
   var k1=Math.round((1-b)*own[1]*100)/100, rv1=Math.round((own[1]-k1)*100)/100, gr1=Math.round((own[2]-own[1])*100)/100;
   var note='Two columns, two boxes. <b style="color:var(--blue)">Yield kept (1\u2212b)</b> is exactly the <b style="color:var(--blue)">Yield kept out of growth</b> box \u2014 year 1\u2019s '+D(k1)+' is '+P(keep)+' of your cost. <b style="color:var(--green)">Reinvested (b)</b> is what earns r and becomes next year\u2019s growth: year 1\u2019s '+D(rv1)+' reinvested slice earns r and lifts owned earnings by '+D(gr1)+', so year 2 '+D(own[2])+' = '+D(own[1])+' + that. Stacked up year after year, that\u2019s the <b style="color:var(--green)">Forward growth</b> box (g = '+P(g)+'). Year 1\u2019s kept '+P(keep)+' + that growth = the <b style="color:var(--accent2)">Total return</b> box (k = '+P(k)+').';
-  host.innerHTML='<div class="fyk-proof-setup">'+setup+'</div><table><thead><tr><th>Year</th><th>Owned earnings</th><th class="fyk-keepcol">Yield kept<span class="fyk-subh">(1\u2212b) &middot; keep box</span></th><th class="fyk-growcol">Reinvested<span class="fyk-subh">(b) &middot; earns r</span></th><th class="fyk-growcol">Grows next yr<span class="fyk-subh">reinvest \u00d7 r</span></th></tr></thead><tbody>'+rows+'</tbody></table><div class="fyk-proof-note">'+note+'</div>';
+  host.innerHTML='<div class="fyk-proof-setup">'+setup+'</div><table><thead><tr><th>Year</th><th>Owned earnings<span class="fyk-subh">$ on $100 = yield-on-cost</span></th><th>Growth %<span class="fyk-subh">YoY &middot; = g</span></th><th class="fyk-keepcol">Yield kept<span class="fyk-subh">(1\u2212b) &middot; keep box</span></th><th class="fyk-growcol">Reinvested<span class="fyk-subh">(b) &middot; earns r</span></th><th class="fyk-growcol">Grows next yr<span class="fyk-subh">reinvest \u00d7 r</span></th></tr></thead><tbody>'+rows+'</tbody></table><div class="fyk-proof-note">'+note+' The <b>Growth %</b> column is that g year by year &mdash; owned earnings compounding at <b>'+P(g)+'</b> every row (the hundredth-of-a-percent wobble is just penny rounding in the dollars above). Your total return <b>k = '+P(k)+'</b> sits a hair above it, by exactly the kept-yield slice you don\u2019t reinvest: (1\u2212b)y = <b>'+P(keep)+'</b>.</div>';
 }
 function _fybBuildTrack(){
   var t=document.getElementById('fybTrack');if(!t)return;t.innerHTML='';
@@ -3049,7 +3060,7 @@ function _fyParked(){
   if(!(ev>0 && ic>0 && ncSec>0 && (ncSec/ic)>=0.10 && !hasLT)){ el.style.display='none'; return; }
   var bps=Math.round(ncSec*TBILL_REF/ev*10000);
   el.style.display='block';
-  el.innerHTML='Parked securities \u2248 <b>'+fmtM(ncSec)+'</b> could add ~'+bps+' bps to the yield if credited at the T-bill rate \u2014 the full, adjustable read sits further down the panel. <span style="opacity:.65">(shown only where it\u2019s material)</span>';
+  el.innerHTML='Parked securities \u2248 <b>'+fmtM(ncSec)+'</b> could add ~'+bps+' bps to the yield if credited at the T-bill rate \u2014 the full, adjustable read sits up by the Yield Ladder. <span style="opacity:.65">(shown only where it\u2019s material)</span>';
 }
 // ===== index264 (item9): re-rating box — PE slider over the engine's lever. Doubling of VALUE (price = multiple·profit;
 // profit compounds at g, multiple re-rates peNow->peEnd): t = ln(2·peNow/peEnd)/ln(1+g). The visual .fyp- slider writes the
@@ -3264,13 +3275,83 @@ function _fyMathBox(){
 // frozen engine\u2019s DOM refs still resolve), re-applied each render via the wrapper chain. Targeted by stable TEXT
 // SIGNATURE, not child index \u2014 the engine omits some children per-ticker, so positions are not stable.
 // NOTE: the parked-securities one-liner (#fyParked) is intentionally LEFT ALONE \u2014 it is the small private-
-// investments acknowledgement that stays in FTR; the big #fyPrivInv card\u2019s relocation (up by BRK Look-Through)
-// is a separate, still-deferred carry-over and is not part of this de-bloat pass.
+// investments acknowledgement that stays in FTR; the big #fyPrivInv card\u2019s relocation (up by the Yield Ladder / BRK Look-Through)
+// was COMPLETED at index329 (now a static sibling of #verdict); the teaser stays in FTR and points up to it.
+// index330: compact effect-on-k sensitivity for r and b. Reads the snapshot the FROZEN engine already
+// exports (_repaFyLast.sens {kBull,kBase,kBear}, _repaFyLast.bRange {lo,hi,kLo,kHi,excluded}). The big
+// two-box "How much r/b matters" grid in #fyResults is hidden by _fyDebloat270; this is its low-profile
+// replacement under the building-blocks dropdown. The sliders already show the input RANGES (r anchors,
+// b ticks), so these two lines show the EFFECT ON k across each range — the magnitude, not the range.
+// Display-layer only; zero frozen change.
+function _fySensCompact(){
+  var el=document.getElementById('fySensLite'); if(!el) return;
+  var S=_repaFyLast, sens=(S&&S.sens)||{}, bR=(S&&S.bRange)||{};
+  var y=S&&S.y, r=S&&S.r;
+  var hasR=(S&&typeof r==='number'&&isFinite(r)&&typeof sens.kBull==='number'&&isFinite(sens.kBull));
+  if(!hasR){ el.style.display='none'; return; }   // r drives both legs; hide until r is set
+  var mono="font-family:'JetBrains Mono',monospace";
+  // r leg: k as the reinvestment return fades from your r toward the yield (b held)
+  var rlo=Math.min(sens.kBear,sens.kBull), rhi=Math.max(sens.kBear,sens.kBull);
+  var rLine='<span style="color:var(--text2);font-weight:600">How much r matters</span> '
+    +'<span style="color:var(--text3)">&middot;</span> k <strong style="color:var(--text);'+mono+'">'+pct(rlo,1)+'\u2013'+pct(rhi,1)+'</strong> '
+    +'<span style="color:var(--text3)">as the return fades from your '+pct(r,0)+' to the '+pct(y,1)+' yield</span>';
+  // b leg: k across the historical reinvestment range (r held)
+  var bHas=(typeof bR.lo==='number'&&isFinite(bR.lo)&&typeof bR.hi==='number'&&isFinite(bR.hi)
+            &&typeof bR.kLo==='number'&&isFinite(bR.kLo)&&typeof bR.kHi==='number'&&isFinite(bR.kHi));
+  var bLine;
+  if(bHas){
+    var blo=Math.min(bR.kLo,bR.kHi), bhi=Math.max(bR.kLo,bR.kHi);
+    bLine='<span style="color:var(--text2);font-weight:600">How much b matters</span> '
+      +'<span style="color:var(--text3)">&middot;</span> k <strong style="color:var(--text);'+mono+'">'+pct(blo,1)+'\u2013'+pct(bhi,1)+'</strong> '
+      +'<span style="color:var(--text3)">across its '+pct(bR.lo,0)+'\u2013'+pct(bR.hi,0)+' reinvestment range</span>';
+  } else {
+    bLine='<span style="color:var(--text2);font-weight:600">How much b matters</span> <span style="color:var(--text3)">&middot; not enough history loaded for a range</span>';
+  }
+  // collapsed scenario detail (the depth the old boxes carried)
+  var detail='<div style="margin-bottom:7px"><span style="color:var(--text2);font-weight:600">r scenarios</span> <span style="color:var(--text3)">(hold b, fade r toward the yield)</span><br>'
+    +'<span style="color:var(--red)">Bear</span> '+pct(sens.kBear,1)+' <span style="color:var(--text3)">r\u2192y, premium gone</span> &nbsp; '
+    +'<span style="color:var(--text2)">Base</span> '+pct(sens.kBase,1)+' <span style="color:var(--text3)">80% of r</span> &nbsp; '
+    +'<span style="color:var(--green)">Bull</span> '+pct(sens.kBull,1)+' <span style="color:var(--text3)">your r holds</span></div>';
+  if(bHas){
+    detail+='<div><span style="color:var(--text2);font-weight:600">b scenarios</span> <span style="color:var(--text3)">(hold r, sweep the historical reinvestment range)</span><br>'
+      +'b '+pct(bR.lo,0)+'\u2013'+pct(bR.hi,0)+' <span style="color:var(--text3)">\u2192</span> k '+pct(Math.min(bR.kLo,bR.kHi),1)+'\u2013'+pct(Math.max(bR.kLo,bR.kHi),1);
+    if(bR.excluded&&bR.excluded.length){ detail+=' <span style="color:var(--text3)">(excluded over-investment yrs: '+bR.excluded.join(', ')+')</span>'; }
+    detail+='</div>';
+  }
+  el.innerHTML='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:.76rem;line-height:1.7">'
+    +'<div>'+rLine+'</div><div>'+bLine+'</div>'
+    +'<details style="margin-top:6px"><summary style="cursor:pointer;color:var(--text3);font-size:.72rem">Scenario detail</summary>'
+    +'<div style="margin-top:7px;font-size:.72rem;line-height:1.6;color:var(--text2)">'+detail+'</div></details>'
+    +'</div>';
+  el.style.display='block';
+}
+// index331: corrected "yield-on-cost ripens toward r" line + the runway caveat, cloned out of the FROZEN
+// #fyResults (where the originals are hidden by _fyDebloat270). Option A: the ceiling is the reinvestment
+// return r you set on the slider — NOT relabeled "ROIC" (which collided with the 48% Real ROIC shown in
+// Capital Allocation). The frozen _roicLine already computed the time toward r; only its LABEL was wrong.
+// Recomputed here from the snapshot (r, y, growthRate) under the same gates as the frozen originals.
+function _fyRipenClone(){
+  var el=document.getElementById('fyRipenLite'); if(!el) return;
+  var S=_repaFyLast, r=S&&S.r, y=S&&S.y, g=S&&S.growthRate;
+  var okBase=(S&&typeof g==='number'&&isFinite(g)&&g>0&&typeof y==='number'&&isFinite(y)&&y>0);
+  if(!okBase){ el.style.display='none'; return; }
+  var h='';
+  // ripen-to-r line — same gate as the frozen _fyToRoic: r>y, y>0, r<=0.5. Ceiling = r (the slider value),
+  // labelled as the reinvestment return, not "ROIC".
+  if(typeof r==='number'&&isFinite(r)&&r>y&&r<=0.5){
+    var t=Math.log(r/y)/Math.log(1+g);
+    h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:8px">Hold longer and your <strong>yield-on-cost</strong> eventually climbs to your <strong>'+pct(r,0)+' reinvestment return (r)</strong> itself, in <strong>~'+t.toFixed(0)+' yrs</strong> — the flip side of paying a premium today: you accept a low starting yield, and growth works it off until your profit-on-cost matches the return you’re assuming on reinvested capital.</div>';
+  }
+  // runway caveat — verbatim from the frozen original (gate g>0 && y>0, already satisfied).
+  h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:12px">All of this rides on the reinvestment runway holding — the real bet: the rate comes from the track record so far, and could run meaningfully higher or lower.</div>';
+  el.innerHTML=h;
+  el.style.display='block';
+}
 function _fyDebloat270(){
   try{
     var res=document.getElementById('fyResults');
     if(!res) return;
-    var SIGS=['Projected Future Total Return','Growth from reinvestment','These two always sum','yield-on-cost doubles'];
+    var SIGS=['Projected Future Total Return','Growth from reinvestment','These two always sum','yield-on-cost doubles','How much r matters','eventually climbs to','rides on the reinvestment runway'];
     var kids=res.children;
     for(var i=0;i<kids.length;i++){
       var t=(kids[i].textContent||''), hit=false;
@@ -3279,7 +3360,7 @@ function _fyDebloat270(){
     }
   }catch(e){}
 }
-  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);try{_ftrHeadSync();}catch(e){}try{_fyHeadline();}catch(e){}try{_fySanity();}catch(e){}try{_fyGSlide();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyDecompTable();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fyDebloat270();}catch(e){}return out;};
+  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);try{_ftrHeadSync();}catch(e){}try{_fyHeadline();}catch(e){}try{_fySanity();}catch(e){}try{_fyGSlide();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyDecompTable();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fySensCompact();}catch(e){}try{_fyRipenClone();}catch(e){}try{_fyDebloat270();}catch(e){}return out;};
 })();
 
 // REP for the active view. Full D&A = the conservative floor (m.realProfit).
@@ -4748,7 +4829,7 @@ function renderTargetCalc(){
   }
   
   var h='';
-  h+='<table class="target-table"><tr><th>Target Yield</th><th>Required Price</th><th>vs Current ($'+price.toFixed(0)+')</th></tr>';
+  h+='<table class="target-table"><tr><th>Target yield-on-cost</th><th>Required Price</th><th>vs Current ($'+price.toFixed(0)+')</th></tr>';
   yields.forEach(function(y){
     var targetEV=rep/y;
     var targetMktCap=targetEV-debt+cash+sti;
