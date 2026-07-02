@@ -587,6 +587,24 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 #roiicCard .ca-step{display:flex;align-items:baseline;gap:9px;margin:2px 0 10px}
 #roiicCard .ca-step-n{flex:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.7rem;font-weight:700;color:var(--accent2);background:var(--card2);border:1px solid var(--accent-dim);border-radius:5px;padding:2px 7px;letter-spacing:.6px;white-space:nowrap}
 #roiicCard .ca-step-q{font-size:.79rem;color:var(--text3);line-height:1.4}
+/* index341: per-step collapsible cards */
+#roiicCard .ca-card{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin:10px 0;padding:0 15px 4px;overflow:hidden}
+#roiicCard .ca-card[open]{padding-bottom:16px;background:var(--card)}
+#roiicCard .ca-sum{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;margin:0 -15px;padding:13px 15px}
+#roiicCard .ca-sum::-webkit-details-marker{display:none}
+#roiicCard .ca-sum:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+#roiicCard .ca-sum-n{flex:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.64rem;font-weight:600;color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;letter-spacing:.5px}
+#roiicCard .ca-sum-q{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.35}
+#roiicCard .ca-sum-val{margin-left:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.7rem;color:var(--text2);text-align:right;white-space:nowrap}
+#roiicCard .ca-sum-arr{flex:none;color:var(--text3);font-size:.8rem;transition:transform .15s}
+#roiicCard .ca-card[open] .ca-sum-arr{transform:rotate(90deg)}
+#roiicCard .ca-card[open] .ca-sum-q{color:var(--accent2)}
+/* index342: richer collapsed summary (headline metric + explanation visible while collapsed) */
+#roiicCard .ca-sum-rich{flex-direction:column;align-items:stretch;gap:9px}
+#roiicCard .ca-sum-top{display:flex;align-items:center;gap:10px}
+#roiicCard .ca-sum-top .ca-sum-q{flex:1}
+#roiicCard .ca-sum-metric{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:1.7rem;font-weight:700;color:var(--accent2);line-height:1}
+#roiicCard .ca-sum-expl{font-size:.74rem;color:var(--text2);line-height:1.45;margin-top:5px}
 /* index298 (Build 2): Source-Line — quiet window stamp under each Cap-Alloc step header. States the timeframe each step is computed over (read live from the engine). */
 .ca-src{display:flex;align-items:baseline;gap:7px;margin:-5px 0 14px;font-size:.68rem;line-height:1.45;flex-wrap:wrap}
 .ca-src-tag{flex:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:700;font-size:.57rem;letter-spacing:.7px;color:var(--text3);text-transform:uppercase;border:1px solid var(--border);border-radius:4px;padding:1px 6px}
@@ -730,7 +748,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index358 \u00b7 v4.80.0'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -1134,24 +1152,17 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     <h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('roiicWrap');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">📊 Capital Allocation Analysis <span id="caHeadSum" class="dd-headsum"></span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
     <div id="roiicWrap">
     <div id="caTtmNote"></div>
-    <div class="ca-step"><span class="ca-step-n">STEP 1</span><span class="ca-step-q">Is R&amp;D an operating expense &mdash; or capital that builds a durable asset?</span></div>
-    <div class="ca-src" id="caSrc1"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
-    <div id="roicRdLead" style="margin-bottom:18px"></div>
-    <div class="ca-step"><span class="ca-step-n">STEP 2</span><span class="ca-step-q">Once growth R&amp;D is capitalized, what capital is truly deployed in the business?</span></div>
+    
+    
+    <details class="ca-card" id="caCard2" open><summary class="ca-sum ca-sum-rich"><div class="ca-sum-top"><span class="ca-sum-n">1</span><span class="ca-sum-q">What is the capital base, and how is it formed?</span><span class="ca-sum-arr">▸</span></div><div class="ca-sum-head" id="caHead2"></div></summary>
     <div class="ca-src" id="caSrc2"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
     <div id="capBaseBridge" style="margin-bottom:16px"></div>
-    <div class="ca-step"><span class="ca-step-n">STEP 3</span><span class="ca-step-q">What return does that capital base earn &mdash; measured symmetrically and honestly?</span></div>
-    <div class="ca-src" id="caSrc3"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
-    <div id="roicMetrics" style="margin-bottom:16px"></div>
-    <div class="ca-step"><span class="ca-step-n">STEP 4</span><span class="ca-step-q">Where did each year&rsquo;s cash actually go?</span></div>
-    <div class="ca-src" id="caSrc4"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
-    <div id="roiicBucketSection" style="margin-bottom:18px">
-      <div style="font-size:.82rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Use of Cash &mdash; Additions &amp; Uses</div>
-      <div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-bottom:10px">How each year&rsquo;s cash was deployed &mdash; the capital-allocation flow that moves the base above: maintenance &amp; growth capex, R&amp;D, buybacks, dividends, and debt paydown.</div>
-      <div id="roiicBucketArea" style="min-height:120px"></div>
-    </div>
-    <div id="roicBasisNote" style="font-size:.72rem;color:var(--text3);line-height:1.5;margin:0 0 14px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0">Everything below is computed on <strong style="color:var(--text2)">Full-D&amp;A REP</strong> — the conservative floor, with full depreciation and amortization treated as real cost. The All-Amortization-Added-Back view, where it applies, sits with the ROIC tiles above.</div>
-    <div class="ca-step"><span class="ca-step-n">STEP 5</span><span class="ca-step-q">Has profit kept pace with the capital base &mdash; or has the base outrun it?</span></div>
+    </details>
+    <details class="ca-card" id="caCard1" open><summary class="ca-sum ca-sum-rich"><div class="ca-sum-top"><span class="ca-sum-n">2</span><span class="ca-sum-q">Is R&amp;D an operating expense &mdash; or capital that builds a durable asset?</span><span class="ca-sum-arr">▸</span></div><div class="ca-sum-head" id="caHead1"></div></summary>
+    <div class="ca-src" id="caSrc1"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
+    <div id="roicRdLead" style="margin-bottom:18px"></div>
+    </details>
+    <details class="ca-card" id="caCard5" open><summary class="ca-sum"><span class="ca-sum-n">3</span><span class="ca-sum-q">How profit and the capital base have moved together</span><span class="ca-sum-val" id="caVal5"></span><span class="ca-sum-arr">▸</span></summary>
     <div class="ca-src" id="caSrc5"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
     <div id="profitCapitalSummary" style="margin-bottom:16px"></div>
     <!-- index272: Co-Movement chart now sits with the CAGR chips as the "Profit vs the capital base" step. -->
@@ -1160,16 +1171,12 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     <!-- index139: R&D Growth % and Competitive Necessity sliders removed. The maintenance/growth split is now owned solely by the canonical Best Guess slider (adjRdSlider); Competitive Necessity is treated as ordinary maintenance. -->
 
 
-    <div class="ca-step"><span class="ca-step-n">STEP 6</span><span class="ca-step-q">Reinvestment &times; return = growth. How fast does REP compound from here?</span></div>
-    <div class="ca-src" id="caSrc6"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
-    <p style="font-size:.8rem;color:var(--text3);margin:0 0 12px">Return on Incremental Invested Capital — measures how efficiently <em>new</em> capital generates Real Economic Profit growth: the change in REP divided by the change in invested capital (ΔREP ÷ ΔIC) across the loaded period. It is the <b style="color:var(--text2)">r</b> in the identity below.</p>
-    <div id="roiicStats" style="margin-bottom:16px"></div>
-
-    <div id="roiicGNote" style="font-size:.7rem;color:var(--text3);line-height:1.55;margin:0 0 16px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0"><strong style="color:var(--text2)">Implied REP growth</strong> is the organic, steady-state rate (g = b&middot;r): how fast REP compounds if the company keeps reinvesting b% of profit at these ROIIC returns. It is a pure operating rate &mdash; Future Total Return adds it to the payout yield for an owner&rsquo;s total return. It can read <em>below</em> the Profit CAGR/Change above; that gap is growth the steady-state identity doesn&rsquo;t capture &mdash; typically acquisitions, where REP arrives faster than retention &times; return implies.</div>
-
-    <!-- index272: Co-Movement chart relocated UP to the Profit-vs-base step (after #profitCapitalSummary).
-         The decomposition + Rolling-ROIIC block (the "two returns" step) stays here, below the implied-g note. -->
-    <div class="ca-step"><span class="ca-step-n">STEP 7</span><span class="ca-step-q">Is the return on each year&rsquo;s new capital holding up over time?</span></div>
+    </details>
+    <details class="ca-card" id="caCard3" open><summary class="ca-sum"><span class="ca-sum-n">4</span><span class="ca-sum-q">What return does that capital base earn?</span><span class="ca-sum-val" id="caVal3"></span><span class="ca-sum-arr">▸</span></summary>
+    <div class="ca-src" id="caSrc3"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
+    <div id="roicMetrics" style="margin-bottom:16px"></div>
+    </details>
+    <details class="ca-card" id="caCard7" open><summary class="ca-sum"><span class="ca-sum-n">5</span><span class="ca-sum-q">ROIC over time &mdash; what the rolling numbers say, and why it isn&rsquo;t the anchor</span><span class="ca-sum-val" id="caVal7"></span><span class="ca-sum-arr">▸</span></summary>
     <div class="ca-src" id="caSrc7"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
     <div id="roiicRatiosArea" style="min-height:80px;padding:6px 0 10px"></div>
 
@@ -1177,13 +1184,34 @@ var REPA_BUILD_TAG='index328 \u00b7 v4.75.0'; // single source of truth for buil
     <div id="roiicDetailWrap" style="display:none;overflow-x:auto">
       <table id="roiicTable" class="trend-table" style="font-size:.78rem"></table>
     </div>
-    <div id="roiicRdCapEff" style="margin-top:18px"></div>
+    <div id="roiicRdCapEff" style="margin-top:18px"></div></details>
+    <details class="ca-card" id="caCard6" style="display:none"><summary class="ca-sum"><span class="ca-sum-n">6</span><span class="ca-sum-q">Reinvestment &times; return = growth. How fast does REP compound from here?</span><span class="ca-sum-val" id="caVal6"></span><span class="ca-sum-arr">▸</span></summary>
+    <div class="ca-src" id="caSrc6" style="display:none"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
+    <p style="font-size:.8rem;color:var(--text3);margin:0 0 12px;display:none">Return on Incremental Invested Capital — measures how efficiently <em>new</em> capital generates Real Economic Profit growth: the change in REP divided by the change in invested capital (ΔREP ÷ ΔIC) across the loaded period. It is the <b style="color:var(--text2)">r</b> in the identity below.</p>
+    <div id="roiicStats" style="margin-bottom:16px;display:none"></div>
+
+    <div id="roiicGNote" style="font-size:.7rem;color:var(--text3);line-height:1.55;margin:0 0 16px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0"><strong style="color:var(--text2)">Implied REP growth</strong> is the organic, steady-state rate (g = b&middot;r): how fast REP compounds if the company keeps reinvesting b% of profit at these ROIIC returns. It is a pure operating rate &mdash; Future Total Return adds it to the payout yield for an owner&rsquo;s total return. It can read <em>below</em> the Profit CAGR/Change above; that gap is growth the steady-state identity doesn&rsquo;t capture &mdash; typically acquisitions, where REP arrives faster than retention &times; return implies.</div>
+
+    <!-- index272: Co-Movement chart relocated UP to the Profit-vs-base step (after #profitCapitalSummary).
+         The decomposition + Rolling-ROIIC block (the "two returns" step) stays here, below the implied-g note. -->
+    </details>
+    <details class="ca-card" id="caCard4" open><summary class="ca-sum"><span class="ca-sum-n">6</span><span class="ca-sum-q">Where did each year&rsquo;s cash actually go?</span><span class="ca-sum-val" id="caVal4"></span><span class="ca-sum-arr">▸</span></summary>
+    <div class="ca-src" id="caSrc4"><span class="ca-src-tag">window</span><span class="ca-src-txt"></span></div>
+    <div id="roiicBucketSection" style="margin-bottom:18px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Use of Cash &mdash; Additions &amp; Uses</div>
+      <div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin-bottom:10px">How each year&rsquo;s cash was deployed &mdash; the capital-allocation flow that moves the base above: maintenance &amp; growth capex, R&amp;D, buybacks, dividends, and debt paydown.</div>
+      <div id="roiicBucketArea" style="min-height:120px"></div>
+    </div>
+    <div id="roicBasisNote" style="font-size:.72rem;color:var(--text3);line-height:1.5;margin:0 0 14px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0">Everything below is computed on <strong style="color:var(--text2)">Full-D&amp;A REP</strong> — the conservative floor, with full depreciation and amortization treated as real cost. The All-Amortization-Added-Back view, where it applies, sits with the ROIC tiles above.</div>
+    </details>
+    
     </div>
   </div>
 
   <!-- Buybacks (index71 merge: Share Count & Capital Return Tracker + Buyback ROI Analysis into one card; inner ids buybackCard/buybackRoiCard preserved so render fns are untouched) -->
   <div class="card" id="buybacksCard" style="display:none">
     <h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('buybacksBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return <span id="bbHeadSum" class="dd-headsum"></span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
+    <div id="bbGraphSlot"></div>
     <div id="buybacksBody">
       <!-- Sub-section: Share Count & Capital Return Tracker -->
       <div id="buybackCard" style="display:none">
@@ -3973,7 +4001,7 @@ function renderBuybackTracker(){
     var buybackShares=fd.buyback_shares||0;
     var label=yr.fiscal_year_label||keys[i];
     if(repurch>0||divs>0)hasBuybackData=true;
-    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice,buybackShares:buybackShares,endPrice:(fd.end_of_period_price||0)});
+    rows.push({key:keys[i],label:label,repurch:repurch,divs:divs,shares:shares,sbcExp:sbcExp,sbcGrant:sbcGrant,realSBC:realSBC,avgBuyPrice:avgBuyPrice,buybackShares:buybackShares,endPrice:(fd.end_of_period_price||0),isInterim:(yr.isInterim||/^(TTM|Q)/i.test(String(label)))});
   }
 
   // index211: split-normalize the per-year diluted-share series ONCE (latest basis) so a
@@ -3994,6 +4022,7 @@ function renderBuybackTracker(){
   var cumRepurch=0,cumDivs=0,cumRealSBC=0;
   var weightedPriceSum=0,weightedSharesBought=0;
   for(var i=0;i<rows.length;i++){
+    if(rows[i].isInterim)continue;   // annual-only cumulative: a TTM row overlaps the latest full year — summing it double-counts
     cumRepurch+=rows[i].repurch;
     cumDivs+=rows[i].divs;
     cumRealSBC+=rows[i].realSBC;
@@ -4027,42 +4056,17 @@ function renderBuybackTracker(){
   window._bbHeadNet=netCapitalReturned; window._bbHeadEv=(_bbEV>0?_bbEV:null); // index296: feed the Share Count collapsed-header summary
 
   // --- Summary pills (above the chart) ---
-  var _spanYears=rows.length;
-  var _spanFirst=rows[0].label;
-  var _spanLast=rows[rows.length-1].label;
-  h+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:6px;font-weight:500">'+_spanFirst+' – '+_spanLast+' · '+_spanYears+' year'+(_spanYears!==1?'s':'')+'</div>';
+  var _annualRows=rows.filter(function(r){return !r.isInterim;});
+  var _ttmRows=rows.filter(function(r){return r.isInterim;});
+  var _ttmLbl=_ttmRows.length?_ttmRows[_ttmRows.length-1].label:'';
+  var _spanYears=_annualRows.length||rows.length;
+  var _spanFirst=(_annualRows[0]||rows[0]).label;
+  var _spanLast=(_annualRows[_annualRows.length-1]||rows[rows.length-1]).label;
+  var _netPerYr=(_spanYears>0)?(netCapitalReturned/_spanYears):0;
+  window._bbHeadPerYr=_netPerYr; window._bbHeadSpanYrs=_spanYears; // feed collapsed-header span
   if(!hasBuybackData){
     h+='<div style="background:var(--card2);border:1px solid var(--accent-dim);border-left:3px solid var(--accent2);border-radius:6px;padding:9px 12px;margin-bottom:14px;font-size:.78rem;color:var(--text2);line-height:1.5">No capital returned to shareholders over this span \u2014 no buybacks, no dividends. With 100%+ of REP reinvested, the chart below tracks <strong style="color:var(--red)">SBC dilution only</strong>: the rising share line and red SBC bars, with no buyback offset.</div>';
   }
-  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
-  if(hasBuybackData){
-    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Buybacks</div>';
-    h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(cumRepurch)+'</div>';
-    h+='</div>';
-  }
-  if(cumDivs>0){
-    h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
-    h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Dividends</div>';
-    h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+fmtM(cumDivs)+'</div>';
-    h+='</div>';
-  }
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:130px">';
-  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Cumulative Real SBC</div>';
-  h+='<div style="font-size:1.05rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--red)">'+fmtM(cumRealSBC)+'</div>';
-  h+='</div>';
-  var ncrClr=netCapitalReturned>=0?'var(--green)':'var(--red)';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">';
-  h+='<div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net Capital Returned</div>';
-  h+='<div style="font-size:1.15rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+ncrClr+'">'+fmtM(netCapitalReturned)+'</div>';
-  h+='<div style="font-size:.62rem;color:var(--text2);margin-top:4px;line-height:1.5;font-family:\'JetBrains Mono\',monospace">';
-  if(hasBuybackData)h+='<span style="color:var(--blue)">'+fmtM(cumRepurch)+'</span> <span style="color:var(--text3)">BB</span>';
-  if(cumDivs>0) h+=' + <span style="color:var(--green)">'+fmtM(cumDivs)+'</span> <span style="color:var(--text3)">Div</span>';
-  h+=' − <span style="color:var(--red)">'+fmtM(cumRealSBC)+'</span> <span style="color:var(--text3)">SBC</span>';
-  h+='</div>';
-  if(_bbEV>0) h+='<div style="font-size:.92rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent2);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">EV: '+fmtM(_bbEV)+'</div>';
-  h+='</div>';
-  h+='</div>';
 
   // Buyback cost basis + return row (separate from main pills)
   if(avgCostBasis>0){
@@ -4159,24 +4163,25 @@ function renderBuybackTracker(){
         var span=rows[0].label+'\u2013'+rows[rows.length-1].label;
         var base=Math.abs(firstShares)>0?Math.abs(firstShares):1;
         var otherPct=otherIssued/base;
-        var issuerBeyondSBC=(otherIssued>0 && otherPct>0.01);
+        var _issPx=v('price')||0; var _issDol=otherIssued*_issPx;
+        var issuerBeyondSBC=(otherIssued>0 && otherPct>0.03 && _issDol>1000); // fire only when both % (>3%) and $ (>$1B) clear — filters small-cap rounding & SBC-estimate noise
         // index294: only surface this when there IS material non-SBC issuance; otherwise render nothing.
         // (The chart's net dilution/shrinkage pill already covers the ordinary case.) Low-profile, lighter red.
         if(issuerBeyondSBC){
           var LR='#ef9a9a'; // lighter red — far more legible on the dark card than the deep --red
           h+='<div style="background:rgba(239,154,154,.055);border:1px solid rgba(239,154,154,.22);border-left:3px solid '+LR+';border-radius:6px;padding:9px 12px;margin-bottom:16px">';
-          h+='<div style="font-size:.77rem;font-weight:600;color:'+LR+';margin-bottom:3px">Issuing shares beyond employee comp \u2014 '+span+'</div>';
-          h+='<div style="font-size:.75rem;color:var(--text2);line-height:1.5;font-family:\'JetBrains Mono\',monospace">\u2248 <b style="color:'+LR+'">'+shf(otherIssued)+'</b> non-SBC issuance ('+pct(otherPct,1)+' of base) \u00b7 <span style="color:var(--text3)">issued '+shf(grossIssued>0?grossIssued:0)+' all-in, \u2248'+shf(cumSBCsh)+' of it SBC</span></div>';
+          h+='<div style="font-size:.77rem;font-weight:600;color:'+LR+';margin-bottom:3px">\u2691 Share growth beyond buybacks &amp; SBC \u2014 '+span+'</div>';
+          h+='<div style="font-size:.75rem;color:var(--text2);line-height:1.55">The share count grew about <b style="color:'+LR+'">'+pct(otherPct,0)+'</b> more than repurchases and stock comp explain \u2014 likely secondary offerings or acquisition stock. Worth confirming in the filings.</div>';
           var caveats=[];
           if(missingPx)caveats.push('period-end price missing for some years, so the SBC estimate is partial');
           if(repurchNoSh)caveats.push('buyback $ present but share count not entered for some years, so gross issuance is understated');
           var cavTxt=caveats.length?(' '+caveats.join('; ')+'.'):'';
-          h+='<div style="font-size:.66rem;color:var(--text3);margin-top:5px">Estimated (SBC shares = SBC$ \u00f7 period-end price). Look for secondary offerings or acquisition stock.'+cavTxt+'</div>';
+          h+='<div style="font-size:.66rem;color:var(--text3);margin-top:5px">Estimate \u2014 SBC shares \u2248 SBC$ \u00f7 price; small residuals are filtered out.'+cavTxt+'</div>';
           h+='</div>';
         }
       })();
 
-      h+='<div style="margin-bottom:16px">';
+      h+='<div id="bbChartWrap" style="margin-bottom:16px">';
       // Title row
       h+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
       h+='<span style="font-size:.85rem;font-weight:600;color:var(--text)">Share Count vs. Dilution & Buybacks'+shrNote+'</span>';
@@ -4286,15 +4291,19 @@ function renderBuybackTracker(){
 
   // --- Year-by-Year Table (reordered: shares first, then dollars) ---
   var hasAvgPrice=rows.some(function(r){return r.avgBuyPrice>0;});
+  h+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-size:.78rem;font-weight:600;color:var(--text2);padding:4px 0;user-select:none">Year-by-year detail <span style="font-weight:400;color:var(--text3);font-size:.72rem">— shares, SBC, buybacks, dividends &amp; return intensity</span></summary>';
   h+='<div style="overflow-x:auto">';
   h+='<table class="breakdown" style="font-size:.78rem;width:100%">';
-  h+='<tr><th>Year</th><th style="text-align:right">Shares'+shrNote+'</th><th style="text-align:right">Δ Shares</th><th style="text-align:right">Real SBC</th><th style="text-align:right">Buybacks</th><th style="text-align:right">BB / SBC</th>';
-  if(hasAvgPrice)h+='<th style="text-align:right">Avg Buy'+shrNote+'</th>';
-  h+='<th style="text-align:right">Dividends</th>';
-  h+='</tr>';
+  h+='<tr><th rowspan="2">Year</th><th rowspan="2" style="text-align:right">Shares'+shrNote+'</th><th rowspan="2" style="text-align:right">Δ Shares</th><th rowspan="2" style="text-align:right">Real SBC</th><th rowspan="2" style="text-align:right">Buybacks</th>';
+  if(hasAvgPrice)h+='<th rowspan="2" style="text-align:right">Avg Buy'+shrNote+'</th>';
+  h+='<th rowspan="2" style="text-align:right">Dividends</th>';
+  h+='<th colspan="3" style="text-align:center;border-bottom:1px solid var(--border);padding-bottom:3px">Return intensity <span style="font-weight:400;font-size:.62rem;color:var(--text3)">÷ REP</span></th>';
+  h+='</tr><tr><th style="text-align:right;font-weight:400;font-size:.62rem;color:var(--text3)">Buyback</th><th style="text-align:right;font-weight:400;font-size:.62rem;color:var(--text3)">Div</th><th style="text-align:right;font-weight:400;font-size:.62rem;color:var(--text3)">Net</th></tr>';
+  var _latestAnnualKey=''; for(var _ak=0;_ak<rows.length;_ak++){if(!rows[_ak].isInterim&&rows[_ak].key>_latestAnnualKey)_latestAnnualKey=rows[_ak].key;}
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
-    var ratio=r.realSBC>0?(r.repurch/r.realSBC):null;
+    if(r.isInterim&&_latestAnnualKey&&r.key<=_latestAnnualKey)continue;   // TTM superseded by a later full fiscal year
+    var _repY=0; try{var _mY=computeMetrics(yearStore[r.key]); _repY=(_mY&&_mY.realProfit)||0;}catch(e){}
     var deltaShares=(i>0&&rows[i-1].shares>0&&r.shares>0)?(r.shares-rows[i-1].shares):null;
     var dsClr=(deltaShares!==null&&deltaShares<=0)?'var(--green)':'var(--red)';
     var dispShares=r.shares*shrMult;
@@ -4307,28 +4316,30 @@ function renderBuybackTracker(){
       (dispDelta!==null?(dispDelta<=0?'':'+')+Math.round(dispDelta).toLocaleString():(i===0?'—':'N/A'))+'</td>';
     h+='<td style="text-align:right;color:var(--red)">'+fmtM(r.realSBC)+'</td>';
     h+='<td style="text-align:right;color:var(--green)">'+fmtM(r.repurch)+'</td>';
-    h+='<td style="text-align:right;font-weight:600">'+(ratio!==null?ratio.toFixed(1)+'×':'—')+'</td>';
     if(hasAvgPrice)h+='<td style="text-align:right">'+(dispAvgPx>0?'$'+dispAvgPx.toFixed(isBRK?2:0):'—')+'</td>';
     h+='<td style="text-align:right">'+(r.divs>0?fmtM(r.divs):'—')+'</td>';
+    h+='<td style="text-align:right;color:var(--green)">'+(_repY>0?pct(r.repurch/_repY,0):'—')+'</td>';
+    h+='<td style="text-align:right">'+(_repY>0?pct(r.divs/_repY,0):'—')+'</td>';
+    h+='<td style="text-align:right;font-weight:600;color:'+((_repY>0&&(r.repurch+r.divs-r.realSBC)>=0)?'var(--text)':'var(--red)')+'">'+(_repY>0?pct((r.repurch+r.divs-r.realSBC)/_repY,0):'—')+'</td>';
     h+='</tr>';
   }
   h+='</table></div>';
+  h+='</details>';
 
   // --- Insight ---
   if(rows.length>=2){
     h+='<div style="margin-top:12px;font-size:.78rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">';
     h+='<strong>Reading this card:</strong> The chart shows diluted share count over time (blue line) with annual buyback spending (green bars, ▼) vs. Real SBC cost (red bars, ▲). ';
-    h+='BB/SBC >1× means buybacks exceed SBC dilution that year. Δ Shares shows actual count changes (all sources). ';
+    h+='The last three columns show buybacks, dividends, and net capital returned (BB + Div − SBC) as a share of that year\'s Real Economic Profit — how intensively each year\'s profit went back to owners. Δ Shares shows actual count changes (all sources). ';
     if(isBRK) h+='All share counts and per-share prices converted to B-share equivalents (÷1,500). ';
     if(avgCostBasis>0){
       h+='Avg Buy is the weighted average price paid for buybacks — compare to current price.';
-    } else {
-      h+='Add "average_buyback_price" to your JSON to see buyback return analysis.';
     }
     h+='</div>';
   }
 
   content.innerHTML=h;
+  (function(){var w=document.getElementById('bbChartWrap'),gs=document.getElementById('bbGraphSlot');if(gs){gs.innerHTML='';if(w)gs.appendChild(w);}})();
 }
 
 // ============ Buyback ROI Analysis ============
@@ -4362,6 +4373,7 @@ function renderBuybackRoi(){
   var hasData=false;
   var repByLabel={};
   var hasLookThrough=false;
+  var _scDivs=0,_scSBC=0; // merged scorecard: annual dividends + Real SBC
   for(var i=0;i<keys.length;i++){
     var yr=yearStore[keys[i]];
     if(!yr||!yr.formData)continue;
@@ -4373,6 +4385,7 @@ function renderBuybackRoi(){
     var costM=fd.share_repurchases||0;
     var sharesRetired=fd.buyback_shares||0;
     var dilShares=fd.shares||0;
+    _scDivs+=fd.dividends_paid||0; _scSBC+=Math.max(fd.sbc_expense||0,fd.sbc_grant||0);
     var repThenM=0;
     try{var m=computeMetrics(yr);repThenM=m.realProfit||0;}catch(e){}
     var ltRep=fd.look_through_rep||ex.look_through_rep||0;
@@ -4431,14 +4444,16 @@ function renderBuybackRoi(){
   // Apply the ephemeral chooser. Default mode 'auto' keeps the real latest annual REP — no visible change.
   // index213: resolve presets from the live refs so they always reflect current data; custom carries its own value.
   var _bbActive=(_bbRepNowPick&&_bbRepNowPick.mode)?_bbRepNowPick.mode:'auto';
-  var _bbOverride=false;
-  if(_bbActive!=='auto'){
-    var _pv=null,_plabel=null;
-    if(_bbActive==='avg3'){_pv=_bbRepRefs.avg3;_plabel='3-yr avg';}
-    else if(_bbActive==='ttm'){_pv=_bbRepRefs.ttm;_plabel=(_bbRepRefs.ttmLabel||'12-mo');}
-    else if(_bbActive==='custom'){_pv=_bbRepNowPick.value;_plabel='custom';}
-    if(typeof _pv==='number'&&!isNaN(_pv)){repNowM=_pv;repNowLabel=_plabel;_bbOverride=true;}
-  }
+  // index347 (1b): default preference = trailing twelve months. 'auto' (untouched) resolves to TTM when a
+  // TTM period is loaded, else falls back to latest annual. 'latest' = explicit latest-year pick. TTM and
+  // latest are real reported bases (unflagged); 3-yr avg and custom are analyst normalizations (_bbOverride).
+  var _defaultMode=(_bbRepRefs.ttm>0)?'ttm':'latest';
+  var _resolvedMode=(_bbActive==='auto')?_defaultMode:_bbActive;
+  if(_resolvedMode==='ttm'&&!(_bbRepRefs.ttm>0))_resolvedMode='latest';
+  if(_resolvedMode==='ttm'){repNowM=_bbRepRefs.ttm;repNowLabel=(_bbRepRefs.ttmLabel||'12-mo');}
+  else if(_resolvedMode==='avg3'&&_bbRepRefs.avg3>0){repNowM=_bbRepRefs.avg3;repNowLabel='3-yr avg';}
+  else if(_resolvedMode==='custom'&&_bbRepNowPick.value>0){repNowM=_bbRepNowPick.value;repNowLabel='custom';}
+  var _bbOverride=((_resolvedMode==='avg3'&&_bbRepRefs.avg3>0)||(_resolvedMode==='custom'&&_bbRepNowPick.value>0));
   // Item 8 fix (v4.19.0): the trailing REP-CAGR / Total-Return columns derive the
   // years-elapsed from the "now" label. When the basis chooser overrides repNowLabel
   // to a descriptive string ('3-yr avg' / 'TTM-2026' / 'custom'), parseInt(repNowLabel)
@@ -4505,16 +4520,24 @@ function renderBuybackRoi(){
 
   var h='';
 
-  // ============ SUMMARY CARDS ============
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Total deployed</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(totalCost)+'</div></div>';
+  // ============ CAPITAL-RETURN SCORECARD (merged flows + ROI metrics) ============
+  var _scNet=totalCost+_scDivs-_scSBC;
+  var _scSpanN=rows.length,_scSpanA=(rows[0]?rows[0].label:''),_scSpanB=(rows[rows.length-1]?rows[rows.length-1].label:'');
+  var _scPerYr=(_scSpanN>0)?(_scNet/_scSpanN):0;
+  var _scEV=(function(){var p=v('price')||0,sh=v('shares')||0,db=v('debt')||0,cs=(v('cash')||0)+(v('sti')||0);var ev=p*sh+db-cs;return ev>0?ev:p*sh;})();
+  h+='<details open style="margin-bottom:16px"><summary style="cursor:pointer;user-select:none;font-size:.8rem;font-weight:700;color:var(--accent2);padding:2px 0">Capital-return scorecard <span style="font-weight:400;color:var(--text3);font-size:.72rem">\u2014 net '+fmtM(_scNet)+' \u00b7 '+_scSpanA+'\u2013'+_scSpanB+' \u00b7 '+_scSpanN+' yr'+(_scSpanN!==1?'s':'')+'</span></summary>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0 0">';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Buybacks deployed</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--blue)">'+fmtM(totalCost)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Dividends</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--green)">'+fmtM(_scDivs)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Real SBC</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--red)">'+fmtM(_scSBC)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Net returned</div><div style="font-size:1.15rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+(_scNet>=0?'var(--green)':'var(--red)')+'">'+fmtM(_scNet)+'</div><div style="font-size:.6rem;color:var(--text2);margin-top:3px;font-family:\'JetBrains Mono\',monospace"><span style="color:var(--blue)">'+fmtM(totalCost)+'</span> BB'+(_scDivs>0?(' + <span style="color:var(--green)">'+fmtM(_scDivs)+'</span> Div'):'')+' \u2212 <span style="color:var(--red)">'+fmtM(_scSBC)+'</span> SBC</div><div style="font-size:.6rem;color:var(--text3);margin-top:2px">\u2248 '+fmtM(_scPerYr)+'/yr'+(_scEV>0?(' \u00b7 '+pct(_scNet/_scEV,1)+' of EV'):'')+'</div></div>';
   h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Ownership retired</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+(totalOwn*100).toFixed(2)+'%</div></div>';
-  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYThen,true)+'</div></div>';
-  h+='<div style="background:var(--card2);border:1px solid '+(_bbOverride?'var(--orange)':'var(--border)')+';border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd avg yield now'+(_bbOverride?' <span style="color:var(--orange);font-weight:700">(hyp)</span>':'')+'</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNow,true)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd yield then</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYThen,true)+'</div></div>';
+  h+='<div style="background:var(--card2);border:1px solid '+(_bbOverride?'var(--orange)':'var(--border)')+';border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Wtd yield now'+(_bbOverride?' <span style="color:var(--orange);font-weight:700">(hyp)</span>':'')+'</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNow,true)+'</div></div>';
   if(hasLookThrough&&ltRepNowM>0){
-    h+='<div style="background:var(--card2);border:1px solid var(--blue);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--blue);margin-bottom:2px">Yield now (Look-Through REP)</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNowLT,true)+'</div><div style="font-size:.62rem;color:var(--text3);margin-top:3px">Adds investee retained earnings to standard REP</div></div>';
+    h+='<div style="background:var(--card2);border:1px solid var(--blue);border-radius:8px;padding:10px 14px"><div style="font-size:.7rem;color:var(--blue);margin-bottom:2px">Yield now (Look-Through)</div><div style="font-size:1.1rem;font-weight:700;font-family:\'JetBrains Mono\',monospace">'+pill(wtdYNowLT,true)+'</div><div style="font-size:.62rem;color:var(--text3);margin-top:3px">Adds investee retained earnings</div></div>';
   }
-  h+='</div>';
+  h+='</div></details>';
 
   // ---- Trim range: first buyback year through latest REP year (preserve gaps, extend past last buyback) ----
   var firstBB=-1,lastBB=-1;
@@ -4530,21 +4553,22 @@ function renderBuybackRoi(){
   // when the latest fiscal year isn't representative. Ephemeral: resets on reload and company switch.
   (function(){
     function _btn(mode,txt,sub){
-      var on=(_bbActive===mode);
-      var bg=on?(mode==='auto'?'var(--blue)':'var(--orange)'):'var(--card2)';
+      var on=(_resolvedMode===mode);
+      var bg=on?(mode===_defaultMode?'var(--blue)':'var(--orange)'):'var(--card2)';
       var fg=on?'#fff':'var(--text2)';
       var bd=on?bg:'var(--border)';
       return '<button type="button" onclick="_bbSetRepNow(\''+mode+'\')" style="border:1px solid '+bd+';background:'+bg+';color:'+fg+';border-radius:7px;padding:6px 10px;font-size:.72rem;font-weight:600;cursor:pointer;line-height:1.25;text-align:left">'+txt+(sub?'<br><span style="font-size:.62rem;font-weight:500;opacity:.85;font-family:\'JetBrains Mono\',monospace">'+sub+'</span>':'')+'</button>';
     }
     h+='<div style="margin:18px 0 6px;padding:11px 13px;border:1px solid '+(_bbOverride?'var(--orange)':'var(--border)')+';border-radius:9px;background:'+(_bbOverride?'rgba(230,126,34,.07)':'var(--card2)')+'">';
     h+='<div style="font-size:.7rem;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">&ldquo;Profit now&rdquo; basis &mdash; what yield-now is measured against</div>';
-    h+='<div style="margin:0 0 11px;padding:9px 12px;background:rgba(52,152,219,.08);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;font-size:.76rem;color:var(--text2);line-height:1.55">';
-    h+='<strong style="color:var(--text)">Why adjust this?</strong> Every buyback\u2019s yield-now, REP Growth and Total Return is measured against the latest fiscal year\u2019s REP. If that single year isn\u2019t representative &mdash; a one-off charge, a write-down, or an outright negative year &mdash; the whole table reads low and understates how the company\u2019s REP has actually compounded over the years. Switch to the 3-year rolling average or the trailing twelve months to get a fairer picture of what the buybacks are really earning. <em style="color:var(--text3)">(Ephemeral &mdash; nothing is saved.)</em>';
-    h+='</div>';
+    h+='<details style="margin:0 0 11px"><summary style="cursor:pointer;user-select:none;font-size:.72rem;font-weight:600;color:var(--blue);padding:2px 0">Why adjust this?</summary>';
+    h+='<div style="margin:6px 0 0;padding:9px 12px;background:rgba(52,152,219,.08);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;font-size:.76rem;color:var(--text2);line-height:1.55">';
+    h+='Every buyback\u2019s yield-now, REP Growth and Total Return is measured against the latest fiscal year\u2019s REP. If that single year isn\u2019t representative &mdash; a one-off charge, a write-down, or an outright negative year &mdash; the whole table reads low and understates how the company\u2019s REP has actually compounded over the years. Switch to the 3-year rolling average or the trailing twelve months to get a fairer picture of what the buybacks are really earning. <em style="color:var(--text3)">(Ephemeral &mdash; nothing is saved.)</em>';
+    h+='</div></details>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:stretch">';
-    h+=_btn('auto','Latest year','('+(_bbRepRefs.latestLabel||'\u2014')+') '+fmtM(_bbRepRefs.latest));
-    h+=_btn('avg3','3-yr rolling avg',fmtM(_bbRepRefs.avg3));
     if(_bbRepRefs.ttm){h+=_btn('ttm','Twelve-month',fmtM(_bbRepRefs.ttm));}
+    h+=_btn('latest','Latest year','('+(_bbRepRefs.latestLabel||'\u2014')+') '+fmtM(_bbRepRefs.latest));
+    h+=_btn('avg3','3-yr rolling avg',fmtM(_bbRepRefs.avg3));
     var _cv=(_bbActive==='custom'&&_bbRepNowPick.value!=null)?_bbRepNowPick.value:'';
     var _cOn=(_bbActive==='custom');
     h+='<span style="display:inline-flex;align-items:center;gap:5px;border:1px solid '+(_cOn?'var(--orange)':'var(--border)')+';border-radius:7px;padding:4px 7px;background:'+(_cOn?'rgba(230,126,34,.18)':'var(--card2)')+'">';
@@ -4568,8 +4592,8 @@ function renderBuybackRoi(){
   h+='<th rowspan="2" style="text-align:right">Total REP</th>';
   h+='<th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);padding-bottom:4px">REP Captured</th>';
   h+='<th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);padding-bottom:4px">Yield</th>';
-  h+='<th rowspan="2" style="text-align:right;font-size:.6rem;color:var(--text3);font-weight:600;padding:3px 4px;line-height:1.12">REP<br>Growth</th>';
-  h+='<th rowspan="2" style="text-align:right;font-size:.6rem;color:var(--text3);font-weight:600;padding:3px 4px;line-height:1.12">Total<br>Return</th>';
+  h+='<th rowspan="2" style="text-align:right;font-size:.6rem;color:var(--text3);font-weight:600;padding:3px 4px;line-height:1.12">REP Growth<br><span style="font-weight:400">%/yr</span></th>';
+  h+='<th rowspan="2" style="text-align:right;font-size:.6rem;color:var(--text3);font-weight:600;padding:3px 4px;line-height:1.12">Total Return<br><span style="font-weight:400">%/yr</span></th>';
   if(hasLookThrough){h+='<th rowspan="2" style="text-align:right;color:var(--blue)">Yield now<br>(LT)</th>';}
   h+='</tr>';
   h+='<tr><th style="text-align:right;font-size:.68rem;color:var(--text3)">Then</th><th style="text-align:right;font-size:.68rem;color:var(--text3)">Now</th>';
@@ -4631,8 +4655,8 @@ function renderBuybackRoi(){
   h+='<p style="font-size:.7rem;color:var(--text3);margin:8px 0 0">Own % = shares retired ÷ avg diluted shares. Avg Price = cost ÷ shares retired. REP captured = own % × total REP. Yield = REP captured ÷ cost.</p>';
   h+='<div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin:10px 0 0;padding:10px 13px;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0">';
   h+='<div style="margin-bottom:8px"><strong style="color:var(--text)">REP Growth</strong> — the annual rate the underlying REP has <em>actually</em> compounded from the purchase year to now (realized, growth only). <span style="color:var(--blue);font-weight:500">This is the backward-looking, backtested version of the same <strong>g</strong> the Future Total Return panel projects forward — same concept, measured on history rather than predicted.</span></div>';
-  h+='<div style="margin-bottom:8px"><strong style="color:var(--text)">Total Return</strong> — your full realized annual return: the cash you collect at today\'s yield-on-cost (the payout share, 1−b) <em>plus</em> the realized REP Growth above, using the same reinvestment rate b ('+(_bK!==null?pct(_bK,0):'n/a')+'). <span style="color:var(--blue);font-weight:500">The backward-looking, backtested counterpart of the same <strong>k</strong> the Future Total Return panel projects forward — same concept, run on actuals.</span></div>';
-  h+='<div style="font-size:.68rem;color:'+(_bbOverride?'var(--orange)':'var(--text3)')+'">Both use '+(_bbOverride?('the selected REP basis ('+repNowLabel+', hypothetical) as the endpoint.'):('the latest year\'s REP ('+repNowLabel+') as the endpoint — if that year is depressed, both read low.'))+'</div>';
+  h+='<div style="margin-bottom:8px"><strong style="color:var(--text)">Total Return</strong> &mdash; your full realized <em>annual</em> return: the yield you pocket <em>plus</em> the annualized REP Growth above. <span style="color:var(--blue);font-weight:500">The backward-looking, backtested counterpart of the same <strong>k</strong> the Future Total Return panel projects forward &mdash; same concept, run on actuals.</span></div>';
+  h+='<div style="font-size:.68rem;color:'+(_bbOverride?'var(--orange)':'var(--text3)')+'">Both use '+repNowLabel+' REP as the endpoint'+(_bbOverride?' (a hypothetical normalization).':' — if that period is depressed, both read low.')+'</div>';
   h+='</div>';
 
   // ============ YIELD MATRIX ============
@@ -4640,7 +4664,9 @@ function renderBuybackRoi(){
   // Columns trimmed to first-buyback through last-buyback year range (same as vintage table)
   var buybackRows=active.filter(function(a){return a.costM>0&&a.sharesRetired>0;});
   if(buybackRows.length>0&&trimmed.length>1){
-    h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px">Yield Matrix</div>';
+    h+='<details id="bbYieldMatrix" style="margin:22px 0 0">';
+    h+='<summary style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;user-select:none;padding:4px 0">Yield Matrix <span style="font-weight:400;letter-spacing:0;text-transform:none;font-size:.68rem">&mdash; year-by-year detail (the Vintage Table&rsquo;s Then&rarr;Now, filled in)</span></summary>';
+    h+='<div style="margin-top:8px">';
     // Column headers = trimmed range years that have REP
     var colLabels=[];
     for(var i=0;i<trimmed.length;i++){
@@ -4686,99 +4712,66 @@ function renderBuybackRoi(){
     }
     h+='</table></div>';
     h+='<p style="font-size:.68rem;color:var(--text3);margin:6px 0 0">Each row = one purchase year. Each column = REP measured that year. Outlined cell = yield at time of purchase. Read across to see yield growing as REP compounded. Trailing columns: REP CAGR (REP Growth) and Tot Ret (Total Return) — defined in the legend above. ▼ = depressed REP year.</p>';
+    h+='</div></details>';
 
-    // ===== v4.21.0 (Item 9 embed): buyback discipline — generic k (at prevailing market yield) vs actual k (at real repurchase prices) =====
-    // The gap is the buyback-timing edge: cost-weighted entry yields differ only by what management paid vs the market price; growth (g) is identical.
+    // index349: buyback discipline reframed as a plain price-timing table — avg price paid vs the year's
+    // prior->end range, with buy intensity. Replaces the generic-k / actual-k framing (too abstract).
     (function(){
-      var _rk=_realizedKWindow(_rkWin); if(!_rk||!_rk.ok||_rk.b==null)return;
-      var _inWin=buybackRows.filter(function(br){return parseInt(br.shortLabel)>=(_rk.toYr-_rk.actualWin);});
-      var _wc=0,_wAct=0,_wGen=0,_yrs=[];
+      var _rk=null; try{_rk=_realizedKWindow(_rkWin);}catch(e){}
+      var _winYr=(_rk&&_rk.ok&&_rk.actualWin&&_rk.toYr)?(_rk.toYr-_rk.actualWin):-Infinity;
+      var _inWin=buybackRows.filter(function(br){return parseInt(br.shortLabel)>=_winYr;});
+      if(_inWin.length===0)_inWin=buybackRows.slice();
+      var _today=v('price')||0;
+      function _followPx(br){var idx=active.indexOf(br);for(var j=idx+1;j<active.length;j++){var pp=getPillAnchor(yearStore[active[j].key])||0;if(pp>0)return pp;}return 0;}
+      var _wc=0,_wPaid=0,_nGreen=0,_nRed=0,_rowsHTML='';
       _inWin.forEach(function(br){
-        if(!(br.costM>0))return;
-        var _px=getPillAnchor(yearStore[br.key])||0; var _mc=_px*(br.dilShares||0);
-        var _actY=(br.own*br.repThenM)/br.costM;            // entered at the real repurchase price
-        var _genY=(_mc>0)?(br.repThenM/_mc):null;            // entered at the prevailing market price
-        if(_genY==null||!(_actY>0))return;
-        _wc+=br.costM; _wAct+=_actY*br.costM; _wGen+=_genY*br.costM; _yrs.push(br.shortLabel);
+        if(!(br.costM>0&&br.sharesRetired>0))return;
+        var _paid=br.costM/br.sharesRetired;
+        var _end=getPillAnchor(yearStore[br.key])||0;
+        var _follow=_followPx(br);
+        var _bench=(_follow>0)?_follow:_today;            // next year's price; today stands in for the latest year
+        var _benchIsToday=!(_follow>0);
+        _wc+=br.costM; _wPaid+=_paid*br.costM;
+        var _pc='var(--text)';
+        if(_bench>0){ if(_paid<_bench*0.98){_pc='var(--green)';_nGreen++;} else if(_paid>_bench*1.02){_pc='var(--red)';_nRed++;} }
+        _rowsHTML+='<tr><td style="padding:4px 8px;font-weight:600">'+br.shortLabel+'</td>'
+          +'<td style="padding:4px 8px;text-align:right">'+pct(br.own,1)+'</td>'
+          +'<td style="padding:4px 8px;text-align:right">'+((br.repThenM>0)?pct(br.costM/br.repThenM,0):'\u2014')+'</td>'
+          +'<td style="padding:4px 8px;text-align:right;font-weight:700;color:'+_pc+'">$'+_paid.toFixed(2)+'</td>'
+          +'<td style="padding:4px 8px;text-align:right;color:var(--text3)">'+(_end>0?('$'+_end.toFixed(2)):'\u2014')+'</td>'
+          +'<td style="padding:4px 8px;text-align:right;color:var(--text3)">'+(_bench>0?('$'+_bench.toFixed(2)+(_benchIsToday?' <span style="font-size:.58rem">(now)</span>':'')):'\u2014')+'</td></tr>';
       });
       if(_wc<=0)return;
-      var _b=_rk.b, _g=_rk.g;
-      var _aY=_wAct/_wc, _gY=_wGen/_wc;
-      var _kAct=(1-_b)*_aY+_g, _kGen=(1-_b)*_gY+_g;
-      var _gap=_kAct-_kGen; var _discPP=(_aY-_gY); // entry-yield discipline
-      var _good=_gap>=0;
+      var _avgPaid=_wPaid/_wc;
       var _hh='<div style="margin-top:18px;border-top:1px dashed var(--border);padding-top:13px">';
       _hh+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
-      _hh+='<div style="font-size:.8rem;font-weight:700;color:var(--accent2)">Buyback discipline <span style="font-weight:400;color:var(--text3);font-size:.72rem">\u2014 did they buy below market? generic k (at market) vs actual k (at repurchase prices)</span></div>';
+      _hh+='<div style="font-size:.8rem;font-weight:700;color:var(--accent2)">Did they buy well? <span style="font-weight:400;color:var(--text3);font-size:.72rem">\u2014 avg price paid vs the next year\u2019s price</span></div>';
       _hh+='<div style="margin-left:auto;display:flex;gap:5px;align-items:center">'+_rkWinChips()+'</div>';
       _hh+='</div>';
-      _hh+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
-      _hh+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:6px;padding:8px 11px">'
-        +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Generic k \u00b7 at market</div>'
-        +'<div style="font-size:1.15rem;font-weight:700;color:var(--text2)">'+pct(_kGen)+'</div>'
-        +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">if shares were bought at the prevailing price</div></div>';
-      _hh+='<div style="flex:1;min-width:135px;background:var(--card2);border:1px solid var(--border);border-left:3px solid '+(_good?'var(--green)':'var(--red)')+';border-radius:6px;padding:8px 11px">'
-        +'<div style="font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Actual k \u00b7 at repurchase</div>'
-        +'<div style="font-size:1.15rem;font-weight:700;color:'+(_good?'var(--green)':'var(--red)')+'">'+pct(_kAct)+'</div>'
-        +'<div style="font-size:.64rem;color:var(--text3);line-height:1.35">at the real prices management paid</div></div>';
-      _hh+='</div>';
-      var _col=Math.abs(_gap)<0.002?'var(--text2)':(_good?'var(--green)':'var(--red)');
-      var _msg=Math.abs(_gap)<0.002
-        ? 'Management bought at roughly market value over the in-window years \u2014 buybacks added no timing edge either way.'
-        : (_good
-          ? 'Management bought <strong>below</strong> market value: the repurchase prices lifted realized k by <strong>+'+(_gap*100).toFixed(1)+' pp</strong> over buying at the prevailing yield (entry yield '+(_discPP>=0?'+':'')+(_discPP*100).toFixed(1)+' pp richer). Disciplined capital return.'
-          : 'Management paid <strong>up</strong> for buybacks: the repurchase prices cost <strong>'+(_gap*100).toFixed(1)+' pp</strong> of realized k versus buying at the prevailing yield. Worth a hard look at timing.');
-      _hh+='<div style="font-size:.74rem;color:'+_col+';line-height:1.5;margin-top:8px">'+_msg+'</div>';
-      _hh+='<div style="font-size:.66rem;color:var(--text3);margin-top:6px;line-height:1.45">Cost-weighted across buyback years '+_yrs.join(', ')+'; growth g ('+pct(_g,1)+') is the realized '+_rk.actualWin+'-year REP rate, identical to both \u2014 so the whole gap is entry price. '
+      _hh+='<div style="font-size:.74rem;color:var(--text2);line-height:1.5;margin-bottom:8px">Each year\u2019s <strong>Avg paid</strong> is compared to the <strong>next year\u2019s</strong> price: <strong style="color:var(--green)">green</strong> if the stock was higher a year later (well-timed), <strong style="color:var(--red)">red</strong> if lower. '+(_today>0?('Today\u2019s <strong>$'+_today.toFixed(2)+'</strong> stands in for the latest year. '):'')+'Cost-weighted avg paid <strong>$'+_avgPaid.toFixed(2)+'</strong> \u2014 <strong>'+_nGreen+'</strong> well-timed / <strong>'+_nRed+'</strong> mistimed.</div>';
+      _hh+='<div style="overflow-x:auto"><table class="breakdown" style="font-size:.74rem;width:100%;border-collapse:collapse">';
+      _hh+='<tr><th rowspan="2" style="text-align:left;padding:4px 8px">Year</th><th colspan="2" style="text-align:center;padding:4px 8px 3px;border-bottom:1px solid var(--border)">Bought</th><th rowspan="2" style="text-align:right;padding:4px 8px">Avg<br>paid</th><th rowspan="2" style="text-align:right;padding:4px 8px;color:var(--text3)">Year-end</th><th rowspan="2" style="text-align:right;padding:4px 8px;color:var(--text3)">Next<br>yr-end</th></tr>';
+      _hh+='<tr><th style="text-align:right;padding:3px 8px;font-weight:400;font-size:.62rem;color:var(--text3)">own %</th><th style="text-align:right;padding:3px 8px;font-weight:400;font-size:.62rem;color:var(--text3)">% of REP</th></tr>';
+      _hh+=_rowsHTML;
+      _hh+='</table></div>';
+      _hh+='<div style="font-size:.66rem;color:var(--text3);margin-top:6px;line-height:1.45">Avg paid = cost \u00f7 shares retired (the real price paid). Color compares it to the <strong>Next yr-end</strong> price \u2014 a ~1-year-out timing read that stays discriminating even for long histories (comparing to today alone would show almost everything above water). Year-end is the purchase-year close, for context. '
         +'<span onclick="var e=document.getElementById(\'histRealizedK\');if(e)e.scrollIntoView({behavior:\'smooth\',block:\'center\'})" style="color:var(--accent2);cursor:pointer;white-space:nowrap">see full Historical k panel \u2193</span></div>';
       _hh+='</div>';
       h+=_hh;
     })();
   }
 
-  // ============ CAPITAL ALLOCATION FLAGS ============
-  var flags=[];
-  // Find depressed REP years
+  // index348 (1c): "Capital Allocation Flags" block removed (verdict-language noise). The one load-bearing
+  // caveat -- a depressed REP year drags every vintage's yield-now -- is kept as a compact note.
   var depYears=[];
   for(var i=0;i<active.length;i++){if(active[i].depressed)depYears.push(active[i].shortLabel);}
   if(depYears.length>0){
-    flags.push({color:'var(--orange)',text:'▼ marks depressed REP years ('+depYears.join(', ')+' on REPA basis). Yield-now figures for all vintages are affected — substituting normalized REP would lift yields proportionally.'});
-  }
-  // Weighted avg yield commentary
-  if(wtdYNow>0){
-    var grade=wtdYNow>=0.07?'strong':wtdYNow>=0.04?'adequate':'below target';
-    flags.push({color:wtdYNow>=0.07?'var(--green)':wtdYNow>=0.04?'var(--orange)':'var(--red)',
-      text:'Wtd avg yield now of '+pct(wtdYNow,1)+' on REPA standard REP — '+grade+' return on buyback capital deployed.'});
-  }
-  // Concentration
-  if(buybackRows.length>=2){
-    var sorted=buybackRows.slice().sort(function(a,b){return b.costM-a.costM;});
-    var topTwo=sorted[0].costM+sorted[1].costM;
-    var topPct=topTwo/totalCost;
-    if(topPct>0.5){
-      flags.push({color:'var(--blue)',text:sorted[0].shortLabel+'–'+sorted[1].shortLabel+' represent '+pct(topPct,0)+' of total cost. '+
-        (sorted[0].yThen&&sorted[0].yThen<0.05?'Entry yield was below 5% — management paid up.':'Concentration in high-conviction periods.')});
-    }
-  }
-  // Zero buyback years (only gaps within trimmed range, not leading/trailing)
-  var zeroYears=trimmed.filter(function(a){return a.costM<=0&&a.repThenM>0;});
-  if(zeroYears.length>0){
-    var zy=zeroYears.map(function(a){return a.shortLabel;});
-    flags.push({color:'var(--text3)',text:'Zero buybacks in '+zy.join(', ')+' — no purchase to measure. Gap years preserved to show buyback cadence.'});
-  }
-
-  if(flags.length>0){
-    h+='<div style="font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px">Capital Allocation Flags</div>';
-    for(var f=0;f<flags.length;f++){
-      h+='<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:.76rem;color:var(--text2);line-height:1.55">';
-      h+='<div style="width:6px;height:6px;border-radius:50%;background:'+flags[f].color+';margin-top:6px;flex-shrink:0"></div>';
-      h+='<div>'+flags[f].text+'</div></div>';
-    }
+    h+='<div style="display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:.72rem;color:var(--text3);line-height:1.5"><span style="color:var(--orange)">▼</span><span>Depressed REP year'+(depYears.length>1?'s':'')+' ('+depYears.join(', ')+' on REPA basis) drag the yield-now figures for every vintage &mdash; a normalized REP basis (above) lifts them proportionally.</span></div>';
   }
 
   // REP basis note
   if(repNowM!==0){
-    h+='<p class="section-note" style="margin-top:14px;font-size:.72rem;color:'+(_bbOverride?'var(--orange)':'var(--text3)')+'">REP basis for "yield now": '+(_bbOverride?('<strong>'+repNowLabel+'</strong> = '+fmtM(repNowM)+' \u2014 hypothetical, chosen via the basis selector above (latest actual: '+(_bbRepRefs.latestLabel||'\u2014')+' = '+fmtM(_bbRepRefs.latest)+')'):('most recent year REPA standard ('+fmtM(repNowM)+')'))+'.</p>';
+    h+='<p class="section-note" style="margin-top:14px;font-size:.72rem;color:'+(_bbOverride?'var(--orange)':'var(--text3)')+'">REP basis for "yield now": <strong>'+repNowLabel+'</strong> = '+fmtM(repNowM)+(_bbOverride?(' \u2014 hypothetical, chosen via the basis selector above (latest annual: '+(_bbRepRefs.latestLabel||'\u2014')+' = '+fmtM(_bbRepRefs.latest)+')'):'')+'.</p>';
     if(hasLookThrough&&ltRepNowM>0){
       h+='<div style="margin-top:10px;padding:10px 14px;background:var(--card2);border-left:3px solid var(--blue);border-radius:4px;font-size:.74rem;color:var(--text2);line-height:1.6">';
       h+='<strong style="color:var(--blue)">What is Look-Through REP?</strong> REPA standard REP is based on Cash From Operations, which only captures <em>dividends received</em> from the equity portfolio. ';
@@ -7499,6 +7492,30 @@ function renderRoiicAnalysis(){
 
   // index53: R&D Capital Efficiency diagnostic, folded in from PCBA. Renders into the roiicRdCapEff container at the bottom of this card. Uses THIS card's `years` (all stored years — same set the chart/table above use), so it stays consistent with its new home. The split still reads the canonical Best Guess slider (adjRdSlider), not this card's R&D Growth % slider (option a); the panel caption states this. Wrapped so a diagnostic error can't blank the whole card.
   try{document.getElementById('roiicRdCapEff').innerHTML=renderRdCapEff(years);}catch(e){document.getElementById('roiicRdCapEff').innerHTML='';console.warn('R&D CapEff error:',e);}
+
+  // index341: per-step collapsed value summaries (display-layer; read from the same model/data the tiles & table use, never recomputed where it could diverge)
+  try{
+    var _sv=function(id,h){var e=document.getElementById(id); if(e)e.innerHTML=h;};
+    var _cm=(typeof _caRdCapModel==='function')?_caRdCapModel():null;
+    if(_cm){
+      _sv('caHead1','<div class="ca-sum-metric">'+fmtM(_cm.asset)+'</div><div class="ca-sum-expl"><b style="color:var(--text)">research asset in the capital base</b> \u2014 growth R&amp;D capitalized and amortized over '+_cm.life+' yrs'+(_cm.sectorLabel?(' ('+_cm.sectorLabel+')'):'')+'; +'+fmtM(_cm.growthRd)+' added in '+_cm.last.label+'.</div>');
+      _sv('caVal3', 'ROIC '+pct(_cm.fullDA,0)+' \u00b7 BG '+pct(_cm.sym,0));
+    }
+    var _lr=(roiicData&&roiicData.length)?roiicData[roiicData.length-1]:null;
+    if(_lr){
+      _sv('caHead2', '<div class="ca-sum-metric">'+fmtM(_lr.ic)+'</div><div class="ca-sum-expl"><b style="color:var(--text)">invested capital</b> \u2014 equity + debt, <em>net of</em> the cash, short-term investments &amp; securities it shouldn\u2019t be credited with. Deployed-side view: NTA '+fmtM(_lr.nta)+'.</div>');
+      _sv('caVal7', (_lr.roiic3!=null&&isFinite(_lr.roiic3))?('3-yr ROIIC '+pct(_lr.roiic3,0)):'rolling ROIIC');
+    }
+    // caVal5: replicate Step 5's exact CAGR calc (annual-only, enriched realProfit/investedCapital) so the teaser matches the panel
+    var _ann=(years||[]).filter(function(e){return e&&!e.isInterim&&String(e.label||'').indexOf('TTM')!==0;});
+    if(_ann.length>=2){
+      var _f=_ann[0],_l=_ann[_ann.length-1],_ny=_ann.length-1, _uc=_ann.length>=3&&_f.realProfit>0;
+      var _pr=_uc?Math.pow(_l.realProfit/_f.realProfit,1/_ny)-1:(Math.abs(_f.realProfit)>0?(_l.realProfit-_f.realProfit)/Math.abs(_f.realProfit):0);
+      var _cr=_uc?(_f.investedCapital>0?Math.pow(_l.investedCapital/_f.investedCapital,1/_ny)-1:0):(Math.abs(_f.investedCapital)>0?(_l.investedCapital-_f.investedCapital)/Math.abs(_f.investedCapital):0);
+      _sv('caVal5','Profit '+pct(_pr,0)+' \u00b7 Capital '+pct(_cr,0));
+    }
+    _sv('caVal4','use of cash');
+  }catch(e){}
 }
 
 // ===== index296: collapsed-header summary readouts (cross-cutting pass — build 1) =====
@@ -7541,9 +7558,7 @@ function renderRoiicAnalysis(){
       try{ var _ks=getSortedYearKeys(); for(var _i=0;_i<_ks.length;_i++){ var _yr=yearStore[_ks[_i]]; if(!_yr)continue; var _lb=(_yr.fiscal_year_label||''); if(_lb.toUpperCase().indexOf('TTM')===0){ ttmLabel=_lb; } } }catch(e){}
       var hasTTM=!!ttmLabel;
       var note=document.getElementById('caTtmNote');
-      if(note){ note.innerHTML = hasTTM
-        ? '<div style="font-size:.72rem;color:var(--text3);line-height:1.5;margin:0 0 16px;padding:8px 11px;background:var(--card2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0">\u2691 <b style="color:var(--text2)">This panel does not use the '+ttmLabel+' interim.</b> Capital Allocation is computed on completed annual (10-K) periods only \u2014 '+ttmLabel+' is included only in Step 4\u2019s all-periods cash view.</div>'
-        : ''; }
+      if(note){ note.innerHTML=''; }
       var latest='Latest annual \u00b7 <b>'+lastL+'</b>';
       var range='<b>'+firstL+'</b> \u2192 <b>'+lastL+'</b>';
       set('caSrc1', latest + (m.hasRd ? (' \u00b7 research asset over prior '+life+' yrs') : ''));
@@ -7562,7 +7577,9 @@ function renderRoiicAnalysis(){
       var ev=(window._bbHeadEv!=null&&isFinite(window._bbHeadEv)&&window._bbHeadEv>0)?window._bbHeadEv:null;
       if(net==null){ _setHead('bbHeadSum',''); return; }
       var pctEv=(ev!=null)?' <span class="dim">('+_pctH(net/ev)+' of EV)</span>':'';
-      _setHead('bbHeadSum','<span class="dim">Net returned</span> '+fmtM(net)+pctEv);
+      var _syr=(window._bbHeadSpanYrs!=null&&isFinite(window._bbHeadSpanYrs))?window._bbHeadSpanYrs:null;
+      var spanTxt=(_syr!=null)?' <span class="dim">&middot; '+_syr+' full yr'+(_syr!==1?'s':'')+'</span>':'';
+      _setHead('bbHeadSum','<span class="dim">Net returned</span> '+fmtM(net)+pctEv+spanTxt);
     }catch(e){}
   }
 
@@ -7819,11 +7836,16 @@ function _caRdCapModel(){
   for(var i=0;i<Math.min(life,n);i++){ var idx=n-1-i; var rem=Math.max(life-i,0)/life; var g=rd[idx]*G; var onB=g*rem; asset+=onB; vintages.push({label:ann[idx].label, growthRd:g, remainingPct:rem, onBase:onB}); }
   var totalRd=last.rd_expense||0, growthRd=totalRd*G, maintRd=totalRd*(1-G);
   var addback=growthRd*(1-TAX_RATE);
-  var fullDA=ic>0?rep/ic:null, asym=ic>0?(rep+addback)/ic:null, sym=(ic+asset)>0?(rep+addback)/(ic+asset):null;
+  // index338: ROIC Best Guess now rides the app-wide Best Guess REP (= Full D&A realProfit + amort addback at adjAmortPct), matching RoNTA and the yield ladder. Full D&A stays on realProfit (the conservative floor, amort treated as real cost). amort addback wired exactly as the canonical basis (da-deprOnly)*adjAmortPct/100.
+  var adjAmortPct=70; var _ae=document.getElementById('adjAmortSlider'); if(_ae)adjAmortPct=parseInt(_ae.value)||70;
+  var amort=(last.deprOnly>0&&last.da>0)?(last.da-last.deprOnly):0;
+  var amortAdd=amort*(adjAmortPct/100);
+  var bgRep=rep+amortAdd; // Best Guess REP (before the growth-R&D capitalization addback)
+  var fullDA=ic>0?rep/ic:null, asym=ic>0?(bgRep+addback)/ic:null, sym=(ic+asset)>0?(bgRep+addback)/(ic+asset):null;
   var repPct=(rep>0)?(growthRd/rep):null;
   var hasRd=(totalRd>0)&&(asset>0.5)&&(growthRd>0);
   return {ann:ann,last:last,rep:rep,ic:ic,gPct:gPct,G:G,life:life,sectorLabel:sectorLabel,vintages:vintages,
-          asset:asset,totalRd:totalRd,growthRd:growthRd,maintRd:maintRd,addback:addback,
+          asset:asset,totalRd:totalRd,growthRd:growthRd,maintRd:maintRd,addback:addback,amortAdd:amortAdd,bgRep:bgRep,adjAmortPct:adjAmortPct,
           fullDA:fullDA,asym:asym,sym:sym,hasRd:hasRd,repPct:repPct,hasTTM:hasTTM};
 }
 
@@ -7837,7 +7859,10 @@ function _caRoicTilesHtml(){
     if(!(ic>0)){
       return '<div style="margin-bottom:14px">'+hdr+'<div style="font-size:.74rem;color:var(--text3);line-height:1.5;padding:6px 0">Invested Capital is non-positive ('+fmtM(ic)+') for the latest annual period, so Real ROIC is omitted \u2014 use Return on NTA below.</div></div>';
     }
-    var gPct=m.gPct, fullDA=m.fullDA, asym=m.asym, sym=m.sym, asset=m.asset, hasRd=m.hasRd;
+    var gPct=m.gPct, fullDA=m.fullDA, asym=m.asym, sym=m.sym, asset=m.asset, addback=m.addback, amortAdd=m.amortAdd, bgRep=m.bgRep, hasRd=m.hasRd;
+    // index339: totals in full comma-millions when the components are M-scale (e.g. $1,690M), else keep fmtM's $B for large caps.
+    var _bigScale=(Math.abs(rep)>=1000||Math.abs(ic)>=1000||Math.abs(asset)>=1000);
+    var fS=function(n){ if(_bigScale) return fmtM(n); return (n<0?'-$':'$')+Math.round(Math.abs(n)).toLocaleString('en-US')+'M'; };
     function tile(bg,bd,hc,h,mc,mm,vc,v,sc,s){
       return '<div style="background:'+bg+';border:1px solid '+bd+';border-radius:10px;padding:13px 15px">'
         +'<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:'+hc+';margin-bottom:3px">'+h+'</div>'
@@ -7851,22 +7876,29 @@ function _caRoicTilesHtml(){
              :'R&amp;D is not material here, so the three readings coincide.')
       +' <span style="color:var(--text2)"><b>This is the R&amp;D-capitalization axis;</b> <b style="color:var(--text)">the amortization lens and its 10-K-footnote guidance live in the Amortization panel.</b></span></p>';
     if(hasRd){
-      html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">';
-      html+=tile('var(--bg)','var(--border)','var(--text3)','Full D&amp;A','var(--green)','\u2713 Correct','var(--green)',pct(fullDA),'var(--text3)','R&amp;D expensed');
-      html+=tile('rgba(230,126,34,.06)','var(--orange)','var(--orange)','Asymmetric','var(--red)','\u2717 Incorrect','var(--orange)',pct(asym),'var(--orange)','overstated');
-      html+=tile('rgba(155,89,182,.08)','var(--purple)','var(--purple)','Symmetric','var(--green)','\u2713 Best Guess','var(--purple)',pct(sym),'var(--purple)','R&amp;D both sides');
+      // index337/338: Full D&A -> Best Guess (the two legitimate reads); asymmetric foil demoted to a struck line, last. Best Guess rides the true Best Guess REP (Full D&A + amort + R&D). Explicit math boxed with the reads it belongs to.
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+      html+=tile('var(--bg)','var(--border)','var(--text3)','Full D&amp;A','var(--text2)','Traditional GAAP','var(--text)',pct(fullDA),'var(--text3)','R&amp;D expensed \u2014 what most people see');
+      html+=tile('rgba(46,204,113,.06)','var(--green)','var(--green)','Best Guess','var(--green)','\u2713 Consistent','var(--green)',pct(sym),'var(--text3)','R&amp;D in numerator &amp; denominator');
       html+='</div>';
       html+='<div style="font-size:.72rem;color:var(--text3);line-height:1.55;margin-top:10px;display:flex;flex-direction:column;gap:5px">'
-        +'<div><strong style="color:var(--green)">Full D&amp;A '+pct(fullDA)+'</strong> \u2014 R&amp;D left fully expensed. The conservative floor; R&amp;D touches neither profit nor capital base.</div>'
-        +'<div><strong style="color:var(--orange)">Asymmetric '+pct(asym)+'</strong> \u2014 growth R&amp;D added to profit but <em>not</em> to the base. Inconsistent and overstates; shown only as the foil that makes the symmetric read obviously correct.</div>'
-        +'<div><strong style="color:var(--purple)">Symmetric (Best Guess) '+pct(sym)+'</strong> \u2014 growth R&amp;D counted on <em>both</em> sides (the '+fmtM(asset)+' research asset added to capital). The consistent treatment \u2014 for an R&amp;D-heavy name it can pull ROIC <em>below</em> the Full-D&amp;A read.</div>'
+        +'<div><strong style="color:var(--text2)">Full D&amp;A '+pct(fullDA)+'</strong> \u2014 R&amp;D left fully expensed. The traditional GAAP view \u2014 what most people look at.</div>'
+        +'<div><strong style="color:var(--green)">Best Guess '+pct(sym)+'</strong> \u2014 growth R&amp;D counted in <em>both</em> the numerator and the denominator: the '+fmtM(asset)+' research asset added to the base; on the profit side, '+fmtM(amortAdd)+' amort + '+fmtM(addback)+' after-tax R&amp;D lift REP to '+fmtM(bgRep+addback)+'. The consistent treatment \u2014 for an R&amp;D-heavy name it can read <em>below</em> the Full-D&amp;A number, because the base addition outweighs the profit addition.</div>'
         +'</div>';
+      // explicit x / y, boxed so it reads as part of the tiles above (not the RoNTA section below)
+      html+='<div style="font-size:.68rem;color:var(--text3);line-height:1.6;margin-top:9px;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:7px">'
+        +'<div><strong style="color:var(--text2)">Full D&amp;A</strong> &nbsp;REP '+fmtM(rep)+' \u00f7 IC '+fmtM(ic)+' = <strong>'+pct(fullDA)+'</strong></div>'
+        +'<div style="margin-top:4px"><strong style="color:var(--green)">Best Guess</strong> &nbsp;REP '+fS(bgRep+addback)+' <span style="color:var(--text3)">('+fmtM(rep)+' + '+fmtM(amortAdd)+' amort + '+fmtM(addback)+' R&amp;D)</span> \u00f7 base '+fS(ic+asset)+' <span style="color:var(--text3)">(IC '+fmtM(ic)+' + '+fmtM(asset)+' research asset)</span> = <strong style="color:var(--green)">'+pct(sym)+'</strong></div>'
+        +'<div style="margin-top:5px;color:var(--text3);font-size:.64rem">Latest annual period ('+last.label+'). Best Guess REP = Full D&amp;A + amort add-back (slider) + after-tax growth R&amp;D \u2014 same basis as Return on NTA below.</div>'
+        +'</div>';
+      html+='<div style="font-size:.7rem;color:var(--text3);line-height:1.5;margin-top:8px;padding-top:7px;border-top:1px dashed var(--border)"><span style="color:var(--red)">\u2717</span> <span style="text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:1px">The shortcut</span>: R&amp;D in the numerator only, <em>not</em> the denominator \u2014 '+pct(asym)+', inflated and inconsistent. Named once so the \u201cnumerator-and-denominator\u201d point is unmistakable.</div>';
     }else{
       html+='<div style="display:grid;grid-template-columns:1fr;gap:12px">'
         +tile('var(--bg)','var(--border)','var(--text3)','Real ROIC','var(--green)','\u2713 REP \u00f7 IC','var(--green)',pct(fullDA),'var(--text3)','a single ROIC \u2014 R&amp;D not material')
         +'</div>';
+      html+='<p style="font-size:.7rem;color:var(--text3);line-height:1.5;margin:9px 0 0">REP '+fmtM(rep)+' \u00f7 IC '+fmtM(ic)+' on the latest annual period ('+last.label+').</p>';
     }
-    html+='<p style="font-size:.7rem;color:var(--text3);line-height:1.5;margin:9px 0 0">REP '+fmtM(rep)+' / IC '+fmtM(ic)+' on the latest annual period ('+last.label+'). ROIC and RoNTA divide by the bases shown in the capital base.</p>';
+    html+='<div style="height:1px;background:var(--border);margin:14px 0 2px"></div>'; // index338: close the ROIC block before Return on NTA
     html+='</div>';
     return html;
   }catch(e){ return '<div style="color:var(--red);font-size:.78rem;padding:8px 0">ROIC tiles error: '+e.message+'</div>'; }
@@ -7967,7 +7999,7 @@ function _caRatiosHtml(roiicData){
   var strip=wins.map(function(o){
     var w=o.w, starHtml=o.star?'<span class="star"> \u2605</span>':'';
     if(_annI.length-w<0){
-      return '<div class="ca-cell" style="padding:11px 9px"><div class="l" style="font-size:.66rem;color:var(--text2);margin-bottom:6px">'+w+'-yr lookback'+starHtml+'</div><div class="v" style="color:var(--text3);font-size:1.45rem">\u2014</div><div style="font-size:.64rem;color:var(--text3);margin-top:6px;font-style:italic">fewer than '+w+' years loaded</div></div>';
+      return '<div class="ca-cell" style="padding:11px 9px"><div class="l" style="font-size:.66rem;color:var(--text2);margin-bottom:6px">'+w+'-yr lookback'+starHtml+'</div><div class="v" style="color:var(--text3);font-size:1.1rem">\u2014</div><div style="font-size:.64rem;color:var(--text3);margin-top:6px;font-style:italic">fewer than '+w+' years loaded</div></div>';
     }
     var ref=roiicData[_annI[_annI.length-w]];
     var dRep=last.rep-ref.rep, dIC=last.ic-ref.ic;
@@ -7980,7 +8012,7 @@ function _caRatiosHtml(roiicData){
     else { main=pct(ratio,1); col=ratio>0.15?'var(--green)':ratio>0?'var(--orange)':'var(--red)'; reason=(ratio>1.5?'small \u0394IC base \u2014 read with care':''); }
     return '<div class="ca-cell" style="padding:11px 9px">'
       +'<div class="l" style="font-size:.66rem;color:var(--text2);margin-bottom:6px">'+ref.label+' \u2192 '+last.label+starHtml+'</div>'
-      +'<div class="v" style="color:'+col+';font-size:1.45rem;font-weight:700">'+main+'</div>'
+      +'<div class="v" style="color:'+col+';font-size:1.1rem;font-weight:700">'+main+'</div>'
       +'<div style="font-size:.74rem;margin-top:9px;font-family:\'JetBrains Mono\',ui-monospace,monospace;line-height:1.6">'
         +'<span style="color:var(--text3)">\u0394REP&nbsp;</span><span style="color:'+(dRep>0?'var(--green)':dRep<0?'var(--red)':'var(--text2)')+';font-weight:600">'+_rMM(dRep)+'</span><br>'
         +'<span style="color:var(--text3)">\u0394IC&nbsp;&nbsp;&nbsp;</span><span style="color:var(--text2);font-weight:600">'+_rMM(dIC)+'</span></div>'
@@ -7988,11 +8020,8 @@ function _caRatiosHtml(roiicData){
       +'</div>';
   }).join('');
   var negIC=okIC?'':'<div class="ca-subcap" style="color:var(--orange)">Invested Capital is floored at $0 (negative book equity), so turnover and Real ROIC aren\u2019t meaningful for the latest period.</div>';
-  return '<div class="ca-lbl">Decomposition \u2014 latest period ('+lab+')</div>'
-    +'<div class="ca-ident">Real ROIC<span class="op">=</span>Margin<span class="op">\u00d7</span>Turnover</div>'
-    +'<div class="ca-decomp" id="caDecomp">'+decomp+'</div>'
-    +'<div class="ca-subcap">Period-end IC basis throughout, so the identity reconciles exactly. Turnover is a multiple (revenue per $1 capital); margin and ROIC are percents.</div>'
-    +negIC
+  // index339: DuPont (margin x turnover = ROIC) decomposition removed per review — low signal for the space. Rolling ROIIC kept as the Step-7 read.
+  return negIC
     +'<div class="ca-roiic">'
     +'<div class="hd">Rolling ROIIC \u2014 \u0394REP \u00f7 \u0394IC</div>'
     +'<div class="sub">Incremental return on recent capital \u2014 \u0394REP \u00f7 \u0394IC over short, medium and long lookbacks (the span is shown on each cell). Reads <b>n/a</b> when it can\u2019t be a clean rate: the window crosses a loss year, or invested capital <em>fell</em> over the span (REP grew on less capital \u2014 the ratio is undefined, but the win is real and visible in the \u0394s). The full-window <b>r</b> above is the loss-robust read; \u2605 marks the canonical window for the r-anchor.</div>'
