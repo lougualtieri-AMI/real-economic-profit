@@ -800,7 +800,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index384 \u00b7 v5.0.2'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index387 \u00b7 v5.1.2'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -6462,6 +6462,7 @@ function _histEnrich(allKeys){
    Solid = $ actuals; dashed = % ratios. No REP/IC/yield math changes. ===== */
 var _histExpSel={rep:true,rev:true,roic:false,ronta:false,margin:false,bgyld:false};
 var _histExpShowVals=false, _histExpLog=false, _histExpData=null;
+var _histExpShowAcq=true; // index386 (Lou): \u0394 Goodwill+Intangibles bars on the Historical explorer -- same acquisition signal as the co-movement chart. Independent toggle, so presets never touch it.
 var _HIST_PRESETS=[
   {id:'core',keys:['rep','rev'],label:'Core \u00b7 REP\u00b7Revenue'},
   {id:'repRevRoic',keys:['rep','rev','roic'],label:'REP\u00b7Rev\u00b7ROIC'},
@@ -6493,7 +6494,10 @@ function renderHistExplorer(allKeys){
     margin:{label:'REP Margin',color:'#1abc9c',kind:'%',data:years.map(function(y){return y.repMargin!=null?y.repMargin*100:null;})},
     bgyld: {label:'Best Guess Yield',color:'#f0c040',kind:'%',data:years.map(function(y){return y.yieldBestGuess!=null?y.yieldBestGuess*100:null;})}
   };
-  _histExpData={YEARS:YEARS,DATES:DATES,T:DATES.map(function(d){return Date.parse(d);}),EVENTS:EVENTS,SER:SER};
+  // index386 (Lou): acquisition-paper deltas, read straight from yearStore formData (frozen _histEnrich untouched)
+  var ACQ=allKeys.map(function(k,i){ if(i===0)return null; var f=(yearStore[k]||{}).formData, p=(yearStore[allKeys[i-1]]||{}).formData; if(!f||!p)return null; return ((+f.goodwill||0)+(+f.intangibles||0))-((+p.goodwill||0)+(+p.intangibles||0)); });
+  var ICS=years.map(function(y){return (y&&y.investedCapital>0)?y.investedCapital:null;}); // index387: per-period IC for the significance threshold
+  _histExpData={YEARS:YEARS,DATES:DATES,T:DATES.map(function(d){return Date.parse(d);}),EVENTS:EVENTS,SER:SER,ACQ:ACQ,ICS:ICS};
   _histExpBuild();
 }
 
@@ -6510,10 +6514,12 @@ function _histExpBuild(){
     +'<div style="display:flex;gap:14px">'
     +'<label class="hx-miniopt"><input type="checkbox" id="hxShowVals"'+(_histExpShowVals?' checked':'')+' onchange="_histExpShowVals=this.checked;_histExpRender()"> values at points</label>'
     +'<label class="hx-miniopt"><input type="checkbox" id="hxLog"'+(_histExpLog?' checked':'')+' onchange="_histExpLog=this.checked;_histExpRender()"> log $-axis</label>'
+    +'<label class="hx-miniopt"><input type="checkbox" id="hxAcq"'+(_histExpShowAcq?' checked':'')+' onchange="_histExpShowAcq=this.checked;_histExpRender()"> \u0394 acquisition paper</label>'
     +'</div></div>'
     +'<div class="hx-note" id="hxAxisNote"></div>'
     +'<div class="hx-logwarn" id="hxLogWarn"></div>'
-    +'<div class="hx-chartwrap"><svg id="hxChart" viewBox="0 0 740 300" preserveAspectRatio="xMidYMid meet"></svg></div>';
+    +'<div class="hx-chartwrap"><svg id="hxChart" viewBox="0 0 740 300" preserveAspectRatio="xMidYMid meet"></svg></div>'
+    +'<div id="hxAcqCaption" style="display:none;font-size:.7rem;color:var(--orange);opacity:.85;margin-top:4px">\u25a0 Orange bars: change in goodwill + intangibles vs the prior period (acquisition paper), in $B. A spike up usually means a deal closed; a drop means impairment or write-down. Only moves of 2%+ of invested capital are shown.</div>';
   document.getElementById('histExplorer').innerHTML=html;
   _histExpRender();
 }
@@ -6587,7 +6593,7 @@ function _histExpDraw(keys){
   else if(hasR&&AR&&!AR.log&&AR.lo<0&&AR.hi>0){var z2=yR(0);s+='<line x1="'+pL+'" y1="'+z2+'" x2="'+(W-pR)+'" y2="'+z2+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
   EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_histExpXByDate(g,te);
     s+='<line x1="'+ex.toFixed(1)+'" y1="'+pT+'" x2="'+ex.toFixed(1)+'" y2="'+(pT+iH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
-    s+='<text x="'+ex.toFixed(1)+'" y="'+(pT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';});
+    var _lx=Math.max(pL+16,Math.min(W-pR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(pT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): edge labels clamped (Symantec fix)
   YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
   function line(k){var sr=SER[k],onR=Rm.indexOf(k)>=0,yf=onR?yR:yL,dash=sr.kind==='%';
     var p='',started=false,o='';
@@ -6596,6 +6602,22 @@ function _histExpDraw(keys){
     sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; o+='<circle cx="'+x(i).toFixed(1)+'" cy="'+yf(v).toFixed(1)+'" r="3" fill="'+sr.color+'"/>';
       if(showVals)o+='<text x="'+x(i).toFixed(1)+'" y="'+(yf(v)-7).toFixed(1)+'" fill="'+sr.color+'" font-size="8" text-anchor="middle" font-family="JetBrains Mono">'+_histExpFmtVal(SER,k,v)+'</text>';});
     return o;}
+  // index386 (Lou): \u0394 Goodwill+Intangibles bars -- own scale, bottom 40% band, zero-baseline aware, behind the lines (same construction as the co-movement chart)
+  if(_histExpShowAcq&&d.ACQ){
+    // index387 (Lou): same significance threshold as the co-movement chart -- only moves >=2% of that period's invested capital draw.
+    var _rawMax=0; d.ACQ.forEach(function(v){ if(v!=null&&isFinite(v))_rawMax=Math.max(_rawMax,Math.abs(v)); });
+    var _sig=function(v,i){ if(v==null||!isFinite(v)||v===0)return false; var _ic=d.ICS&&d.ICS[i]; var _thr=Math.max((_ic>0?0.02*_ic:0),0.03*_rawMax); return Math.abs(v)>=_thr; }; // index387b: same combined threshold as the co-movement chart
+    var _av=d.ACQ.filter(function(v,i){return _sig(v,i);});
+    var _capEl=document.getElementById('hxAcqCaption'); if(_capEl)_capEl.style.display=_av.length?'block':'none';
+    if(_av.length){
+      var _ab=_av.map(function(v){return v/1000;}), _aMax=Math.max.apply(null,_ab.concat([0])), _aMin=Math.min.apply(null,_ab.concat([0])), _aSpan=(_aMax-_aMin)||1;
+      var _bTop=pT+iH*0.60, _bH=iH*0.40;
+      var _yA=function(v){return _bTop+((_aMax-v/1000)/_aSpan)*_bH;}, _z=_bTop+(_aMax/_aSpan)*_bH;
+      d.ACQ.forEach(function(v,i){ if(!_sig(v,i))return; var _yy=_yA(v), _top=Math.min(_yy,_z), _h=Math.abs(_yy-_z); if(_h<1)_h=1;
+        s+='<rect x="'+(x(i)-5).toFixed(1)+'" y="'+_top.toFixed(1)+'" width="10" height="'+_h.toFixed(1)+'" fill="var(--orange)" opacity="0.42"/>';
+        s+='<text x="'+x(i).toFixed(1)+'" y="'+((v>0?_top-3:_top+_h+9)).toFixed(1)+'" fill="var(--orange)" font-size="7.5" text-anchor="middle" opacity="0.9" font-family="JetBrains Mono">'+(v>0?'+':'')+(v/1000).toFixed(1)+'</text>'; });
+    }
+  }
   ratios.forEach(function(k){s+=line(k);});
   actuals.forEach(function(k){s+=line(k);});
   chartEl.innerHTML=s;
@@ -7167,6 +7189,7 @@ function renderRoiicAnalysis(){
       trueGrowthRD:trueGrowthRD,
       totalReinvestment:totalReinvestment, reinvestmentRate:reinvestmentRate,
       cfo:y.cfo, revenue:y.revenue,
+      gwIntang:(y.formData?((+y.formData.goodwill||0)+(+y.formData.intangibles||0)):null), // index385 (Lou): acquisition-paper level, for the \u0394 bar on the co-movement chart
       buybacks:(y.formData&&(y.formData.buyback_cost_m||y.formData.share_repurchases))||0,
       dividends:(y.formData&&y.formData.dividends_paid)||0
     };
@@ -7484,7 +7507,7 @@ function renderRoiicAnalysis(){
        computed for the per-year detail table. In Full-D&A (this card's basis, and the FTR default) those
        are byte-identical to the r-anchor _fyRoiicW values (verified in node against AVGO: 1yr n/m, 3yr 0.5%, 5yr 3.4%).
    Event markers reuse the Item 2C date-interpolation (_caXByDate), same mechanism as renderHistExplorer. ===== */
-var _caSel={rep:false,rev:true,ic:true,nta:false}; // mock default: lands on Revenue.IC (turnover view)
+var _caSel={rep:false,rev:true,ic:true,nta:false,acq:true}; // mock default: lands on Revenue.IC (turnover view); index385: acq bars on by default (invisible when a company has no acquisition paper)
 var _caShowRead=true;
 var _caShowPts=false; // index230: toggle value labels ($B) at each plotted point
 var _caData=null;
@@ -7503,7 +7526,8 @@ function _caInit(roiicData, icNote){
     rep:{label:'REP',color:'var(--accent2)',axis:'R',data:roiicData.map(function(d){return d.rep;})},
     rev:{label:'Revenue',color:'var(--blue)',axis:'L',data:roiicData.map(function(d){return (d.revenue!=null?d.revenue:null);})},
     ic :{label:'Invested Capital',color:'var(--purple)',axis:'L',data:roiicData.map(function(d){return d.ic;})},
-    nta:{label:'NTA',color:'var(--green)',axis:'L',data:roiicData.map(function(d){return d.nta;})}
+    nta:{label:'NTA',color:'var(--green)',axis:'L',data:roiicData.map(function(d){return d.nta;})},
+    acq:{label:'\u0394 Goodwill+Intangibles',color:'var(--orange)',axis:'B',data:roiicData.map(function(d,i){ if(i===0)return null; var a=d.gwIntang,p=roiicData[i-1].gwIntang; return (a!=null&&p!=null)?(a-p):null; })} // index385 (Lou): the generic acquisition signal from the June walkthrough -- YoY change in acquisition paper. Spike up = a sizable deal closed in that interval (the automatic version of the manual events marker); drop = impairment or amortization runoff. axis:'B' = bottom-band bars, drawn behind the lines.
   };
   var YEARS=roiicData.map(function(d){return d.label;});
   var DATES=roiicData.map(function(d){return d.endDate;});
@@ -7530,14 +7554,15 @@ function _caBuild(){
     +'<label class="ca-miniopt"><input type="checkbox" id="caShowPts"'+(_caShowPts?' checked':'')+' onchange="_caShowPts=this.checked;_caRender()"> point values ($B)</label></div>'
     +'<div class="ca-note" id="caAxisNote"></div>'
     +'<div class="ca-chartwrap"><svg id="caChart" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet"></svg></div>'
+    +'<div id="caAcqCaption" style="display:none;font-size:.7rem;color:var(--orange);opacity:.85;margin-top:4px">\u25a0 Orange bars: change in goodwill + intangibles vs the prior period (acquisition paper), in $B. A spike up usually means a deal closed; a drop means impairment or write-down. Only moves of 2%+ of invested capital are shown.</div>'
     +'<div class="ca-ctxread" id="caCtxRead"></div>'
     +(_caData.icNote||'');
   area.innerHTML=html;
   _caRender();
 }
-function _caSetPreset(id){var p=_CA_PRESETS.find(function(x){return x.id===id;});if(!p)return;Object.keys(_caSel).forEach(function(k){_caSel[k]=p.keys.indexOf(k)>=0;var cb=document.getElementById('cac_'+k);if(cb)cb.checked=_caSel[k];});_caRender();}
+function _caSetPreset(id){var p=_CA_PRESETS.find(function(x){return x.id===id;});if(!p)return;Object.keys(_caSel).forEach(function(k){if(k==='acq')return; /* index385: presets pick line pairs; the acq bar overlay is independent */ _caSel[k]=p.keys.indexOf(k)>=0;var cb=document.getElementById('cac_'+k);if(cb)cb.checked=_caSel[k];});_caRender();}
 function _caToggle(k){var cb=document.getElementById('cac_'+k);_caSel[k]=cb?cb.checked:_caSel[k];_caRender();}
-function _caMatchPreset(){var on=Object.keys(_caSel).filter(function(k){return _caSel[k];}).sort().join(',');var p=_CA_PRESETS.find(function(x){return x.keys.slice().sort().join(',')===on;});return p?p.id:null;}
+function _caMatchPreset(){var on=Object.keys(_caSel).filter(function(k){return _caSel[k]&&k!=='acq';}).sort().join(','); /* index385: overlay excluded from preset matching */var p=_CA_PRESETS.find(function(x){return x.keys.slice().sort().join(',')===on;});return p?p.id:null;}
 function _caRender(){
   if(!_caData)return; var SER=_caData.SER;
   var cur=_caMatchPreset();
@@ -7586,7 +7611,7 @@ function _caDraw(keys,hasL,hasR){
   }
   EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_caXByDate(g,te);
     s+='<line x1="'+ex.toFixed(1)+'" y1="'+padT+'" x2="'+ex.toFixed(1)+'" y2="'+(padT+innerH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
-    s+='<text x="'+ex.toFixed(1)+'" y="'+(padT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';});
+    var _lx=Math.max(padL+16,Math.min(W-padR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(padT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): label clamped inside the plot so edge events (e.g. Symantec) are not cut off
   YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
   function line(k){var sr=SER[k],yf=sr.axis==='L'?yL:yR;var p='',started=false;
     sr.data.forEach(function(v,i){ if(v==null||!isFinite(v)){started=false;return;} p+=(started?'L':'M')+x(i).toFixed(1)+','+yf(v).toFixed(1)+' '; started=true; });
@@ -7594,6 +7619,22 @@ function _caDraw(keys,hasL,hasR){
     sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; out+='<circle cx="'+x(i).toFixed(1)+'" cy="'+yf(v).toFixed(1)+'" r="3.1" fill="'+sr.color+'"/>';});
     if(_caShowPts){var dy=(sr.axis==='R')?13:-7; sr.data.forEach(function(v,i){ if(v==null||!isFinite(v))return; out+='<text x="'+x(i).toFixed(1)+'" y="'+(yf(v)+dy).toFixed(1)+'" fill="'+sr.color+'" font-size="8" text-anchor="middle" font-family="JetBrains Mono">'+(v/1000).toFixed(1)+'</text>';});}
     return out;}
+  // index385 (Lou): acquisition-paper bars -- own scale in the bottom 40% band, zero-baseline aware (negative = impairment), drawn behind the lines
+  if(_caSel.acq&&SER.acq){
+    // index387 (Lou): significance threshold -- only moves >=2% of that period's invested capital draw (all bars kept when IC unavailable). Kills routine-amortization confetti; real deals and impairments survive. Scale computed over VISIBLE bars only.
+    var _rawMax=0; SER.acq.data.forEach(function(v){ if(v!=null&&isFinite(v))_rawMax=Math.max(_rawMax,Math.abs(v)); });
+    var _sig=function(v,i){ if(v==null||!isFinite(v)||v===0)return false; var _ic=SER.ic&&SER.ic.data[i]; var _thr=Math.max((_ic>0?0.02*_ic:0),0.03*_rawMax); return Math.abs(v)>=_thr; }; // index387b: significant = clears BOTH 2% of that period's invested capital AND 3% of the series' largest move (the IC leg alone fails on tiny-IC companies like AAPL; the rawMax leg alone would flatten serial acquirers)
+    var _av=SER.acq.data.filter(function(v,i){return _sig(v,i);});
+    var _capEl=document.getElementById('caAcqCaption'); if(_capEl)_capEl.style.display=_av.length?'block':'none';
+    if(_av.length){
+      var _ab=_av.map(b), _aMax=Math.max.apply(null,_ab.concat([0])), _aMin=Math.min.apply(null,_ab.concat([0])), _aSpan=(_aMax-_aMin)||1;
+      var _bTop=padT+innerH*0.60, _bH=innerH*0.40;
+      var _yA=function(v){return _bTop+((_aMax-b(v))/_aSpan)*_bH;}, _z=_bTop+((_aMax-0)/_aSpan)*_bH;
+      SER.acq.data.forEach(function(v,i){ if(!_sig(v,i))return; var _yy=_yA(v), _top=Math.min(_yy,_z), _h=Math.abs(_yy-_z); if(_h<1)_h=1;
+        s+='<rect x="'+(x(i)-5).toFixed(1)+'" y="'+_top.toFixed(1)+'" width="10" height="'+_h.toFixed(1)+'" fill="var(--orange)" opacity="0.42"/>';
+        s+='<text x="'+x(i).toFixed(1)+'" y="'+((v>0?_top-3:_top+_h+9)).toFixed(1)+'" fill="var(--orange)" font-size="7.5" text-anchor="middle" opacity="0.9" font-family="JetBrains Mono">'+(v>0?'+':'')+b(v).toFixed(1)+'</text>'; });
+    }
+  }
   keys.filter(function(k){return SER[k].axis==='L';}).forEach(function(k){s+=line(k);});
   keys.filter(function(k){return SER[k].axis==='R';}).forEach(function(k){s+=line(k);});
   var el=document.getElementById('caChart'); if(el)el.innerHTML=s;
