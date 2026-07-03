@@ -184,7 +184,7 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The complete app — single file, no dependencies (v4.96.0) |
+| `index.html` | The complete app — single file, no dependencies (v4.97.0) |
 | `README.md` | This file |
 | `REP_Glossary.md` | Full glossary of every metric, yield, ratio, and input field |
 | `NOTEBOOK_EXTRACTION_ANNUAL_v2_0.md` | Extraction — ANNUAL (10-K). Turns a 10-K into structured JSON. Mode-locked. |
@@ -216,6 +216,7 @@ The eight core engine functions (metrics, enrichment, reinvestment rate, the k i
 
 | Version | Date | Key Changes |
 | --- | --- | --- |
+| v4.97.0 | Jul 2026 | **Export Brief mirror** — Brief reordered to the app's chronology (SBC/CapEx/Amortization follow the waterfall; the historical block precedes FTR) with four new sections: Capital Base derivation walks (IC & NTA, research asset), How the Growth Happened, Capital-Return Scorecard, and Dollar Growth (doubling comparison, REP-level year with the price caveat, income table); the markdown export's waterfall now walks to Best Guess, tied to Panel ③ to the penny |
 | v4.95–4.96 | Jul 2026 | **Dollar Growth panel** — merged Wealth by Horizon and the FTR's doubling clocks into one $100-vs-$100 graph with an end-multiple slider + ramp (the constant-multiple assumption made explicit and adjustable), doubling markers, log/linear toggle, and the collapsed income-race table (“my REP draws level in year N” — with the caveat that level on cumulative profit is not level on price); retired the standalone doubling-clocks panel and the interim share-price columns |
 | v4.89–4.93 | Jun–Jul 2026 | Profit Waterfall walks to **Best Guess** (ties the Yield Ladder to the penny); capital-base bridge rebuilt as full-width horizontal bars with IC/NTA **derivation waterfalls** (every subtraction drawn) and the research asset shown as matching extensions on both bars; Wealth by Horizon revised to a single live model with plain-language columns and the crossover shown in the table |
 | v4.16.0 | Jun 2026 | Maintenance-CapEx **physical-split cap** (uses Depreciation Only as the physical base when available, protecting acquisition-heavy names from over-charged maintenance); **deferred-maintenance advisory** in both the live trend table and the Export Brief; red **"Depreciation Only missing"** data-completeness nudge for acquirer-shaped names with that field blank (supersedes the amber note for those years); renamed the third yield tier to **Real Ownership Yield** app-wide; added a **Total Return** column to the report's Buyback Vintage Yield Matrix for parity with the live card; removed dead glossary text |
