@@ -71,8 +71,9 @@ The whole figure rests on those assumptions holding, and the panel keeps that fr
 
 * **Three-Tier Yield Cascade** — Wall Street → Real Earnings → Real Ownership
 * **Best Guess View** — Full D&A / 100% Amort / Best Guess ★, slider-calibrated
-* **Future Total Return** — the `k = (1−b)·y + b·r` forward total-return identity
-* **Capital Allocation Analysis** — Real ROIC and ROIIC trends, REP·IC·NTA co-movement (indexed, log-axis), and **Buyback ROI** with per-vintage yield-on-cost, REP Growth, and Total Return
+* **Future Total Return** — the `k = (1−b)·y + b·r` forward total-return identity, growth-first controls, and a live decomposition (yield kept + forward growth = total return)
+* **Dollar Growth** — one graph, two racers from $100: the company at today's Best Guess economics vs. a steady earner you set (6/8/10/12% or your own). Doubling markers on each line, an end-multiple slider (0.5×–2.0× of today's, with a ramp) so the constant-multiple assumption is a knob instead of a footnote, a log toggle where every gridline is a doubling, and a multiple-proof income-race table showing the year the grower's cumulative profit overtakes the steady earner's
+* **Capital Allocation Analysis** — Real ROIC and ROIIC trends, invested capital and net tangible assets derived as explicit waterfalls (every subtraction drawn — no mystery lines), the capitalized research asset shown on both sides of the base, a "how the growth happened" read (implied reinvestment return vs. actual ROIC), REP·IC·NTA co-movement (indexed, log-axis), and **Buyback ROI** with per-vintage yield-on-cost, REP Growth, Total Return, and a seven-tile capital-return scorecard
 * **Historical** — curated key-metrics summary plus long-run yield/margin/revenue trends and full data tables (with per-table year windows for long histories)
 * **Look-Through REP** — for companies whose equity portfolios generate unreported earnings power (e.g. Berkshire's retained-earnings look-through; an Alphabet fair-value proxy)
 * **"When Does This Investment Work?"** — model revenue-growth scenarios to see when (or if) your yield hits a target
@@ -94,8 +95,9 @@ The app is laid out **grounded-first, forward-second** — everything built on r
 4. **Capital Allocation** → **Buybacks** → **Historical** — the grounded track record
 5. *— forward-looking divider —*
 6. **Future Total Return** — the forward synthesis
-7. **Red Flags** → **Detailed Breakdown** (all-years appendix)
-8. **When Does This Investment Work?** and **Target Price Calculator** — optional what-if tools
+7. **Dollar Growth** — how much does my invested dollar grow, and how fast?
+8. **Red Flags** → **Detailed Breakdown** (all-years appendix)
+9. **When Does This Investment Work?** and **Target Price Calculator** — optional what-if tools
 
 ---
 
@@ -182,7 +184,7 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The complete app — single file, no dependencies (v4.16.0) |
+| `index.html` | The complete app — single file, no dependencies (v4.96.0) |
 | `README.md` | This file |
 | `REP_Glossary.md` | Full glossary of every metric, yield, ratio, and input field |
 | `NOTEBOOK_EXTRACTION_ANNUAL_v2_0.md` | Extraction — ANNUAL (10-K). Turns a 10-K into structured JSON. Mode-locked. |
@@ -192,6 +194,12 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 | `CLAUDE_PORTFOLIO_JSON_AUDIT_v1_1.md` | Lightweight JSON-in / JSON-out integrity check and master-portfolio integration (no PDFs) |
 | `CLAUDE_HISTORICAL_BACKTEST_PROMPT_v2_1.md` | Hindsight-blinded backtest of REPA metrics at a past period (research use) |
 | `Post_Report_3_Annotation_Prompt_v1_3.md` | Annotated companion to a Gemini Deep Research report |
+
+---
+
+## Engineering Discipline
+
+The eight core engine functions (metrics, enrichment, reinvestment rate, the k identity, the FTR render, maintenance CapEx, historical enrichment, long-run render) are **frozen** — byte-identical and fingerprint-verified on every build since v4.8x. All feature work is display-layer: wrappers read the engine, never edit it. Every build also passes a structural tag-count gate and per-panel jsdom test suites (waterfall, capital-base bridge, Dollar Growth) against three reference tickers, with negative controls against the prior build.
 
 ---
 
@@ -208,6 +216,8 @@ Enter ticker `TEST`, price `100`, click **Analyze**.
 
 | Version | Date | Key Changes |
 | --- | --- | --- |
+| v4.95–4.96 | Jul 2026 | **Dollar Growth panel** — merged Wealth by Horizon and the FTR's doubling clocks into one $100-vs-$100 graph with an end-multiple slider + ramp (the constant-multiple assumption made explicit and adjustable), doubling markers, log/linear toggle, and the collapsed income-race table (“my REP draws level in year N” — with the caveat that level on cumulative profit is not level on price); retired the standalone doubling-clocks panel and the interim share-price columns |
+| v4.89–4.93 | Jun–Jul 2026 | Profit Waterfall walks to **Best Guess** (ties the Yield Ladder to the penny); capital-base bridge rebuilt as full-width horizontal bars with IC/NTA **derivation waterfalls** (every subtraction drawn) and the research asset shown as matching extensions on both bars; Wealth by Horizon revised to a single live model with plain-language columns and the crossover shown in the table |
 | v4.16.0 | Jun 2026 | Maintenance-CapEx **physical-split cap** (uses Depreciation Only as the physical base when available, protecting acquisition-heavy names from over-charged maintenance); **deferred-maintenance advisory** in both the live trend table and the Export Brief; red **"Depreciation Only missing"** data-completeness nudge for acquirer-shaped names with that field blank (supersedes the amber note for those years); renamed the third yield tier to **Real Ownership Yield** app-wide; added a **Total Return** column to the report's Buyback Vintage Yield Matrix for parity with the live card; removed dead glossary text |
 | v4.15.0 | Jun 2026 | Future Total Return panel (`k = (1−b)·y + b·r`); Best Guess slider-calibrated view (amort + growth-R&D add-back) with symmetric R&D-capitalized ROIC; Capital Allocation Analysis (ROIC/ROIIC, REP·IC·NTA indexed log chart, Buyback ROI with REP Growth & Total Return); Look-Through REP; grounded→forward layout |
 | v3.4.8 | Mar 2026 | Fixed net-debt narrative (subtracts Cash + STI, not just Cash) |
