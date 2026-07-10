@@ -4650,7 +4650,11 @@ function renderBuybackTracker(){
   }
 
   content.innerHTML=h;
-  (function(){var w=document.getElementById('bbChartWrap'),gs=document.getElementById('bbGraphSlot');if(gs){gs.innerHTML='';if(w)gs.appendChild(w);}})();
+  // index411 (Lou): clear the slot BEFORE grabbing #bbChartWrap. getElementById returns the first match in
+  // document order, and bbGraphSlot sits above buybackContent — so on a ticker switch the STALE parked chart
+  // (first) was grabbed and re-parked while the fresh chart was orphaned in the body, stacking two charts.
+  // Emptying the slot first leaves only the freshly-built chart in the document, so the right one moves up.
+  (function(){var gs=document.getElementById('bbGraphSlot');if(!gs)return;gs.innerHTML='';var w=document.getElementById('bbChartWrap');if(w)gs.appendChild(w);})();
 }
 
 // ============ Buyback ROI Analysis ============
