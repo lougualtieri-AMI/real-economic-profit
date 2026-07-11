@@ -852,7 +852,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index410 \u00b7 v5.1.25'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index412 \u00b7 v5.1.26'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -2013,13 +2013,19 @@ function saveToPortfolio(){
   // we have nothing better to use, so we fall back to the box value.
   var existingPrice = (p[ticker] && p[ticker].price) ? p[ticker].price : null;
   var savedPrice = (existingPrice && existingPrice > 0) ? existingPrice : v('price');
-  p[ticker]={
+  // index412: preserve prior top-level ticker keys (events, settings, any future fields).
+  // The old fresh-literal write silently destroyed manual event markers and per-ticker slider
+  // settings on every Save — same clobber class as the PRICE-FIX above, applied to all keys.
+  var _prevTk = p[ticker] || {};
+  var _newTk = {
     ticker:ticker,
     price:savedPrice,
     years:JSON.parse(JSON.stringify(yearStore)),
     currentYearKey:currentYearKey,
     savedAt:new Date().toISOString()
   };
+  for(var _pk in _prevTk){ if(Object.prototype.hasOwnProperty.call(_prevTk,_pk) && !(_pk in _newTk)) _newTk[_pk]=_prevTk[_pk]; }
+  p[ticker]=_newTk;
   putPortfolio(p);
   refreshPortfolioSelect();
   document.getElementById('portfolioSelect').value=ticker;
@@ -6869,6 +6875,11 @@ function renderHistExplorer(allKeys){
   if(!mount)return;
   if(!allKeys||allKeys.length<2){mount.style.display='none';mount.innerHTML='';return;}
   mount.style.display='block';
+  // index412: drop sub-annual pills (isInterim flag or Q*/H* labels) — part-period flows read as false
+  // dips when drawn as levels beside annual/TTM rows. TTM rows stay (12-month flows are comparable).
+  // Filter applied to allKeys BEFORE enrichment so years/ACQ/ICS/T stay index-aligned; _histEnrich untouched.
+  allKeys=allKeys.filter(function(k){var _y=yearStore[k]||{};var _l=String(_y.fiscal_year_label||'').toUpperCase().replace(/\s+/g,'');if(_l.indexOf('TTM')===0)return true;return !(_y.isInterim===true||/^Q\d/.test(_l)||/^H\d/.test(_l));});
+  if(allKeys.length<2){mount.style.display='none';mount.innerHTML='';return;}
   var years=_histEnrich(allKeys);
   var YEARS=years.map(function(y){return y.label;});
   var DATES=years.map(function(y){return y.endDate;});
@@ -6930,7 +6941,13 @@ function _histExpRender(){
 }
 
 function _histExpXFns(pL,pR){var W=740,H=300,pT=24,pB=40,iW=W-pL-pR,iH=H-pT-pB,n=_histExpData.YEARS.length;
-  return {W:W,H:H,pL:pL,pR:pR,pT:pT,iW:iW,iH:iH,x:function(i){return pL+(n<=1?iW/2:iW*i/(n-1));}};}
+  // index412 (Lou): time-proportional x by pill end-date (was ordinal equal-slot; see _caXFns note)
+  var T=_histExpData.T||[],t0=(T.length?T[0]:0),tSpan=(T.length?(T[T.length-1]-t0):0);
+  return {W:W,H:H,pL:pL,pR:pR,pT:pT,iW:iW,iH:iH,x:function(i){
+    if(n<=1)return pL+iW/2;
+    if(tSpan>0&&isFinite(T[i]))return pL+iW*(T[i]-t0)/tSpan;
+    return pL+iW*i/(n-1);
+  }};}
 function _histExpXByDate(g,te){var T=_histExpData.T;if(!T.length)return g.x(0);if(te<=T[0])return g.x(0);if(te>=T[T.length-1])return g.x(T.length-1);
   for(var i=1;i<T.length;i++){if(te<=T[i]){var f=(te-T[i-1])/(T[i]-T[i-1]);return g.x(i-1)+f*(g.x(i)-g.x(i-1));}}return g.x(T.length-1);}
 function _histExpBuildAxis(members,unit,floor0,wantLog,pT,iH){
@@ -6987,7 +7004,23 @@ function _histExpDraw(keys){
   EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_histExpXByDate(g,te);
     s+='<line x1="'+ex.toFixed(1)+'" y1="'+pT+'" x2="'+ex.toFixed(1)+'" y2="'+(pT+iH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
     var _lx=Math.max(pL+16,Math.min(W-pR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(pT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): edge labels clamped (Symantec fix)
-  YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
+  // index412: time-proportional x can crowd close-dated labels (TTM vs FY). Place newest-first;
+  // skip any label landing within 40px of one already placed — newest annual always wins.
+  var _placedL1=[],_placedL2=[];
+  var _tryLabel=function(_li){
+    var _lxx=x(_li),_pj,_ok=true;
+    for(_pj=0;_pj<_placedL1.length;_pj++){ if(Math.abs(_lxx-_placedL1[_pj])<40){_ok=false;break;} }
+    if(_ok){_placedL1.push(_lxx);
+      s+='<text x="'+_lxx+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+YEARS[_li]+'</text>';return;}
+    _ok=true;
+    for(_pj=0;_pj<_placedL2.length;_pj++){ if(Math.abs(_lxx-_placedL2[_pj])<40){_ok=false;break;} }
+    if(_ok){_placedL2.push(_lxx);
+      s+='<text x="'+_lxx+'" y="'+(H-3)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans" opacity="0.8">'+YEARS[_li]+'</text>';}
+  };
+  // two passes, newest-first within each: annual labels claim row 1 first; TTM/close-dated labels
+  // stagger to a lower second row when crowded, so no point ever loses its label entirely (index412)
+  for(var _li=YEARS.length-1;_li>=0;_li--){ if(String(YEARS[_li]).toUpperCase().indexOf('TTM')!==0)_tryLabel(_li); }
+  for(var _li2=YEARS.length-1;_li2>=0;_li2--){ if(String(YEARS[_li2]).toUpperCase().indexOf('TTM')===0)_tryLabel(_li2); }
   function line(k){var sr=SER[k],onR=Rm.indexOf(k)>=0,yf=onR?yR:yL,dash=sr.kind==='%';
     var p='',started=false,o='';
     sr.data.forEach(function(v,i){ if(v==null||!isFinite(v)){started=false;return;} p+=(started?'L':'M')+x(i).toFixed(1)+','+yf(v).toFixed(1)+' '; started=true; });
@@ -7923,6 +7956,10 @@ function _caMult(x){return x.toFixed(2)+'\u00d7';}
 
 // Tab 1 -- Co-Movement. Build _caData from roiicData (incl. Item 2C events), render controls + chart.
 function _caInit(roiicData, icNote){
+  // index412: the co-movement chart plots ANNUAL and TTM rows only. Sub-annual pills (Q*/H* labels)
+  // are part-period flows — drawn as levels beside 12-month rows they read as false dips. TTM rows
+  // stay: a trailing-twelve-month flow is level-comparable with an annual row.
+  roiicData=roiicData.filter(function(d){var l=String(d.label||'').toUpperCase().replace(/\s+/g,'');return !(/^Q\d/.test(l)||/^H\d/.test(l));});
   var SER={
     rep:{label:'REP',color:'var(--accent2)',axis:'R',data:roiicData.map(function(d){return d.rep;})},
     rev:{label:'Revenue',color:'var(--blue)',axis:'L',data:roiicData.map(function(d){return (d.revenue!=null?d.revenue:null);})},
@@ -7982,7 +8019,16 @@ function _caRender(){
 function _caXFns(hasL,hasR){
   var W=680,H=300,padL=hasL?52:18,padR=hasR?54:18,padT=20,padB=40;
   var innerW=W-padL-padR,innerH=H-padT-padB,n=_caData.YEARS.length;
-  return {W:W,H:H,padL:padL,padR:padR,padT:padT,padB:padB,innerW:innerW,innerH:innerH,x:function(i){return padL+(n<=1?innerW/2:innerW*i/(n-1));}};
+  // index412 (Lou): TIME-PROPORTIONAL x. The old ordinal map (innerW*i/(n-1)) gave every pill an equal
+  // slot, so a TTM row 9 months after FY-end got the same width as a full fiscal year — FY2024→FY2025
+  // looked compressed next to FY2025→FY2026. Position by end-date instead; falls back to ordinal only
+  // if dates are missing/degenerate. _caXByDate stays correct (linear interpolation over a linear map).
+  var T=_caData.T||[],t0=(T.length?T[0]:0),tSpan=(T.length?(T[T.length-1]-t0):0);
+  return {W:W,H:H,padL:padL,padR:padR,padT:padT,padB:padB,innerW:innerW,innerH:innerH,x:function(i){
+    if(n<=1)return padL+innerW/2;
+    if(tSpan>0&&isFinite(T[i]))return padL+innerW*(T[i]-t0)/tSpan;
+    return padL+innerW*i/(n-1);
+  }};
 }
 function _caXByDate(g,te){var T=_caData.T;if(!T.length)return g.x(0);if(te<=T[0])return g.x(0);if(te>=T[T.length-1])return g.x(T.length-1);
   for(var i=1;i<T.length;i++){if(te<=T[i]){var f=(te-T[i-1])/(T[i]-T[i-1]);return g.x(i-1)+f*(g.x(i)-g.x(i-1));}}return g.x(T.length-1);}
@@ -8013,7 +8059,23 @@ function _caDraw(keys,hasL,hasR){
   EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_caXByDate(g,te);
     s+='<line x1="'+ex.toFixed(1)+'" y1="'+padT+'" x2="'+ex.toFixed(1)+'" y2="'+(padT+innerH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
     var _lx=Math.max(padL+16,Math.min(W-padR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(padT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): label clamped inside the plot so edge events (e.g. Symantec) are not cut off
-  YEARS.forEach(function(yr,i){s+='<text x="'+x(i)+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+yr+'</text>';});
+  // index412: time-proportional x can crowd close-dated labels (TTM vs FY). Place newest-first;
+  // skip any label landing within 40px of one already placed — newest annual always wins.
+  var _placedL1=[],_placedL2=[];
+  var _tryLabel=function(_li){
+    var _lxx=x(_li),_pj,_ok=true;
+    for(_pj=0;_pj<_placedL1.length;_pj++){ if(Math.abs(_lxx-_placedL1[_pj])<40){_ok=false;break;} }
+    if(_ok){_placedL1.push(_lxx);
+      s+='<text x="'+_lxx+'" y="'+(H-14)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans">'+YEARS[_li]+'</text>';return;}
+    _ok=true;
+    for(_pj=0;_pj<_placedL2.length;_pj++){ if(Math.abs(_lxx-_placedL2[_pj])<40){_ok=false;break;} }
+    if(_ok){_placedL2.push(_lxx);
+      s+='<text x="'+_lxx+'" y="'+(H-3)+'" fill="#999" font-size="9" text-anchor="middle" font-family="DM Sans" opacity="0.8">'+YEARS[_li]+'</text>';}
+  };
+  // two passes, newest-first within each: annual labels claim row 1 first; TTM/close-dated labels
+  // stagger to a lower second row when crowded, so no point ever loses its label entirely (index412)
+  for(var _li=YEARS.length-1;_li>=0;_li--){ if(String(YEARS[_li]).toUpperCase().indexOf('TTM')!==0)_tryLabel(_li); }
+  for(var _li2=YEARS.length-1;_li2>=0;_li2--){ if(String(YEARS[_li2]).toUpperCase().indexOf('TTM')===0)_tryLabel(_li2); }
   function line(k){var sr=SER[k],yf=sr.axis==='L'?yL:yR;var p='',started=false;
     sr.data.forEach(function(v,i){ if(v==null||!isFinite(v)){started=false;return;} p+=(started?'L':'M')+x(i).toFixed(1)+','+yf(v).toFixed(1)+' '; started=true; });
     var out=p?'<path d="'+p+'" fill="none" stroke="'+sr.color+'" stroke-width="2.4"/>':'';
