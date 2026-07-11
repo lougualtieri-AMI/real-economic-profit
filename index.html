@@ -7590,7 +7590,7 @@ function renderRoiicAnalysis(){
       totalReinvestment:totalReinvestment, reinvestmentRate:reinvestmentRate,
       cfo:y.cfo, revenue:y.revenue,
       gwIntang:(y.formData?((+y.formData.goodwill||0)+(+y.formData.intangibles||0)):null), // index385 (Lou): acquisition-paper level, for the \u0394 bar on the co-movement chart
-      buybacks:(y.formData&&(y.formData.buyback_cost_m||y.formData.share_repurchases))||0,
+      buybacks:(y.formData&&(y.formData.share_repurchases||y.formData.buyback_cost_m))||0, // index412: share_repurchases-first — buyback_cost_m demoted to fallback (stale cross-year contamination residue; matches the index-era fix in the share-count panel)
       dividends:(y.formData&&y.formData.dividends_paid)||0
     };
   });
@@ -8754,7 +8754,7 @@ function _growthReadModel(){
   // BY CONSTRUCTION -- the distortion a deployed-side adjustment exists to fix lives in gross capital
   // bases, not here. Adding gross buybacks back would double-count money that left the business.
   var cumBB=0;
-  for(var j=firstIdx+1;j<=lastIdx;j++){ var fd=ann[j].formData||{}; cumBB+=(fd.buyback_cost_m||fd.share_repurchases||0); }
+  for(var j=firstIdx+1;j<=lastIdx;j++){ var fd=ann[j].formData||{}; cumBB+=(fd.share_repurchases||fd.buyback_cost_m||0); } // index412: share_repurchases-first (was buyback_cost_m-first; stale-field contamination)
   var gRep=Math.pow(_lRep/_fRep,1/n)-1;
   var gIc=_lIC>0?Math.pow(_lIC/_fIC,1/n)-1:null;
   var dRep=_lRep-_fRep, dIc=_lIC-_fIC;
