@@ -852,7 +852,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index413 \u00b7 v5.1.26'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index414 \u00b7 v5.1.27'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -1113,6 +1113,9 @@ var REPA_BUILD_TAG='index413 \u00b7 v5.1.26'; // single source of truth for buil
     <div class="field"><label>Receivables Change ($M)</label><input type="number" id="recv_change" step="1"><div class="hint">+ = collected · − = not collected</div></div>
     <div class="field"><label>AP Change ($M)</label><input type="number" id="ap_change" step="1" value="0"><div class="hint">+ = payables grew (cash benefit) · − = payables shrank</div></div>
   </div>
+  <div class="row"><!-- index414: working-capital fix — the CASH-FLOW-STATEMENT working-capital line. This is the number actually inside CFO (excludes WC acquired in business combinations + FX), and it is the ONLY ΔNWC allowed to enter the REP adjustment. Balance-sheet levels (Phase 2) are used ONLY for the intensity ratio. -->
+    <div class="field"><label>Working-Capital Δ in CFO ($M)</label><input type="number" id="wc_change_cf" step="1" placeholder="Optional"><div class="hint">The net working-capital line inside CFO ("changes in operating assets and liabilities"). + = source of cash · − = use. Sign exactly as it appears in the cash flow statement.</div></div>
+  </div>
   <div class="row">
     <div class="field"><label>Interest Paid ($M)</label><input type="number" id="interest" step="1"><div class="hint">Supplemental disclosure</div></div>
     <div class="field"><label>Income Tax Paid ($M)</label><input type="number" id="tax_paid" step="1"><div class="hint">Supplemental disclosure</div></div>
@@ -1128,6 +1131,10 @@ var REPA_BUILD_TAG='index413 \u00b7 v5.1.26'; // single source of truth for buil
   <div class="row">
     <div class="field"><label>Short-Term Investments ($M)</label><input type="number" id="sti" step="1" value="0"></div>
     <div class="field"><label>Diluted Shares Outstanding (M)</label><input type="number" id="shares" step="1"></div>
+  </div>
+  <div class="row"><!-- index414: working-capital fix — balance-sheet LEVELS. Used ONLY to compute wc_intensity (a ratio of levels); never fed directly into the REP adjustment (that is the CF-statement line above, per the VRT addendum: BS ΔNWC includes acquired WC + FX). -->
+    <div class="field"><label>Operating NWC ($M)</label><input type="number" id="operating_nwc" step="1" placeholder="Optional"><div class="hint">(AR + inventory + prepaid + other current assets) − (trade payables + accrued expenses + accrued payroll + other payables + income tax payable + <strong>deferred revenue, current AND noncurrent</strong> + customer deposits / contract liabilities). Excludes cash, STI, fixed-asset payables, all debt. Noncurrent deferred revenue often hides in "Other long-term liabilities" — check the revenue footnote. Can be negative (customer-funded).</div></div>
+    <div class="field"><label>Deferred Revenue ($M)</label><input type="number" id="deferred_rev" step="1" placeholder="Optional"><div class="hint">Current + noncurrent + contract liabilities / customer deposits / advance payments. Enables the customer-financing (float) split and the float-ratio series.</div></div>
   </div>
   <div class="row">
     <div class="field"><label>Share Repurchases ($M)</label><input type="number" id="share_repurchases" step="1" value="0"><div class="hint">Total buyback spend this fiscal year (from cash flow stmt)</div></div>
@@ -1318,6 +1325,13 @@ var REPA_BUILD_TAG='index413 \u00b7 v5.1.26'; // single source of truth for buil
   </div>
 
   <!-- Buybacks (index71 merge: Share Count & Capital Return Tracker + Buyback ROI Analysis into one card; inner ids buybackCard/buybackRoiCard preserved so render fns are untouched) -->
+  <!-- index414: Working Capital — growth vs efficiency. Renders for EVERY ticker, material or not:
+       an absent number is indistinguishable from a missed number. -->
+  <div class="card" id="wcCard" style="display:none">
+    <h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('wcBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">💧 Working Capital — Growth vs Efficiency <span id="wcHeadSum" class="dd-headsum"></span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
+    <div id="wcBody"></div>
+  </div>
+
   <div class="card" id="buybacksCard" style="display:none">
     <h2 style="cursor:pointer;user-select:none;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px" onclick="var el=document.getElementById('buybacksBody');var arr=this.querySelector('.collapse-arrow');if(el.style.display==='none'){el.style.display='block';arr.textContent='▼';}else{el.style.display='none';arr.textContent='▶';}">🔄 Share Count &amp; Capital Return <span id="bbHeadSum" class="dd-headsum"></span> <span class="collapse-arrow" style="font-size:.75rem;color:var(--text3);margin-left:auto">▼</span></h2>
     <div id="bbGraphSlot"></div>
@@ -2115,7 +2129,7 @@ function clearForNewCompany(){
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
   selectedYears=[];
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
@@ -2358,7 +2372,7 @@ function runCompare(selectedTickers){
       reportedFCF:m.reportedFCF,gap:_repV-m.reportedFCF,
       roicFirst:roicFirst,roicLast:roicLast,
       da:m.da,equity:m.equity,debt:debt,
-      reinvestRate:canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,_repV).rate,
+      reinvestRate:canonicalReinvestRate((m.growthCapex||0)+(m.wcGrowth||0),m.rd_expense,(100-rdMaintPct)/100,_repV).rate, /* index414: b numerator includes growth WC */
       organicBase:keys.length>=2?_fyRepForView(_cmpMs[0]):_repV,
       reinvestLayer:keys.length>=2?(_repV-_fyRepForView(_cmpMs[0])):0,
       nta:m.nta,returnOnNTA:(m.nta>0?(_repV/m.nta):null),
@@ -2838,7 +2852,7 @@ function _fyPickR(k){var v=_fyAnchors[k];if(v==null||!isFinite(v))return;var el=
 // years (Sigma numerator / Sigma REP_view, REP_view>0). Same construction as the all-years seed, so the
 // All-yrs / 3yr / Latest chips beneath the b input are all one consistent computation, just different windows.
 function repaK(yy,rr,bb,ff){if(rr===null)return null;return yy+Math.min(bb,1)*(rr-yy)+Math.max(bb-1,0)*(rr-ff);} // index140: shared FTR total-return identity (was inline kCalc inside renderForwardYield); single source for the panel and Compare.
-function _fyPwB(arr){var sn=0,sr=0;arr.forEach(function(m){var rv=_fyRepForView(m);if(rv>0){sn+=canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,rv).numerator;sr+=rv;}});return sr>0?(sn/sr):null;}
+function _fyPwB(arr){var sn=0,sr=0;arr.forEach(function(m){var rv=_fyRepForView(m);if(rv>0){sn+=canonicalReinvestRate((m.growthCapex||0)+(m.wcGrowth||0),m.rd_expense,(100-rdMaintPct)/100,rv).numerator;/* index414: b numerator includes growth WC */sr+=rv;}});return sr>0?(sn/sr):null;}
 var _fyBAnchors={};
 function _fyPickB(k){var v=_fyBAnchors[k];if(v==null||!isFinite(v))return;var el=document.getElementById('fyB');if(el){el.value=(v*100).toFixed(1);renderForwardYield();}}
 function _fyMultReset(){var s=document.getElementById('fyMultSlider');if(s&&s.dataset.today){s.value=s.dataset.today;renderForwardYield();}}
@@ -2941,13 +2955,13 @@ function _fyrGReal(){ // realized g = the TAMED full-history durable REP CAGR. J
 function _fyrB(){return (_repaFyLast&&typeof _repaFyLast.b==='number'&&isFinite(_repaFyLast.b)&&_repaFyLast.b>0)?_repaFyLast.b:null;} // fraction
 function _fyrGbPct(){var g=_fyrGReal(),b=_fyrB();return (g!==null&&b!==null)?Math.max(0,Math.min(_FYR_MAX,(g/b)*100)):null;}     // r% reproducing realized g
 function _fyrCands(){var A=_fyAnchors||{};function pc(x){return (typeof x==='number'&&isFinite(x))?x*100:null;}
+  // index414: ΔREP÷ΔIC ROIIC candidates (cum + rolling 1/3/5-yr) REMOVED from the r-slider — demoted to
+  // diagnostics in the Capital Allocation card. It is a ratio of two whipsawing numbers, one of which was
+  // corrupted by the working-capital bug (FN's r = 97.6% came from here). r is now DERIVED, never entered:
+  // the green g÷b anchor (g = CAGR of normalized REP, b measured from cash flows) is the spine's default.
   return [
     {key:'ronta', l:'RoNTA',         v:pc(A.ronta),               c:'var(--green)'},
-    {key:'roic',  l:'ROIC',          v:pc(A.roic),                c:'#b9a13a'},
-    {key:'cum',   l:'cum ROIIC',     v:pc(window._repaCumRoiic),  c:'var(--orange)'},
-    {key:'roiic5',l:'rolling 5-yr',  v:pc(A.roiic5),              c:'#b9a13a'},
-    {key:'roiic3',l:'rolling 3-yr',  v:pc(A.roiic3),              c:'var(--orange)'},
-    {key:'roiic1',l:'rolling 1-yr',  v:pc(A.roiic1),              c:'var(--red)'}
+    {key:'roic',  l:'ROIC',          v:pc(A.roic),                c:'#b9a13a'}
   ];}
 function _fyrSetR(rPct){_fyrState.rVal=rPct;var inp=document.getElementById('fyR');if(inp){inp.value=(+rPct).toFixed(1);}renderForwardYield();}
 function _fyrSetAnchor(){_fyrState.rVal=null;renderForwardYield();}
@@ -3685,7 +3699,7 @@ function _fyRepForView(m){
 }
 // b on the active basis: same canonical numerator / the view's REP.
 function _fyBForYear(m){
-  return canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,_fyRepForView(m)).rate;
+  return canonicalReinvestRate((m.growthCapex||0)+(m.wcGrowth||0),m.rd_expense,(100-rdMaintPct)/100,_fyRepForView(m)).rate; // index414: b numerator includes growth WC
 }
 
 // index391 (Lou): the KEYSTONE of the basis-consistency arc. A shared, reusable Best-Guess invested-capital
@@ -5411,6 +5425,7 @@ function doImport(){
       'maintenance capex':1,'maint capex':1,'maintenance_capex_explicit':1,'maintenance_capex':1,
       'restructuring charges':1,'restructuring':1,'restructuring_cash_payments':1,'restructuring_payments':1,'restructuring_charges':1,
       'inventory change':1,'inventory_change':1,
+      'wc change cf':1,'wc_change_cf':1,'wc_change_cf_m':1,'working capital change cfo':1,'working_capital_change_cfo':1,'working_capital_change':1,'change in working capital':1,'change_in_working_capital':1,'changes in operating assets and liabilities':1,'changes_in_operating_assets_and_liabilities':1,
       'receivables change':1,'accounts receivable change':1,'trade receivables change':1,'receivables_change':1,
       'ap change':1,'accounts payable change':1,'payables change':1,'ap_change':1,'accounts_payable_change':1,'trade payables change':1,
       'interest paid':1,'cash_interest_paid':1,'cash interest paid':1,'interest_paid':1,'interest_expense':1,'interest expense':1,
@@ -5430,6 +5445,11 @@ function doImport(){
       'depreciation only':'depr_only','depreciation':'depr_only','depreciation_only':'depr_only','physical depreciation':'depr_only','physical_depreciation':'depr_only',
       'restructuring charges':'restructuring','restructuring':'restructuring','restructuring_cash_payments':'restructuring','restructuring_payments':'restructuring','restructuring_charges':'restructuring',
       'inventory change':'inv_change','inventory_change':'inv_change',
+      // index414: working-capital fix. wc_change_cf = the CF-statement working-capital line (sign as reported in CFO: + = source).
+      // operating_nwc / deferred_rev are balance-sheet LEVELS — deliberately NOT in annualizeFields (levels never annualize).
+      'wc change cf':'wc_change_cf','wc_change_cf':'wc_change_cf','wc_change_cf_m':'wc_change_cf','working capital change cfo':'wc_change_cf','working_capital_change_cfo':'wc_change_cf','working_capital_change':'wc_change_cf','change in working capital':'wc_change_cf','change_in_working_capital':'wc_change_cf','changes in operating assets and liabilities':'wc_change_cf','changes_in_operating_assets_and_liabilities':'wc_change_cf',
+      'operating nwc':'operating_nwc','operating_nwc':'operating_nwc','operating_nwc_m':'operating_nwc','operating net working capital':'operating_nwc','operating_net_working_capital':'operating_nwc','net working capital':'operating_nwc','net_working_capital':'operating_nwc',
+      'deferred revenue':'deferred_rev','deferred_revenue':'deferred_rev','deferred_revenue_m':'deferred_rev','deferred_revenue_total':'deferred_rev','deferred revenue total':'deferred_rev','contract liabilities':'deferred_rev','contract_liabilities':'deferred_rev','customer deposits':'deferred_rev','customer_deposits':'deferred_rev',
       'receivables change':'recv_change','accounts receivable change':'recv_change','trade receivables change':'recv_change','receivables_change':'recv_change',
       'ap change':'ap_change','accounts payable change':'ap_change','payables change':'ap_change','ap_change':'ap_change','accounts_payable_change':'ap_change','trade payables change':'ap_change',
       'interest paid':'interest','cash_interest_paid':'interest','cash interest paid':'interest','interest_paid':'interest',
@@ -5898,7 +5918,7 @@ function captureForm(){
   // now reserved for current price (per-ticker top-level), and no longer
   // contaminates per-pill formData. Per-pill anchor is formData.end_of_period_price,
   // set at extraction time and migration only — never via the form.
-  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
+  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev'];
   numericFields.forEach(function(id){
     var el = document.getElementById(id);
     if(el && el.value !== ''){
@@ -5914,7 +5934,7 @@ function captureForm(){
 }
 
 function restoreForm(d){
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   // PRICE-FIX 2026-04-30 v3: TWO-BOX MODEL.
@@ -6094,6 +6114,277 @@ function canonicalReinvestRate(growthCapex, rdExpense, growthFraction, rep){
   return {rate:rate, numerator:numerator, afterTaxGrowthRD:afterTaxGrowthRD};
 }
 
+// ===== index414: WORKING CAPITAL ENGINE (growth WC vs efficiency drift) =====
+// THE BUG (spec 2026-07-12): REP starts from CFO; every dollar of working capital invested to grow
+// was subtracted from REP as if it were a cost of standing still. Fixed capital gets the maintenance/
+// growth split; working capital got none.
+// THE FIX: split ΔNWC into growth_wc (reinvestment — added back, feeds b) and efficiency_wc
+// (real cash, but NON-RECURRING and BOUNDED — never feeds g or r).
+// VRT ADDENDUM rules baked in here:
+//   (1) operating_nwc INCLUDES deferred revenue (current + noncurrent) + customer deposits — field hint enforces.
+//   (2) Balance-sheet levels are used ONLY for wc_intensity. The ΔNWC that enters the REP adjustment is the
+//       CASH-FLOW-STATEMENT working-capital line (wcCf, sign as in CFO: + = source), because that is the number
+//       actually inside CFO — BS ΔNWC also contains working capital ACQUIRED in business combinations + FX,
+//       which never touched CFO. The residual (acqFxGap) is disclosed, never silently absorbed.
+//   (3) TWO REP SERIES. REP (reported) = old REP + growth_wc — includes any efficiency windfall; it is real
+//       cash, what the company actually collected. REP (normalized) = reported + min(0, ΔNWC_cf) — when the
+//       CF working-capital line is a net SOURCE of cash, the entire source is stripped (a windfall borrowed
+//       from next year; non-recurring by construction); when it is a net USE, reported already handles it
+//       (growth added back, efficiency leak kept as the real expense it is). Normalized is the series that
+//       feeds g, AND ONLY NORMALIZED. The gap between the two series is the earnings-quality diagnostic.
+//       Fixture gate (VRT TTM-2026): growth_wc=+36.3, efficiency_wc=−608.2, reported 2,073.1 → normalized 1,501.2.
+//   (4) efficiency_wc sub-splits into customer_financing_wc = −Δ(deferred revenue) vs residual — opposite
+//       diagnostic meanings (customers financing the build vs true collection/inventory drift).
+//   (5) Negative intensity is legal (the Dell model: customer-funded) — growth WC becomes a SOURCE.
+// Pure function: no DOM, no globals. Unit-tested in the index414 gate suite.
+function repaWcSeriesCompute(rows){
+  rows=rows||[];
+  function num(v){return (typeof v==='number'&&isFinite(v))?v:null;}
+  var out={byKey:{}, hasLevels:false, hasCf:false, hasDefRev:false, n:rows.length};
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i], p=i>0?rows[i-1]:null;
+    var nwc=num(r.nwc), rev=num(r.rev), wcCf=num(r.wcCf), defRev=num(r.defRev), ni=num(r.netIncome);
+    if(nwc!==null)out.hasLevels=true; if(wcCf!==null)out.hasCf=true; if(defRev!==null)out.hasDefRev=true;
+    var rec={key:r.key, label:r.label||r.key, prevLabel:p?(p.label||p.key):null,
+             nwc:nwc, rev:rev, wcCf:wcCf, defRev:defRev,
+             intensity:(nwc!==null&&rev!==null&&rev>0)?nwc/rev:null,
+             floatRatio:(defRev!==null&&rev!==null&&rev>0)?defRev/rev:null,
+             dNwcBs:null, dNwcCf:(wcCf!==null)?-wcCf:null,
+             growthWc:null, efficiencyWc:null, custFinWc:null, residEffWc:null,
+             normDelta:0, acqFxGap:null, revGrowth:null, distortion:null, tag:null};
+    if(p){
+      var pNwc=num(p.nwc), pRev=num(p.rev), pDef=num(p.defRev);
+      if(nwc!==null&&pNwc!==null)rec.dNwcBs=nwc-pNwc;
+      if(pNwc!==null&&pRev!==null&&pRev>0&&rev!==null)rec.growthWc=(pNwc/pRev)*(rev-pRev); // cost of getting bigger — REINVESTMENT (prior-year intensity × Δrevenue)
+      if(rec.dNwcCf!==null&&rec.growthWc!==null)rec.efficiencyWc=rec.dNwcCf-rec.growthWc;   // real cash, but non-recurring and bounded
+      if(rec.dNwcCf!==null)rec.normDelta=Math.min(0,rec.dNwcCf);                            // strip any net WC SOURCE from the g-feeding series
+      if(defRev!==null&&pDef!==null){rec.custFinWc=-(defRev-pDef); if(rec.efficiencyWc!==null)rec.residEffWc=rec.efficiencyWc-rec.custFinWc;}
+      if(rec.dNwcBs!==null&&rec.dNwcCf!==null)rec.acqFxGap=rec.dNwcBs-rec.dNwcCf;           // acquisitions + FX — disclosed, not an operating event
+      if(pRev!==null&&pRev>0&&rev!==null)rec.revGrowth=rev/pRev-1;
+      if(rec.intensity!==null&&rec.revGrowth!==null&&ni!==null&&rev>0){
+        var nm=ni/rev;
+        if(nm>0){rec.distortion=Math.abs(rec.intensity*rec.revGrowth/nm);
+          rec.tag=rec.distortion<0.10?'Immaterial':(rec.distortion<=0.30?'Moderate':'Material');}
+      }
+    }
+    out.byKey[r.key]=rec;
+  }
+  return out;
+}
+// Rebuilds the app-wide WC map from yearStore. Called at the top of calculate() (after captureForm) so
+// computeMetrics can look up per-year adjustments. Keys: yearStore key AND fiscal_year_end (belt & braces).
+window._repaWcMap=null;
+function repaWcRebuild(){
+  try{
+    var keys=getSortedYearKeys(), rows=[];
+    keys.forEach(function(k){
+      var yr=yearStore[k]; if(!yr||!yr.formData)return;
+      var fd=yr.formData, ex=yr.extra||{};
+      rows.push({key:k, label:yr.fiscal_year_label||k,
+        nwc:(typeof fd.operating_nwc==='number')?fd.operating_nwc:null,
+        wcCf:(typeof fd.wc_change_cf==='number')?fd.wc_change_cf:null,
+        defRev:(typeof fd.deferred_rev==='number')?fd.deferred_rev:null,
+        rev:(typeof ex.revenue==='number')?ex.revenue:((typeof fd.revenue==='number')?fd.revenue:null),
+        netIncome:(typeof ex.net_income==='number')?ex.net_income:((typeof fd.net_income==='number')?fd.net_income:null)});
+    });
+    var res=repaWcSeriesCompute(rows);
+    // Identity index (WeakMap) — the PRIMARY lookup. The Compare scorecard runs computeMetrics over OTHER
+    // tickers' saved years; a bare fiscal_year_end key would cross-contaminate any two tickers sharing a
+    // year-end date. Identity can't. A ticker-guarded key fallback below covers active-ticker COPIES.
+    res.byEntry=(typeof WeakMap!=='undefined')?new WeakMap():null;
+    keys.forEach(function(k){var yr=yearStore[k];if(yr&&res.byKey[k]){if(res.byEntry)res.byEntry.set(yr,res.byKey[k]);if(yr.fiscal_year_end&&!res.byKey[yr.fiscal_year_end])res.byKey[yr.fiscal_year_end]=res.byKey[k];}});
+    var _tEl=document.getElementById('ticker');
+    res.ticker=_tEl?String(_tEl.value||'').trim().toUpperCase():'';
+    window._repaWcMap=res;
+  }catch(e){window._repaWcMap=null;}
+  return window._repaWcMap;
+}
+// Resolve this entry's WC record (or null). Used by computeMetrics and the WC panel.
+function repaWcFor(entry){
+  var m=window._repaWcMap; if(!m||!m.byKey||!entry)return null;
+  if(m.byEntry){var hit=m.byEntry.get(entry); if(hit)return hit;}
+  // fallback for same-ticker COPIES only (e.g. Compare reading portfolio objects): ticker must match
+  var fdT=(entry.formData&&entry.formData.ticker)?String(entry.formData.ticker).trim().toUpperCase():'';
+  if(m.ticker&&fdT===m.ticker&&entry.fiscal_year_end&&m.byKey[entry.fiscal_year_end])return m.byKey[entry.fiscal_year_end];
+  return null;
+}
+// ===== end index414 working-capital engine =====
+
+// index414: the Working Capital panel. Renders for EVERY ticker — an absent number is indistinguishable
+// from a missed number, so the no-data state shows the field definition instead of hiding.
+function renderWcPanel(){
+  var body=document.getElementById('wcBody'); if(!body)return;
+  var head=document.getElementById('wcHeadSum'); if(head)head.textContent='';
+  var map=window._repaWcMap;
+  var keys=(typeof getSortedYearKeys==='function')?getSortedYearKeys():[];
+  var mono="font-family:'JetBrains Mono',ui-monospace,monospace";
+  function esc(s){return String(s==null?'':s);}
+  function fm(v){return (v===null||v===undefined||!isFinite(v))?'\u2014':fmtM(v);}
+  function fp(v,d){return (v===null||v===undefined||!isFinite(v))?'\u2014':pct(v,(d===undefined?1:d));}
+
+  // ---------- STATE A: no usable history ----------
+  if(!keys||keys.length<2){
+    body.innerHTML='<div style="font-size:.78rem;color:var(--text3);padding:6px 2px">Needs at least two stored periods to measure working-capital dynamics.</div>';
+    return;
+  }
+
+  // Collect rows (chronological) with WC recs + REP pairs
+  var rows=[];
+  keys.forEach(function(k){
+    var yr=yearStore[k]; if(!yr||!yr.formData)return;
+    var rec=(map&&map.byKey)?map.byKey[k]:null;
+    var m=null; try{m=computeMetrics(yr);}catch(e){}
+    rows.push({key:k,label:yr.fiscal_year_label||k,end:yr.fiscal_year_end||k,rec:rec,
+      rep:m?m.realProfit:null, repNorm:(m&&typeof m.realProfitNorm==='number')?m.realProfitNorm:null,
+      wcGrowth:m?(m.wcGrowth||0):0});
+  });
+  var hasLevels=!!(map&&map.hasLevels), hasCf=!!(map&&map.hasCf), hasDef=!!(map&&map.hasDefRev);
+
+  // ---------- STATE B: fields absent — show the definition, not a blank ----------
+  if(!hasLevels&&!hasCf){
+    var b='';
+    b+='<div style="border:1px solid var(--orange);border-left:4px solid var(--orange);border-radius:8px;background:var(--card2);padding:12px 14px;margin:2px 0 12px">'
+      +'<div style="font-size:.8rem;font-weight:700;color:var(--orange);margin-bottom:6px">\u26a0 No working-capital fields in this ticker\u2019s data \u2014 the index414 growth/efficiency split is INACTIVE.</div>'
+      +'<div style="font-size:.76rem;color:var(--text2);line-height:1.6">Every dollar of working capital this company invests to grow is currently subtracted from REP as if it were a cost of standing still (and any efficiency windfall is being credited as earning power). REP, b, and historic g are computed <em>without</em> the correction. An absent number is indistinguishable from a missed number \u2014 which is why this panel renders anyway.</div></div>';
+    b+='<div style="font-size:.72rem;color:var(--text2);line-height:1.7;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px">'
+      +'<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:7px">Add three fields to the extraction (per period)</div>'
+      +'<div style="'+mono+';font-size:.72rem;color:var(--text)">operating_nwc_m</div>'
+      +'<div style="margin:2px 0 8px">= (AR + inventory + prepaid + other current assets) \u2212 (trade payables + accrued expenses + accrued payroll + other payables + income tax payable + <strong>deferred revenue \u2014 current AND noncurrent</strong> + customer deposits / contract liabilities). Excludes cash, STI, fixed-asset payables, all debt. Noncurrent deferred revenue frequently hides inside \u201cOther long-term liabilities\u201d and is disclosed only in the revenue footnote.</div>'
+      +'<div style="'+mono+';font-size:.72rem;color:var(--text)">wc_change_cf_m</div>'
+      +'<div style="margin:2px 0 8px">= the cash-flow-statement working-capital line (\u201cchanges in operating assets and liabilities\u201d), sign exactly as it appears in CFO (+ = source of cash). This \u2014 not the balance-sheet delta \u2014 is the only \u0394NWC allowed into the REP adjustment: the balance-sheet delta also contains working capital acquired in business combinations and FX, which never touched CFO.</div>'
+      +'<div style="'+mono+';font-size:.72rem;color:var(--text)">deferred_revenue_m</div>'
+      +'<div style="margin:2px 0 0">= deferred revenue current + noncurrent + contract liabilities / customer deposits. Enables the customer-financing (float) split and the float-ratio series.</div>'
+      +'</div>';
+    body.innerHTML=b;
+    if(head)head.textContent='fields absent \u2014 correction inactive';
+    return;
+  }
+
+  // ---------- STATE C: data present ----------
+  // latest record with anything computed
+  var lastRec=null,lastRow=null,firstInt=null,lastInt=null;
+  rows.forEach(function(r){ if(r.rec){ if(r.rec.intensity!==null){ if(firstInt===null)firstInt=r.rec.intensity; lastInt=r.rec.intensity; } if(r.rec.growthWc!==null||r.rec.dNwcCf!==null){lastRec=r.rec;lastRow=r;} } });
+
+  // intensity state (4-state legend, incl. Negative = customer-funded)
+  var stTxt='\u2014',stCol='var(--text3)';
+  if(lastInt!==null){
+    if(lastInt<0){stTxt='Negative \u2014 customer-funded';stCol='var(--blue)';}
+    else if(firstInt!==null&&(lastInt-firstInt<-0.05||(firstInt>0&&lastInt<firstInt*0.55))){stTxt='Cliff \u2014 a harvest that\u2019s ending';stCol='var(--orange)';}
+    else if(firstInt!==null&&(lastInt-firstInt>0.05||(firstInt>0&&lastInt>firstInt*1.5))){stTxt='Rising \u2014 getting worse at converting';stCol='var(--red)';}
+    else {stTxt='Flat \u2014 healthy';stCol='var(--green)';}
+  }
+  // latest materiality + quality gap
+  var lastTag=null,lastDist=null; rows.forEach(function(r){ if(r.rec&&r.rec.tag){lastTag=r.rec.tag;lastDist=r.rec.distortion;} });
+  var gapM=null,gapPct=null;
+  if(lastRow&&lastRow.rep!==null&&lastRow.repNorm!==null){gapM=lastRow.rep-lastRow.repNorm; if(lastRow.rep>0)gapPct=gapM/lastRow.rep;}
+  var lastFloat=null; rows.forEach(function(r){ if(r.rec&&r.rec.floatRatio!==null)lastFloat=r.rec.floatRatio; });
+
+  var h='';
+  // chips
+  function chip(lab,val,col,sub){return '<div style="flex:1;min-width:150px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px 12px;text-align:center">'
+    +'<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:4px">'+lab+'</div>'
+    +'<div style="'+mono+';font-size:1.3rem;font-weight:700;color:'+col+'">'+val+'</div>'
+    +(sub?'<div style="font-size:.64rem;color:var(--text2);margin-top:4px;line-height:1.35">'+sub+'</div>':'')+'</div>';}
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 12px">';
+  h+=chip('WC intensity now',fp(lastInt),stCol,esc(stTxt));
+  if(lastFloat!==null)h+=chip('Float ratio (def. rev / revenue)',fp(lastFloat),'var(--blue)','customers financing the build');
+  if(lastDist!==null)h+=chip('Distortion (of REP)',fp(lastDist,0),(lastTag==='Material'?'var(--red)':(lastTag==='Moderate'?'var(--orange)':'var(--green)')),lastTag+(lastTag==='Material'?' \u2014 REP is materially wrong without adjustment':''));
+  if(gapM!==null&&Math.abs(gapM)>0.005)h+=chip('Earnings-quality gap',fm(gapM),(gapM>0?'var(--orange)':'var(--green)'),(gapPct!==null?pct(Math.abs(gapPct),0)+' of reported REP ':'')+(gapM>0?'borrowed from next year':''));
+  h+='</div>';
+
+  // partial-state warnings
+  if(hasLevels&&!hasCf){
+    h+='<div style="font-size:.72rem;color:var(--orange);line-height:1.55;background:var(--card2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0;padding:8px 11px;margin:0 0 12px">\u26a0 <strong>Cash-flow-statement WC line missing</strong> (<span style="'+mono+'">wc_change_cf_m</span>). Intensity and the growth-WC addback are active; the efficiency split and NORMALIZED REP are not \u2014 balance-sheet deltas are never allowed into the REP adjustment (they contain acquired working capital + FX). Add the field to the extraction.</div>';
+  }
+  if(hasCf&&!hasLevels){
+    h+='<div style="font-size:.72rem;color:var(--orange);line-height:1.55;background:var(--card2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0;padding:8px 11px;margin:0 0 12px">\u26a0 <strong>Balance-sheet NWC levels missing</strong> (<span style="'+mono+'">operating_nwc_m</span>). The windfall strip (normalized REP) is active, but the growth/efficiency split and the intensity series are not. Add the field to the extraction.</div>';
+  }
+  if(lastInt!==null&&lastInt<0){
+    h+='<div style="font-size:.72rem;color:var(--blue);line-height:1.55;background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 11px;margin:0 0 12px"><strong>Negative intensity \u2014 this business is funded by its customers.</strong> Growth WC is a source, not a use: getting bigger <em>generates</em> cash (the Dell model). Reinvestment needs in working capital are structurally negative.</div>';
+  }
+
+  // chart: intensity + float ratio, time-proportional x
+  var pts=[],fpts=[];
+  rows.forEach(function(r){ if(!r.rec)return; var t=Date.parse(r.end||r.key); if(!isFinite(t))return;
+    if(r.rec.intensity!==null)pts.push({t:t,v:r.rec.intensity,l:r.label});
+    if(r.rec.floatRatio!==null)fpts.push({t:t,v:r.rec.floatRatio,l:r.label}); });
+  if(pts.length>=2||fpts.length>=2){
+    var all=pts.concat(fpts); var t0=Math.min.apply(null,all.map(function(p){return p.t;})),t1=Math.max.apply(null,all.map(function(p){return p.t;}));
+    var vMin=Math.min(0,Math.min.apply(null,all.map(function(p){return p.v;}))), vMax=Math.max.apply(null,all.map(function(p){return p.v;}))*1.15+0.005;
+    var W=720,H=190,L=44,R=10,T=14,B=26;
+    function X(t){return t1>t0?L+(t-t0)/(t1-t0)*(W-L-R):L;}
+    function Y(v){return T+(vMax-v)/(vMax-vMin)*(H-T-B);}
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
+    var step=(vMax-vMin)>0.15?0.05:((vMax-vMin)>0.06?0.02:0.01);
+    for(var gv=Math.ceil(vMin/step)*step;gv<=vMax+1e-9;gv+=step){
+      svg+='<line x1="'+L+'" y1="'+Y(gv).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(gv).toFixed(1)+'" stroke="var(--border)" stroke-width="'+(Math.abs(gv)<1e-9?'1.4':'0.6')+'"'+(Math.abs(gv)<1e-9?'':' stroke-dasharray="3,4"')+'/>';
+      svg+='<text x="'+(L-6)+'" y="'+(Y(gv)+3).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--text3)">'+(gv*100).toFixed(0)+'%</text>';
+    }
+    function line(ps,col){ if(ps.length<2)return ''; var d=ps.map(function(p,i){return (i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+      var s='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2"/>';
+      ps.forEach(function(p){s+='<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="2.6" fill="'+col+'"/>';});
+      return s; }
+    svg+=line(pts,'var(--accent2)')+line(fpts,'var(--blue)');
+    pts.forEach(function(p){svg+='<text x="'+X(p.t).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="8.5" fill="var(--text3)">'+esc(String(p.l).replace(/^FY/,''))+'</text>';});
+    svg+='</svg>';
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 8px 4px;margin:0 0 8px">'+svg+'</div>';
+    h+='<div style="font-size:.66rem;color:var(--text3);margin:0 0 12px;display:flex;gap:16px;flex-wrap:wrap"><span><span style="display:inline-block;width:10px;height:3px;background:var(--accent2);vertical-align:middle;margin-right:5px"></span>wc_intensity = operating NWC \u00f7 revenue</span>'+(fpts.length?'<span><span style="display:inline-block;width:10px;height:3px;background:var(--blue);vertical-align:middle;margin-right:5px"></span>float_ratio = deferred revenue \u00f7 revenue</span>':'')+'<span style="margin-left:auto">Flat = healthy \u00b7 Cliff = a harvest ending \u00b7 Rising = worse at converting \u00b7 <span style="color:var(--blue)">Negative = customer-funded</span></span></div>';
+  }
+
+  // table
+  var anyGap=rows.some(function(r){return r.rec&&r.rec.acqFxGap!==null&&Math.abs(r.rec.acqFxGap)>0.05;});
+  var anyCust=rows.some(function(r){return r.rec&&r.rec.custFinWc!==null;});
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.72rem">';
+  h+='<tr style="color:var(--text3);text-transform:uppercase;font-size:.6rem;letter-spacing:.4px"><th style="text-align:left;padding:4px 6px">Period</th><th style="text-align:right;padding:4px 6px">Op NWC</th><th style="text-align:right;padding:4px 6px">NWC/Rev</th><th style="text-align:right;padding:4px 6px">\u0394NWC (CF)</th><th style="text-align:right;padding:4px 6px">Growth WC</th><th style="text-align:right;padding:4px 6px">Efficiency WC</th>'+(anyCust?'<th style="text-align:right;padding:4px 6px">\u2014 cust. financing</th><th style="text-align:right;padding:4px 6px">\u2014 residual</th>':'')+(anyGap?'<th style="text-align:right;padding:4px 6px">Acq/FX gap</th>':'')+'<th style="text-align:right;padding:4px 6px">REP reported</th><th style="text-align:right;padding:4px 6px">REP normalized</th></tr>';
+  rows.forEach(function(r){
+    var rc=r.rec||{};
+    var normDiff=(r.rep!==null&&r.repNorm!==null&&Math.abs(r.rep-r.repNorm)>0.005);
+    h+='<tr style="border-top:1px solid var(--border)"><td style="padding:5px 6px;color:var(--text2)">'+esc(r.label)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+'">'+fm(rc.nwc)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+';color:'+(rc.intensity!==null&&rc.intensity<0?'var(--blue)':'var(--text)')+'">'+fp(rc.intensity)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+'">'+fm(rc.dNwcCf)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+';color:var(--accent2)">'+fm(rc.growthWc)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+';color:'+(rc.efficiencyWc!==null&&rc.efficiencyWc<0?'var(--orange)':'var(--text)')+'">'+fm(rc.efficiencyWc)+'</td>'
+      +(anyCust?('<td style="padding:5px 6px;text-align:right;'+mono+';color:var(--blue)">'+fm(rc.custFinWc)+'</td><td style="padding:5px 6px;text-align:right;'+mono+'">'+fm(rc.residEffWc)+'</td>'):'')
+      +(anyGap?('<td style="padding:5px 6px;text-align:right;'+mono+';color:var(--text3)">'+fm(rc.acqFxGap)+'</td>'):'')
+      +'<td style="padding:5px 6px;text-align:right;'+mono+';font-weight:700">'+fm(r.rep)+'</td>'
+      +'<td style="padding:5px 6px;text-align:right;'+mono+';font-weight:700;color:'+(normDiff?'var(--orange)':'var(--text)')+'">'+fm(r.repNorm)+'</td></tr>';
+  });
+  h+='</table></div>';
+  h+='<p style="font-size:.66rem;color:var(--text3);margin:7px 0 0;line-height:1.55">\u0394NWC (CF) = \u2212(the working-capital line inside CFO) \u2014 the only \u0394NWC allowed into the REP adjustment. Growth WC = prior-year intensity \u00d7 \u0394revenue \u2014 the cost of getting bigger; REINVESTMENT (added back to REP, feeds b). Efficiency WC = \u0394NWC (CF) \u2212 growth WC \u2014 real cash, but non-recurring and bounded; NEVER feeds g or r.'+(anyGap?' Acq/FX gap = \u0394NWC (BS) \u2212 \u0394NWC (CF): working capital that arrived through the investing section (business combinations) plus FX translation \u2014 disclosed here, never silently absorbed.':'')+'</p>';
+
+  // two-series explainer
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin:12px 0 0;font-size:.73rem;color:var(--text2);line-height:1.6">'
+    +'<div style="font-size:.64rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:6px">Two REP series, not one</div>'
+    +'<strong style="color:var(--text)">REP (reported)</strong> includes any efficiency windfall. It is real cash \u2014 what the company actually collected \u2014 and it is the headline REP everywhere in the app. '
+    +'<strong style="color:var(--text)">REP (normalized)</strong> strips working capital arriving as a net cash source; it is the series that feeds historic g (and therefore the g\u00f7b anchor for r) \u2014 and only this one. '
+    +'The <strong style="color:var(--orange)">gap</strong> between them is the earnings-quality diagnostic'+((gapM!==null&&gapPct!==null&&gapM>0.005)?(': currently '+fmtM(gapM)+', or '+pct(gapPct,0)+' of reported REP, is borrowed from next year.'):'.')+'</div>';
+
+  // sub-split meaning (only when deferred revenue is in play)
+  if(anyCust||lastFloat!==null){
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin:10px 0 0;font-size:.72rem;color:var(--text2);line-height:1.6">'
+      +'<div style="font-size:.64rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:6px">Deferred-revenue drift is NOT efficiency drift</div>'
+      +'Three different phenomena land in the efficiency bucket, and they mean opposite things: '
+      +'<strong style="color:var(--text)">true efficiency drift</strong> (better collections, leaner inventory, stretched payables) \u2014 a reversal means the business is getting worse at converting; '
+      +'<strong style="color:var(--blue)">customer-financing deepening</strong> (the queue is long; customers prepay to hold slots) \u2014 a plateau means nothing is wrong, growth just decelerates; do not panic; '
+      +'<strong style="color:var(--red)">float reversal</strong> (orders declining while deliveries continue) \u2014 genuinely predictive of demand rolling over. Deferred revenue is a deposit on FUTURE revenue: it scales with orders, not deliveries. It is not \u201cthe business got better at collecting\u201d \u2014 it is customers financing the build.</div>';
+    if(lastFloat!==null&&lastFloat>=0.10){
+      h+='<div style="border:1px solid var(--orange);border-left:4px solid var(--orange);border-radius:8px;background:var(--card2);padding:11px 13px;margin:10px 0 0;font-size:.73rem;color:var(--text2);line-height:1.6">'
+        +'<strong style="color:var(--orange)">\u26a0 The asymmetry.</strong> Customer-financing float is a gentle accelerant on the way up and a hard brake on the way down: when the float pile shrinks, cash flow actively reverses while deliveries continue, and reported REP falls <em>below</em> normalized REP. '
+        +'<strong style="color:var(--text)">REP growth breaks BEFORE revenue growth does.</strong> A company can print strong GAAP revenue and earnings while cash flow collapses \u2014 half the market will read it as a fraud signal. It is the float unwinding. Normalized REP is the defense: it already excludes the float tailwind, so the unwind cannot surprise the g series.</div>';
+    }
+  }
+
+  // materiality footnote (always show the number)
+  h+='<p style="font-size:.64rem;color:var(--text3);margin:10px 0 0;line-height:1.5">Distortion \u2248 WC intensity \u00d7 revenue growth \u00f7 net margin = share of REP consumed (or supplied) by working capital. &lt;10% Immaterial \u00b7 10\u201330% Moderate \u00b7 &gt;30% Material \u2014 the number is shown even when immaterial. b now includes growth WC in its numerator; r is derived (r = g \u00f7 b), never entered.</p>';
+
+  body.innerHTML=h;
+  if(head){
+    var hs=[]; if(lastInt!==null)hs.push('intensity '+pct(lastInt,1)); if(lastTag)hs.push(lastTag.toLowerCase()); if(gapM!==null&&gapM>0.005)hs.push('gap '+fmtM(gapM));
+    head.textContent=hs.join(' \u00b7 ');
+  }
+}
+
 function computeMetrics(entry){
   var d=entry.formData;
   var cfo=d.cfo||0,sbcExp=d.sbc_expense||0,sbcGrant=d.sbc_grant||0;
@@ -6105,6 +6396,13 @@ function computeMetrics(entry){
   var totalAssets=d.total_assets||0,goodwill=d.goodwill||0,intangibles=d.intangibles||0;
   var _exNc=(entry.extra||{}).non_current_marketable_securities||0;
   var ncSec=_exNc>0?_exNc:((entry.formData||{}).lt_investments||0); // index65: prefer extra.non_current_marketable_securities (current periods, e.g. 8,864); fall back to formData.lt_investments (historical years, e.g. 4,840) so the whole ROIC series nets non-operating securities on one basis
+  // index414: working-capital fix. growth_wc = reinvestment (added back to REP, feeds b);
+  // normDelta = min(0, ΔNWC_cf) — strips a net WC cash SOURCE from the normalized (g-feeding) series.
+  // When the three new fields are absent (all pre-414 JSONs) both are 0 and every number below is
+  // byte-identical to index413 — that is the regression control.
+  var _wcRec=(typeof repaWcFor==='function')?repaWcFor(entry):null;
+  var _wcGrowth=(_wcRec&&typeof _wcRec.growthWc==='number'&&isFinite(_wcRec.growthWc))?_wcRec.growthWc:0;
+  var _wcNormDelta=(_wcRec&&typeof _wcRec.normDelta==='number'&&isFinite(_wcRec.normDelta))?_wcRec.normDelta:0;
   var maintCapex,maintCapped=false;
   if(mcIn!==null&&mcIn>0){maintCapex=mcIn;}
   else{var _mc=calcMaintCapex(capex,da,null,deprOnly);maintCapex=_mc.value;maintCapped=_mc.capped;} // index220: carry the physical-cap flag for the deferred-maintenance note
@@ -6118,7 +6416,7 @@ function computeMetrics(entry){
     maintCapexLight=(capex>0&&capex<_lightEst)?capex:_lightEst; // index219: physical-split cap also applies to the Light (depreciation-only) view
     var realSBCForLight=Math.max(sbcExp,sbcGrant);
     var invIncomeLight=ltInv*invRate;
-    realProfitLight=cfo-realSBCForLight-maintCapexLight-restructuring+invIncomeLight;
+    realProfitLight=cfo-realSBCForLight-maintCapexLight-restructuring+invIncomeLight+_wcGrowth; // index414: growth WC returns to the profit line on the Light basis too
     var icLight=equity>0?(equity+debt-cash-sti-ncSec):0;
     realROICLight=icLight>0?realProfitLight/icLight:0;
     var ntaLight=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
@@ -6126,7 +6424,10 @@ function computeMetrics(entry){
   }
   var realSBC=Math.max(sbcExp,sbcGrant);
   var invIncome=ltInv*invRate;
-  var realProfit=cfo-realSBC-maintCapex-restructuring+invIncome;
+  // index414: REP = CFO + Δnwc − efficiency_wc − Real SBC − Maint CapEx − Restructuring + Inv income.
+  // Algebraically Δnwc − efficiency_wc = growth_wc, so the reported series is old REP + growth_wc.
+  var realProfit=cfo-realSBC-maintCapex-restructuring+invIncome+_wcGrowth;
+  var realProfitNorm=realProfit+_wcNormDelta; // index414: normalized REP — efficiency windfalls stripped. THE series that feeds g. Never shown as the headline (reported is real cash); the gap IS the earnings-quality diagnostic.
   var growthCapex=Math.max(capex-maintCapex,0);
   var investedCapital=equity>0?(equity+debt-cash-sti-ncSec):0;
   var realROIC=investedCapital>0?realProfit/investedCapital:0;
@@ -6134,7 +6435,8 @@ function computeMetrics(entry){
   var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapped:maintCapped,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,ncSec:ncSec,realROIC:realROIC,reinvestRate:reinvestRate,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
+  return {wc:_wcRec,wcGrowth:_wcGrowth,realProfitNorm:realProfitNorm, /* index414 */
+    cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapped:maintCapped,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,ncSec:ncSec,realROIC:realROIC,reinvestRate:reinvestRate,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
 }
 
 // Shared helper: build enriched years array from yearStore keys
@@ -6154,7 +6456,7 @@ function enrichYears(keys,opts){
       m.repPerShareLight=(m.realProfitLight!==null&&shares>0)?m.realProfitLight/shares:null;
     }
     m.sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:null;
-    m.canonReinvest=canonicalReinvestRate(m.growthCapex,m.rd_expense,(100-rdMaintPct)/100,m.realProfit).rate; // index21: canonical "% of profit reinvested" (b) = (Growth CapEx + after-tax Growth R&D) / REP, per year
+    m.canonReinvest=canonicalReinvestRate((m.growthCapex||0)+(m.wcGrowth||0),m.rd_expense,(100-rdMaintPct)/100,m.realProfit).rate; // index414: + growth WC. index21: canonical "% of profit reinvested" (b) = (Growth CapEx + after-tax Growth R&D) / REP, per year
     if(opts.formData)m.formData=yr.formData;
     if(opts.extra)m.extra=yr.extra||{};
     return m;
@@ -7093,7 +7395,15 @@ var _rkWin=99;            // index318: realized-k window — DEFAULT full histor
 // uses for the forward y). Full-D&A view returns computeMetrics.realProfit — identical to the old
 // behavior; Best Guess (the default) re-bases every vintage/endpoint consistently.
 function _rkRepBasis(yr){
-  try{var m=computeMetrics(yr); return (typeof _fyRepForView==='function')?(_fyRepForView(m)||0):(m.realProfit||0);}catch(e){return 0;}
+  // index414: the historical series that feeds g rides NORMALIZED REP (efficiency windfalls stripped),
+  // and ONLY normalized. realProfitNorm − realProfit = min(0, ΔNWC_cf) ≤ 0; zero for every ticker without
+  // the WC fields, so pre-414 behavior is untouched. The view basis (Best Guess amort/R&D) stacks on top.
+  try{
+    var m=computeMetrics(yr);
+    var base=(typeof _fyRepForView==='function')?(_fyRepForView(m)||0):(m.realProfit||0);
+    var normDelta=(typeof m.realProfitNorm==='number'&&typeof m.realProfit==='number')?(m.realProfitNorm-m.realProfit):0;
+    return base+normDelta;
+  }catch(e){return 0;}
 }
 function _rkBasisLabel(){ return (typeof _fyView!=='undefined'&&_fyView==='bestguess')?'Best Guess':'Full D&A'; }
 
@@ -7612,7 +7922,8 @@ function renderRoiicAnalysis(){
     var rawGrowthRD=rd*(rdGrowthPct/100);
     var trueGrowthRD=rawGrowthRD*(1-TAX_RATE); // index23/index139: after-tax, consistent with canonical b (Competitive Necessity removed — treated as maintenance)
     var growthCapex=y.growthCapex||0;
-    var totalReinvestment=growthCapex+trueGrowthRD;
+    var wcGrowth=y.wcGrowth||0; // index414: growth WC is reinvestment — b was missing it (FN: app said 33.7%; truth ~97%)
+    var totalReinvestment=growthCapex+trueGrowthRD+wcGrowth;
     var _repV=_fyRepForView(y);                 // index392: view-aware REP (Best Guess default) — reconciles ROIIC + b·r with the FTR
     var reinvestmentRate=_repV>0?totalReinvestment/_repV:0;
     return {
@@ -12068,10 +12379,11 @@ function calculate(opts){opts=opts||{};
   }
 
   if(currentYearKey&&yearStore[currentYearKey])yearStore[currentYearKey].formData=captureForm();
+  try{repaWcRebuild();}catch(e){} // index414: refresh the working-capital map before ANY metric is computed
 
   // Collapse input form and show summary bar
   var _fieldCount=0;
-  ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles'].forEach(function(f){var el=document.getElementById(f);if(el&&el.value&&el.value!=='0'&&el.value!=='')_fieldCount++;});
+  ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','lt_investments','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev'].forEach(function(f){var el=document.getElementById(f);if(el&&el.value&&el.value!=='0'&&el.value!=='')_fieldCount++;});
   var _yearCount=getSortedYearKeys().length;
   var _sumText='<strong style="color:var(--accent2)">'+ticker+'</strong> · $'+price.toFixed(0)+' · CFO '+fmtM(cfo)+' · '+_fieldCount+' fields'+(_yearCount>1?' · '+_yearCount+' years':'');
   document.getElementById('formSummaryText').innerHTML=_sumText;
@@ -12113,8 +12425,11 @@ function calculate(opts){opts=opts||{};
   var wcDrag=invChange+recvChange+apChange;
   var investmentIncome=ltInvestments*invReturnRate;
   var onetimeAdj=v('onetime_adj')||0;
-  var realProfit=cfo-realSBC-maintCapex-restructuring-onetimeAdj+investmentIncome;
-  var realProfitLight=hasLightView?(cfo-realSBC-maintCapexLight-restructuring-onetimeAdj+investmentIncome):null;
+  // index414: same growth-WC addback as computeMetrics, so the verdict and every panel agree.
+  var _vWcRec=(typeof repaWcFor==='function'&&currentYearKey&&yearStore[currentYearKey])?repaWcFor(yearStore[currentYearKey]):null;
+  var _vWcGrowth=(_vWcRec&&typeof _vWcRec.growthWc==='number'&&isFinite(_vWcRec.growthWc))?_vWcRec.growthWc:0;
+  var realProfit=cfo-realSBC-maintCapex-restructuring-onetimeAdj+investmentIncome+_vWcGrowth;
+  var realProfitLight=hasLightView?(cfo-realSBC-maintCapexLight-restructuring-onetimeAdj+investmentIncome+_vWcGrowth):null;
   var unleverProfit=realProfit+interest;
   var marketCap=price*shares;
   var ev=marketCap+debt-(cash+sti);
@@ -12660,7 +12975,7 @@ function calculate(opts){opts=opts||{};
       {label:'Invested Capital',value:fmtM(investedCapital),sub:fmtM(equity)+' equity + '+fmtM(debt)+' debt - '+fmtM(cash+sti)+' cash'}
     ];
     if(growthCapex>0){
-      var _cr=canonicalReinvestRate(growthCapex,adjRdExp,(100-rdMaintPct)/100,realProfit);
+      var _cr=canonicalReinvestRate(growthCapex+_vWcGrowth,adjRdExp,(100-rdMaintPct)/100,realProfit); // index414: b numerator includes growth WC
       roicItems.push({label:'Growth CapEx',value:fmtM(growthCapex),sub:fmtM(capex)+' total - '+fmtM(maintCapex)+' maint'});
       roicItems.push({label:'Maint CapEx (Full D&A)',value:fmtM(maintCapex),sub:maintMethod});
       roicItems.push({label:'% of Profit Reinvested (latest yr)',value:_cr.rate!==null?pct(_cr.rate,1):'\u2014',sub:fmtM(_cr.numerator)+' / '+fmtM(realProfit)+' REP'});
@@ -12966,6 +13281,8 @@ function calculate(opts){opts=opts||{};
   try{renderLongRun();}catch(e){console.warn('Long-run history error:',e);}
   // ROIIC Analysis
   try{renderRoiicAnalysis();}catch(e){console.warn('ROIIC error:',e);}
+  // index414: Working Capital panel — renders for EVERY ticker (an absent number is indistinguishable from a missed number)
+  try{var _wcCard=document.getElementById('wcCard');if(_wcCard)_wcCard.style.display='block';renderWcPanel();}catch(e){console.warn('WC panel error:',e);}
   // Feature 5: Render target price calculator
   try{renderTargetCalc();}catch(e){console.warn('Target calc error:',e);}
   // index73: Detailed Breakdown — all-years reference appendix
@@ -12986,6 +13303,7 @@ var _REPA_NAV_SECTIONS=[
   {id:'rdCard',          label:'R&amp;D Investment'},
   {id:'roiicCard',       label:'Capital Allocation'},
   {id:'growthReadArea',  label:'&nbsp;&nbsp;&middot; How the growth happened'}, // index400 (Lou): was undiscoverable \u2014 the r-realism / native-growth evidence lives here
+  {id:'wcCard',          label:'Working Capital'}, // index414
   {id:'buybacksCard',    label:'Share Count &amp; Capital Return'},
   {id:'historicalCard',  label:'Historical'},
   {id:'forwardYieldCard',label:'Future Total Return'},
