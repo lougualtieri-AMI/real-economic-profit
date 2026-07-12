@@ -852,7 +852,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index412 \u00b7 v5.1.26'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index413 \u00b7 v5.1.26'; // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -8143,7 +8143,25 @@ function _caBridgeModel(){
     var tangible=Math.max(ta-sec-gw-intang-cash-sti,0), floatV=Math.max(ta-eq-debt,0);
     var icVal=eq+debt-cash-sti-sec, ntaVal=ta-gw-intang-cash-sti;
     var tk=''; try{ tk=((document.getElementById('portfolioSelect')||{}).value)||''; }catch(e){}
-    return {label:last.label, ticker:tk, ta:ta,
+    // index412 (Lou): TTM balance-sheet update. The bars stay anchored to the audited annual balance
+    // sheet (interim filings often lack itemization — intangibles grouped in Other assets etc.), but
+    // when a NEWER TTM/interim pill carries the core stock fields, surface its point-in-time numbers
+    // as a text strip with deltas. Stocks are snapshots — a quarter-end reading is valid as stated.
+    var ttm=null;
+    try{
+      var lastD=Date.parse(last.endDate||'')||0;
+      for(var _ti=ys.length-1;_ti>=0;_ti--){
+        var _ty=ys[_ti]; if(!_ty||_ty===last)continue;
+        var _td=Date.parse(_ty.endDate||'')||0; if(_td<=lastD)continue;
+        var _tf=_ty.formData||{};
+        if(!(_tf.total_assets>0)||!(_tf.equity>0)||typeof _tf.debt!=='number')continue;
+        ttm={label:_ty.label,end:(_ty.endDate||''),ta:_tf.total_assets,eq:_tf.equity,debt:_tf.debt,
+             liquid:(_tf.cash||0)+(_tf.sti||0),
+             floatV:Math.max(_tf.total_assets-_tf.equity-_tf.debt,0)};
+        break;
+      }
+    }catch(e){ttm=null;}
+    return {label:last.label, ticker:tk, ta:ta, ttm:ttm,
       dep:[['tangible',tangible,'var(--green)'],['securities',sec,'var(--blue)'],['goodwill',gw,'var(--purple)'],['intangibles',intang,'var(--orange)'],['cash',cash,'#3a4250'],['STI',sti,'#2c333d']],
       fund:[['Equity',eq,'var(--accent2)'],['Debt',debt,'var(--red)'],['Float',floatV,'#2a9d8f']],
       gw:gw,intang:intang,cash:cash,sti:sti,sec:sec,eq:eq,debt:debt,
@@ -8212,6 +8230,21 @@ function _caBridgeHtml(){
     h+=_cbbHBar(d.dep);
     h+='<div class="cbbh-lab">Funded by <span class="r">where the capital comes from</span></div>';
     h+=_cbbHBar(d.fund);
+    if(d.ttm){
+      // index412 (Lou): fresher point-in-time numbers from the newest TTM/interim balance sheet.
+      // Deltas are neutral-colored — descriptive, not judgmental (a rising debt figure is a fact, not a verdict).
+      var _t=d.ttm;
+      var _dl=function(nv,ov){ if(typeof ov!=='number')return ''; var _df=nv-ov;
+        return ' <span style="color:var(--text3)">('+(_df>=0?'+':'\u2212')+_cbbFmt(Math.abs(_df))+')</span>'; };
+      h+='<div class="cbbh-lab" style="margin-top:12px">Updated since '+d.label+' <span class="r">'+_t.label+' balance sheet, as of '+_t.end+' \u2014 the bars above stay on the audited annual</span></div>';
+      h+='<div style="font-size:.72rem;color:var(--text2);line-height:1.7;font-family:\'JetBrains Mono\',monospace;padding:2px 0 4px">'
+        +'Debt <b style="color:var(--text)">'+_cbbFmt(_t.debt)+'</b>'+_dl(_t.debt,d.debt)
+        +' \u00b7 Float <b style="color:var(--text)">'+_cbbFmt(_t.floatV)+'</b>'+_dl(_t.floatV,d.floatV)
+        +' \u00b7 Equity <b style="color:var(--text)">'+_cbbFmt(_t.eq)+'</b>'+_dl(_t.eq,d.eq)
+        +' \u00b7 Cash+STI <b style="color:var(--text)">'+_cbbFmt(_t.liquid)+'</b>'+_dl(_t.liquid,d.cash+d.sti)
+        +' \u00b7 Total Assets <b style="color:var(--text)">'+_cbbFmt(_t.ta)+'</b>'+_dl(_t.ta,d.ta)
+        +'</div>';
+    }
     if(rdAsset>0){
       h+='<div class="cbbh-capnote"><b>The hatched extension, on both bars:</b> GAAP expensed this company\u2019s growth R&D the year it was spent \u2014 pretending the machine it built evaporated on delivery. That charge flowed through net income and <b>docked retained earnings by the same amount</b>. So the deployed side is missing the asset ('+f(rdAsset)+', amortizing over '+rdLifeTxt+') and the funded side is missing the retained earnings that built it. The cash was only the <i>means of payment</i> \u2014 it left the company either way. <b>Best Guess restores both sides; funded = deployed still holds. Full story: \u2461 \u201cIs R&D an operating expense \u2014 or capital that builds a durable asset?\u201d below.</b></div>'; // index379 (Lou): closing sentences bolded; reference repointed from the local dropdown to card 2, where R&D-as-asset is properly introduced -- this note is the concept\u2019s first appearance in the panel
     }
