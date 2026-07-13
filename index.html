@@ -10982,7 +10982,8 @@ function exportDataMarkdown(){
   var msA=enrichYears(keysActive,{formData:true,extra:true});
   nl('## 2. Real Economic Profit (REP)');
   nl('');
-  nl('REP = CFO \u2212 Real SBC \u2212 Maintenance CapEx \u2212 Restructuring + Investment income.');
+  nl('REP = CFO \u2212 Real SBC \u2212 Maintenance CapEx \u2212 Restructuring + Investment income + Growth WC.');
+  nl('- Growth WC (index414): prior-year working-capital intensity \u00d7 \u0394revenue \u2014 reinvestment returned to the profit line. 0 when the working-capital fields are absent. The growth/efficiency split, both REP series (reported / normalized), and the float ratio are in Section 4c.');
   nl('- Real SBC = MAX(SBC expense, SBC grant-date fair value)  [conservative SBC rule]');
   nl('- Maintenance CapEx: disclosed when provided, else D&A \u00d7 '+maintMult.toFixed(2)+' (or = total CapEx when CapEx \u2248 D&A).');
   nl('- Investment income = idle long-term investments \u00d7 the per-year idle-cash proxy rate.');
@@ -11109,6 +11110,38 @@ function exportDataMarkdown(){
   } else {
     nl('- (Future Total Return not applicable for the current period — EV \u2264 0 or REP \u2264 0 — so no r-anchors were computed.)');
   }
+  nl('');
+
+  // ===== 4c. Working capital — growth vs efficiency (index414) =====
+  nl('### 4c. Working Capital \u2014 Growth vs Efficiency (index414)');
+  try{
+    if(typeof repaWcRebuild==='function')repaWcRebuild(); // ensure the map is fresh at export time
+    var _wcm=window._repaWcMap;
+    if(!_wcm||(!_wcm.hasLevels&&!_wcm.hasCf)){
+      nl('- Working-capital fields absent for every stored period \u2014 the index414 growth/efficiency correction is INACTIVE for this ticker (backfill candidate). REP above carries the pre-index414 basis.');
+    } else {
+      nl('- Engine: wc_intensity = operating NWC \u00f7 revenue (balance-sheet levels, intensity ONLY); \u0394NWC (CF) = \u2212(the CFS working-capital line) \u2014 the only \u0394NWC in the REP adjustment; growth WC = prior intensity \u00d7 \u0394revenue (reinvestment, feeds b); efficiency WC = \u0394NWC (CF) \u2212 growth WC (never feeds g or r).');
+      nl('- Two REP series: REP (reported) = headline everywhere, real cash. REP (normalized) = reported + min(0, \u0394NWC CF) \u2014 efficiency windfalls stripped; feeds historic g, and only this one. Gap = the earnings-quality diagnostic.');
+      nl('| Period | Op NWC | NWC/Rev | Float ratio | \u0394NWC (CF) | Growth WC | Efficiency WC | \u2014 cust. financing | Acq/FX gap | REP reported | REP normalized |');
+      nl('|---|---|---|---|---|---|---|---|---|---|---|');
+      keysAll.forEach(function(k){
+        var yr=yearStore[k]; if(!yr)return;
+        var rc=_wcm.byKey[k]||{};
+        var mm=null; try{mm=computeMetrics(yr);}catch(e){}
+        function c(v){return (v==null||!isFinite(v))?'\u2014':m$(v);}
+        function cp(v){return (v==null||!isFinite(v))?'\u2014':(v*100).toFixed(1)+'%';}
+        nl('| '+lbl(k)+' | '+c(rc.nwc)+' | '+cp(rc.intensity)+' | '+cp(rc.floatRatio)+' | '+c(rc.dNwcCf)+' | '+c(rc.growthWc)+' | '+c(rc.efficiencyWc)+' | '+c(rc.custFinWc)+' | '+c(rc.acqFxGap)+' | '+(mm?m$(mm.realProfit):'\u2014')+' | '+((mm&&typeof mm.realProfitNorm==='number')?m$(mm.realProfitNorm):'\u2014')+' |');
+      });
+      var _lk=null; keysAll.forEach(function(k){ if(_wcm.byKey[k]&&(_wcm.byKey[k].growthWc!=null||_wcm.byKey[k].dNwcCf!=null))_lk=k; });
+      if(_lk){ var _lr=_wcm.byKey[_lk];
+        if(_lr.tag!=null)nl('- materiality (latest computable): distortion \u2248 '+(_lr.distortion*100).toFixed(0)+'% of REP \u2014 '+_lr.tag+'  [intensity \u00d7 revenue growth \u00f7 net margin; shown even when immaterial]');
+        if(_lr.intensity!=null&&_lr.intensity<0)nl('- \u26a0 negative intensity \u2014 customer-funded: growth WC is a SOURCE, not a use.');
+        if(_lr.floatRatio!=null&&_lr.floatRatio>=0.10)nl('- \u26a0 float ratio \u2265 10%: the asymmetry warning applies \u2014 REP growth breaks BEFORE revenue growth when the float unwinds; normalized REP already excludes the tailwind.');
+        if(_wcm.hasLevels&&!_wcm.hasCf)nl('- \u26a0 CFS working-capital line missing (wc_change_cf) \u2014 efficiency split and normalized REP inactive; intensity/growth WC only.');
+        if(_wcm.hasCf&&!_wcm.hasLevels)nl('- \u26a0 balance-sheet NWC levels missing (operating_nwc) \u2014 windfall strip active; growth/efficiency split and intensity unavailable.');
+      }
+    }
+  }catch(e){ nl('- (working-capital section unavailable: '+(e&&e.message?e.message:'error')+')'); }
   nl('');
 
   // ===== 5. R&D addback layer =====
@@ -11402,6 +11435,7 @@ function exportDataMarkdown(){
   row('CapEx (total)', fdg('capex')); row('D&A', fdg('da')); row('Depreciation only', fdg('depr_only'));
   row('Maint CapEx (disclosed)', fdg('maint_capex')); row('Restructuring', fdg('restructuring'));
   row('One-time adj', fdg('onetime_adj')); row('Interest', fdg('interest')); row('Tax paid', fdg('tax_paid'));
+  row('WC change in CFO (as printed)', fdg('wc_change_cf')); // index414: + = source of cash
   nl('');
   nl('### 10b. Balance-sheet inputs ($M; shares in M)');
   nl(hdr); nl(sep);
@@ -11409,6 +11443,7 @@ function exportDataMarkdown(){
   row('Long-term inv', fdg('lt_investments')); row('Non-current mkt securities', exg('non_current_marketable_securities'));
   row('Total equity', fdg('equity')); row('Total assets', fdg('total_assets'));
   row('Goodwill', fdg('goodwill')); row('Intangibles', fdg('intangibles'));
+  row('Operating NWC (index414)', fdg('operating_nwc')); row('Deferred revenue, total (index414)', fdg('deferred_rev'));
   row('Diluted shares (M)', fdg('shares', function(x){return n2(x);}));
   nl('');
   nl('### 10c. Capital returns & price');
