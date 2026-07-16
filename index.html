@@ -878,7 +878,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index417 \u00b7 v5.1.30'; // index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index418 \u00b7 v5.2.0'; // index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -1161,6 +1161,16 @@ var REPA_BUILD_TAG='index417 \u00b7 v5.1.30'; // index417: copyright + PolyForm 
   <div class="row"><!-- index414: working-capital fix — balance-sheet LEVELS. Used ONLY to compute wc_intensity (a ratio of levels); never fed directly into the REP adjustment (that is the CF-statement line above, per the VRT addendum: BS ΔNWC includes acquired WC + FX). -->
     <div class="field"><label>Operating NWC ($M)</label><input type="number" id="operating_nwc" step="1" placeholder="Optional"><div class="hint"><strong>Scope rule (index416):</strong> the CFS "changes in operating assets and liabilities" block defines WHAT is working capital; this field carries the FULL balance of exactly those items — current AND noncurrent legs combined. Follow the item, not the shelf. Typically: (AR + inventory + prepaid incl. <strong>noncurrent supplier prepayments / capacity deposits</strong> + other WC assets) − (trade payables + accrued expenses + accrued payroll + other payables + income tax payable + <strong>deferred revenue, current AND noncurrent</strong> + customer deposits / contract liabilities). Excludes cash, STI, fixed-asset payables, all debt — because those are not in the CFS block. Noncurrent legs hide in "Other assets" / "Other long-term liabilities" — check the footnotes. Can be negative (customer-funded).</div></div>
     <div class="field"><label>Deferred Revenue ($M)</label><input type="number" id="deferred_rev" step="1" placeholder="Optional"><div class="hint">Current + noncurrent + contract liabilities / customer deposits / advance payments. Enables the customer-financing (float) split and the float-ratio series.</div></div>
+  </div>
+  <div class="row"><!-- index418: PREPAID SUPPLIER bucket. A multi-year supplier prepayment (cash out one year, returned as
+       goods or amortized over several) distorts CFO at BOTH ends and the single-period WC engine cannot link them.
+       Fill these to carve the prepay out of the WC split and apply the timing correction (+add−consumption / +fee−amort).
+       LEVELS per period; leave blank for tickers with no such arrangement (they behave exactly as before). -->
+    <div class="field"><label>Prepaid Supply Balance ($M) <span style="color:var(--text3);font-weight:400">— Type A, returning</span></label><input type="number" id="prepaid_supply_balance" step="1" placeholder="Optional"><div class="hint"><strong>Type A — returning prepayment</strong> (e.g. prepaid wafers/goods bought anyway, paid early). Period-end balance of the prepaid-supply asset; draws down as the goods are consumed. The drawdown ties to the CFS "prepaid wafers/supply" line. Carved out of Operating NWC and WC-Δ; the period change (+add signing year, −consumption each use year) is applied to REP as a timing correction.</div></div>
+    <div class="field"><label>Prepaid Supply Addition ($M)</label><input type="number" id="prepaid_supply_add" step="1" placeholder="Signing year only"><div class="hint">Gross cash prepaid into the supply asset in the signing year (e.g. the up-front wafer prepayment). Optional — when omitted, the balance change carries the timing. Consumption is derived: opening + addition − closing.</div></div>
+    <div class="field"><label>Prepaid Supply Growth Share ($M)</label><input type="number" id="prepaid_supply_growth_share" step="1" placeholder="0 unless disclosed"><div class="hint">Portion of the prepayment tied to <em>growth</em> capacity (feeds b), only if a dollar amount is explicitly disclosed. Default 0 — capacity-assurance boilerplate is maintenance and nothing feeds b without a stated figure.</div></div>
+    <div class="field"><label>Prepaid Fee Balance ($M) <span style="color:var(--text3);font-weight:400">— Type B, amortizing</span></label><input type="number" id="prepaid_fee_balance" step="1" placeholder="Optional"><div class="hint"><strong>Type B — amortizing fee</strong> (non-refundable capacity-reservation fee). Period-end unamortized balance; amortizes over the commitment period as a real cost. Carved out of Operating NWC and WC-Δ; +full fee in the signing year, −amortization each period, applied to REP.</div></div>
+    <div class="field"><label>Prepaid Fee Addition ($M)</label><input type="number" id="prepaid_fee_add" step="1" placeholder="Signing year only"><div class="hint">The non-refundable fee paid in the signing year (e.g. a capacity-reservation fee). Amortization is derived from the balance drop when a per-year schedule isn't separately disclosed.</div></div>
   </div>
   <div class="row"><!-- index415: PRIOR-YEAR ANCHOR — fill ONLY on the EARLIEST stored year. Terminates the base-year
        warning without a full extra pill: growth WC for the base year = (prior NWC ÷ prior revenue) × Δrevenue, and
@@ -2162,7 +2172,7 @@ function clearForNewCompany(){
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
   selectedYears=[];
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev','prepaid_supply_balance','prepaid_supply_add','prepaid_supply_growth_share','prepaid_fee_balance','prepaid_fee_add'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('amort_only').value='';
   document.getElementById('ticker').value='';
@@ -5500,6 +5510,14 @@ function doImport(){
       'prior operating nwc':'prior_operating_nwc','prior_operating_nwc':'prior_operating_nwc','prior_operating_nwc_m':'prior_operating_nwc','prior year operating nwc':'prior_operating_nwc','prior_year_operating_nwc':'prior_operating_nwc',
       'prior revenue':'prior_revenue','prior_revenue':'prior_revenue','prior_revenue_m':'prior_revenue','prior year revenue':'prior_revenue','prior_year_revenue':'prior_revenue',
       'prior deferred revenue':'prior_deferred_rev','prior_deferred_revenue':'prior_deferred_rev','prior_deferred_revenue_m':'prior_deferred_rev',
+      // index418: PREPAID SUPPLIER bucket. Type A = returning prepayment (prepaid wafers/goods; balance draws down as consumed). Type B = amortizing capacity-reservation fee (non-refundable; amortizes over the commitment period). LEVELS (never annualize); carved out of both operating_nwc and wc_change_cf.
+      'prepaid supply balance':'prepaid_supply_balance','prepaid_supply_balance':'prepaid_supply_balance','prepaid_supply_balance_m':'prepaid_supply_balance','prepaid wafers balance':'prepaid_supply_balance','prepaid_wafers_balance':'prepaid_supply_balance','long-term prepaid wafers':'prepaid_supply_balance','long_term_prepaid_wafers':'prepaid_supply_balance','supplier prepayment balance':'prepaid_supply_balance','supplier_prepayment_balance':'prepaid_supply_balance',
+      'prepaid supply add':'prepaid_supply_add','prepaid_supply_add':'prepaid_supply_add','prepaid_supply_addition':'prepaid_supply_add','prepaid_supply_add_m':'prepaid_supply_add','supplier prepayment addition':'prepaid_supply_add',
+      'prepaid supply growth share':'prepaid_supply_growth_share','prepaid_supply_growth_share':'prepaid_supply_growth_share','prepaid_supply_growth_share_m':'prepaid_supply_growth_share',
+      'prepaid fee balance':'prepaid_fee_balance','prepaid_fee_balance':'prepaid_fee_balance','prepaid_fee_balance_m':'prepaid_fee_balance','capacity reservation fee balance':'prepaid_fee_balance','capacity_reservation_fee_balance':'prepaid_fee_balance','capacity fee balance':'prepaid_fee_balance','capacity_deposit_balance':'prepaid_fee_balance',
+      'prepaid fee add':'prepaid_fee_add','prepaid_fee_add':'prepaid_fee_add','prepaid_fee_addition':'prepaid_fee_add','prepaid_fee_add_m':'prepaid_fee_add','capacity reservation fee':'prepaid_fee_add','capacity_reservation_fee':'prepaid_fee_add',
+      'prior prepaid supply balance':'prior_prepaid_supply_balance','prior_prepaid_supply_balance':'prior_prepaid_supply_balance','prior_prepaid_supply_balance_m':'prior_prepaid_supply_balance',
+      'prior prepaid fee balance':'prior_prepaid_fee_balance','prior_prepaid_fee_balance':'prior_prepaid_fee_balance','prior_prepaid_fee_balance_m':'prior_prepaid_fee_balance',
       'operating nwc':'operating_nwc','operating_nwc':'operating_nwc','operating_nwc_m':'operating_nwc','operating net working capital':'operating_nwc','operating_net_working_capital':'operating_nwc','net working capital':'operating_nwc','net_working_capital':'operating_nwc',
       'deferred revenue':'deferred_rev','deferred_revenue':'deferred_rev','deferred_revenue_m':'deferred_rev','deferred_revenue_total':'deferred_rev','deferred revenue total':'deferred_rev','contract liabilities':'deferred_rev','contract_liabilities':'deferred_rev','customer deposits':'deferred_rev','customer_deposits':'deferred_rev',
       'receivables change':'recv_change','accounts receivable change':'recv_change','trade receivables change':'recv_change','receivables_change':'recv_change',
@@ -5970,7 +5988,7 @@ function captureForm(){
   // now reserved for current price (per-ticker top-level), and no longer
   // contaminates per-pill formData. Per-pill anchor is formData.end_of_period_price,
   // set at extraction time and migration only — never via the form.
-  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev'];
+  var numericFields = ['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev','prepaid_supply_balance','prepaid_supply_add','prepaid_supply_growth_share','prepaid_fee_balance','prepaid_fee_add'];
   numericFields.forEach(function(id){
     var el = document.getElementById(id);
     if(el && el.value !== ''){
@@ -5986,7 +6004,7 @@ function captureForm(){
 }
 
 function restoreForm(d){
-  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev'];
+  var fields=['cfo','sbc_expense','sbc_grant','capex','da','maint_capex','depr_only','restructuring','onetime_adj','inv_change','recv_change','ap_change','interest','tax_paid','debt','cash','sti','shares','share_repurchases','dividends_paid','buyback_cost_m','buyback_shares','lt_investments','inv_return_rate','equity','total_assets','goodwill','intangibles','operating_nwc','wc_change_cf','deferred_rev','prior_operating_nwc','prior_revenue','prior_deferred_rev','prepaid_supply_balance','prepaid_supply_add','prepaid_supply_growth_share','prepaid_fee_balance','prepaid_fee_add'];
   fields.forEach(function(f){var el=document.getElementById(f);if(el&&d[f]!==null&&d[f]!==undefined)el.value=d[f];else if(el)el.value='';});
   if(d.ticker)document.getElementById('ticker').value=d.ticker;
   // PRICE-FIX 2026-04-30 v3: TWO-BOX MODEL.
@@ -6250,17 +6268,64 @@ function repaWcRebuild(){
     keys.forEach(function(k){
       var yr=yearStore[k]; if(!yr||!yr.formData)return;
       var fd=yr.formData, ex=yr.extra||{};
+      // index418: PREPAID SUPPLIER carve. Read the new fields (null-safe). A ticker carrying none of these
+      // behaves byte-identically to index417 — that is the regression control.
+      var _psB=(typeof fd.prepaid_supply_balance==='number')?fd.prepaid_supply_balance:null; // Type A level
+      var _pfB=(typeof fd.prepaid_fee_balance==='number')?fd.prepaid_fee_balance:null;       // Type B level
+      var _hasPre=(_psB!==null||_pfB!==null);
+      var _preBal=_hasPre?((_psB||0)+(_pfB||0)):null;                                          // combined prepay level
+      var _rawNwc=(typeof fd.operating_nwc==='number')?fd.operating_nwc:null;
+      var _rawWcCf=(typeof fd.wc_change_cf==='number')?fd.wc_change_cf:null;
+      var _priorPre=(typeof fd.prior_prepaid_supply_balance==='number'||typeof fd.prior_prepaid_fee_balance==='number')?((fd.prior_prepaid_supply_balance||0)+(fd.prior_prepaid_fee_balance||0)):null;
+      var _priorNwc=(typeof fd.prior_operating_nwc==='number')?fd.prior_operating_nwc:null;
       rows.push({key:k, label:yr.fiscal_year_label||k,
-        nwc:(typeof fd.operating_nwc==='number')?fd.operating_nwc:null,
-        wcCf:(typeof fd.wc_change_cf==='number')?fd.wc_change_cf:null,
+        // LEVEL carve: the full prepay balance leaves operating_nwc. index416 scope explicitly folds noncurrent
+        // supplier prepayments / capacity deposits INTO operating_nwc, so the whole balance must come back out —
+        // prepay is not working capital and must never touch the growth/efficiency split or the intensity series.
+        nwc:(_rawNwc!==null&&_hasPre)?(_rawNwc-_preBal):_rawNwc,
+        rawNwc:_rawNwc,
+        wcCf:_rawWcCf,          // FLOW carve applied in the index418 second pass below (needs the prior-annual anchor)
+        rawWcCf:_rawWcCf,
+        preBal:_preBal, psBal:_psB, pfBal:_pfB, hasPrepay:_hasPre,
+        psAdd:(typeof fd.prepaid_supply_add==='number')?fd.prepaid_supply_add:null,
+        pfAdd:(typeof fd.prepaid_fee_add==='number')?fd.prepaid_fee_add:null,
+        psGrowth:(typeof fd.prepaid_supply_growth_share==='number')?fd.prepaid_supply_growth_share:null,
+        priorPre:_priorPre,
         defRev:(typeof fd.deferred_rev==='number')?fd.deferred_rev:null,
-        priorNwc:(typeof fd.prior_operating_nwc==='number')?fd.prior_operating_nwc:null,
+        // carve prepay from the base-year anchor too (0 for both live tickers — each begins pre-prepay):
+        priorNwc:(_priorNwc!==null&&_priorPre!==null)?(_priorNwc-_priorPre):_priorNwc,
         priorRev:(typeof fd.prior_revenue==='number')?fd.prior_revenue:null,
         priorDef:(typeof fd.prior_deferred_rev==='number')?fd.prior_deferred_rev:null,
         rev:(typeof ex.revenue==='number')?ex.revenue:((typeof fd.revenue==='number')?fd.revenue:null),
         netIncome:(typeof ex.net_income==='number')?ex.net_income:((typeof fd.net_income==='number')?fd.net_income:null)});
     });
+    // index418: SECOND PASS — prepay \u0394balance drives BOTH the flow carve and the REP timing delta, anchored to the
+    // nearest prior ANNUAL row (mirrors the index415 WC anchor rule: skip TTM so a 12-month flow isn't measured
+    // against a 3-month interim). prepayDelta = +add\u2212consumption (Type A) + +fee_add\u2212amort (Type B), which reduces
+    // algebraically to \u0394(combined prepay balance) vs the prior annual — the returning prepay and the amortizing fee
+    // both net to the same balance-\u0394 correction, so one term carries both instruments. Cross-checks against the
+    // dedicated CFS "Prepaid wafers" line where one exists (CRUS wafer only); QCOM and the CRUS fee work off \u0394balance.
+    for(var _i=0;_i<rows.length;_i++){
+      var _r=rows[_i];
+      if(!_r.hasPrepay){ _r.prepayDelta=0; continue; }                 // null-safe: no prepay fields → no effect
+      var _anchBal=null,_found=false;
+      for(var _j=_i-1;_j>=0;_j--){ var _c=rows[_j];
+        if(!/TTM/i.test(String(_c.label||''))&&_c.hasPrepay&&typeof _c.preBal==='number'){ _anchBal=_c.preBal; _found=true; break; } }
+      if(!_found) _anchBal=(_r.priorPre!==null)?_r.priorPre:0;          // base year: explicit prior-prepay anchor, else 0
+      var _dPre=(_r.preBal||0)-_anchBal;                               // \u0394(combined prepay balance) vs prior annual
+      _r.prepayDelta=_dPre;                                            // added to REP in computeMetrics
+      _r.prepayAnchBal=_anchBal;
+      // FLOW carve: prepay's contribution to the printed WC line = −\u0394bal (an asset build is a USE of cash).
+      // Remove it so normDelta can't strip a prepay drawdown as an "efficiency windfall" and efficiencyWc can't
+      // book the outlay as a leak: wcCf_ex = printed − (−\u0394bal) = printed + \u0394bal.
+      if(_r.rawWcCf!==null) _r.wcCf=_r.rawWcCf+_dPre;
+    }
     var res=repaWcSeriesCompute(rows);
+    // index418: attach prepay data onto each rec (in place — byEntry/fiscal_year_end aliases below inherit it) so
+    // computeMetrics can add the delta and the WC panel / .md export can disclose the carve.
+    for(var _p=0;_p<rows.length;_p++){ var _rr=rows[_p], _rec=res.byKey[_rr.key];
+      if(_rec){ _rec.prepayDelta=_rr.prepayDelta||0; _rec.preBal=_rr.preBal; _rec.psBal=_rr.psBal; _rec.pfBal=_rr.pfBal;
+        _rec.rawNwc=_rr.rawNwc; _rec.hasPrepay=!!_rr.hasPrepay; _rec.prepayAnchBal=(typeof _rr.prepayAnchBal==='number')?_rr.prepayAnchBal:null; } }
     // Identity index (WeakMap) — the PRIMARY lookup. The Compare scorecard runs computeMetrics over OTHER
     // tickers' saved years; a bare fiscal_year_end key would cross-contaminate any two tickers sharing a
     // year-end date. Identity can't. A ticker-guarded key fallback below covers active-ticker COPIES.
@@ -6442,6 +6507,15 @@ function renderWcPanel(){
   });
   h+='</table></div>';
   h+='<p style="font-size:.66rem;color:var(--text3);margin:7px 0 0;line-height:1.55">\u0394NWC (CF) = \u2212(the working-capital line inside CFO) \u2014 the only \u0394NWC allowed into the REP adjustment. Growth WC = prior-year intensity \u00d7 \u0394revenue \u2014 the cost of getting bigger; REINVESTMENT (added back to REP, feeds b). Efficiency WC = \u0394NWC (CF) \u2212 growth WC \u2014 real cash, but non-recurring and bounded; NEVER feeds g or r.'+(anyGap?' Acq/FX gap = \u0394NWC (BS) \u2212 \u0394NWC (CF): working capital that arrived through the investing section (business combinations) plus FX translation \u2014 disclosed here, never silently absorbed.':'')+'</p>';
+  // index418: prepaid-supplier carve disclosure. When a ticker carries a multi-year supplier prepayment, the full
+  // prepay balance is removed from BOTH the Op NWC level and the \u0394NWC (CF) flow BEFORE the split runs, so the
+  // "Op NWC" column here is the EX-prepay level (not the reported balance-sheet number) and the prepay timing
+  // correction is applied to REP directly — never through the growth/efficiency split.
+  var _anyPrepay=rows.some(function(r){return r.rec&&r.rec.hasPrepay;});
+  if(_anyPrepay){
+    var _latPre=null; for(var _z=rows.length-1;_z>=0;_z--){ if(rows[_z].rec&&rows[_z].rec.hasPrepay){_latPre=rows[_z];break;} }
+    h+='<p style="font-size:.66rem;color:var(--blue);margin:7px 0 0;line-height:1.55;border-left:3px solid var(--blue);border-radius:0 6px 6px 0;background:var(--card2);padding:7px 10px"><strong>\u25b8 Prepaid-supplier carve active (index418).</strong> This ticker holds a multi-year supplier prepayment. The <strong>Op NWC</strong> column above is the <strong>ex-prepay</strong> level \u2014 the full prepay balance'+((_latPre&&typeof _latPre.rec.preBal==='number')?(' (latest: reported '+fm(_latPre.rec.rawNwc)+' \u2212 prepay '+fm(_latPre.rec.preBal)+' = '+fm(_latPre.rec.nwc)+')'):'')+' is carved out of both the level and the \u0394NWC (CF) flow, so prepay never touches the growth/efficiency split or normalized REP. The prepayment\u2019s own effect is applied to REP as a pure timing correction (+addition in the signing year, \u2212consumption/\u2212amortization each period). See the raw-inputs export for the per-period prepay schedule.</p>';
+  }
 
   // two-series explainer
   h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin:12px 0 0;font-size:.73rem;color:var(--text2);line-height:1.6">'
@@ -6493,6 +6567,11 @@ function computeMetrics(entry){
   var _wcRec=(typeof repaWcFor==='function')?repaWcFor(entry):null;
   var _wcGrowth=(_wcRec&&typeof _wcRec.growthWc==='number'&&isFinite(_wcRec.growthWc))?_wcRec.growthWc:0;
   var _wcNormDelta=(_wcRec&&typeof _wcRec.normDelta==='number'&&isFinite(_wcRec.normDelta))?_wcRec.normDelta:0;
+  // index418: prepaid-supplier timing correction (+add−consumption for Type A / +fee−amort for Type B, == Δbalance
+  // vs the prior annual). 0 when no prepay fields — the regression control. Flows into BOTH reported and normalized
+  // REP (normalized = reported + normDelta, so it inherits this), matching "reported is real cash, corrected only
+  // for the multi-year round trip the single-period WC engine cannot see."
+  var _wcPrepay=(_wcRec&&typeof _wcRec.prepayDelta==='number'&&isFinite(_wcRec.prepayDelta))?_wcRec.prepayDelta:0;
   var maintCapex,maintCapped=false;
   if(mcIn!==null&&mcIn>0){maintCapex=mcIn;}
   else{var _mc=calcMaintCapex(capex,da,null,deprOnly);maintCapex=_mc.value;maintCapped=_mc.capped;} // index220: carry the physical-cap flag for the deferred-maintenance note
@@ -6506,7 +6585,7 @@ function computeMetrics(entry){
     maintCapexLight=(capex>0&&capex<_lightEst)?capex:_lightEst; // index219: physical-split cap also applies to the Light (depreciation-only) view
     var realSBCForLight=Math.max(sbcExp,sbcGrant);
     var invIncomeLight=ltInv*invRate;
-    realProfitLight=cfo-realSBCForLight-maintCapexLight-restructuring+invIncomeLight+_wcGrowth; // index414: growth WC returns to the profit line on the Light basis too
+    realProfitLight=cfo-realSBCForLight-maintCapexLight-restructuring+invIncomeLight+_wcGrowth+_wcPrepay; // index414: growth WC returns to the profit line on the Light basis too. index418: + prepay timing correction.
     var icLight=equity>0?(equity+debt-cash-sti-ncSec):0;
     realROICLight=icLight>0?realProfitLight/icLight:0;
     var ntaLight=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
@@ -6516,7 +6595,7 @@ function computeMetrics(entry){
   var invIncome=ltInv*invRate;
   // index414: REP = CFO + Δnwc − efficiency_wc − Real SBC − Maint CapEx − Restructuring + Inv income.
   // Algebraically Δnwc − efficiency_wc = growth_wc, so the reported series is old REP + growth_wc.
-  var realProfit=cfo-realSBC-maintCapex-restructuring+invIncome+_wcGrowth;
+  var realProfit=cfo-realSBC-maintCapex-restructuring+invIncome+_wcGrowth+_wcPrepay; // index414: + growth WC. index418: + prepay timing correction (Type A/B, == Δcombined-balance; 0 when no prepay fields).
   var realProfitNorm=realProfit+_wcNormDelta; // index414: normalized REP — efficiency windfalls stripped. THE series that feeds g. Never shown as the headline (reported is real cash); the gap IS the earnings-quality diagnostic.
   var growthCapex=Math.max(capex-maintCapex,0);
   var investedCapital=equity>0?(equity+debt-cash-sti-ncSec):0;
@@ -6525,7 +6604,7 @@ function computeMetrics(entry){
   var reinvestRate=investedCapital>0?growthCapex/investedCapital:0;
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
-  return {wc:_wcRec,wcGrowth:_wcGrowth,realProfitNorm:realProfitNorm, /* index414 */
+  return {wc:_wcRec,wcGrowth:_wcGrowth,wcPrepay:_wcPrepay,realProfitNorm:realProfitNorm, /* index414 / index418 */
     cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapped:maintCapped,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,ncSec:ncSec,realROIC:realROIC,reinvestRate:reinvestRate,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
 }
 
@@ -11536,6 +11615,20 @@ function exportDataMarkdown(){
   row('Total equity', fdg('equity')); row('Total assets', fdg('total_assets'));
   row('Goodwill', fdg('goodwill')); row('Intangibles', fdg('intangibles'));
   row('Operating NWC (index414)', fdg('operating_nwc')); row('Deferred revenue, total (index414)', fdg('deferred_rev'));
+  // index418: PREPAID SUPPLIER bucket — only emit these rows when at least one period carries a prepay field (keeps
+  // the export byte-identical for every ticker that has no such arrangement).
+  (function(){
+    var anyPre=keysAll.some(function(k){var f=(yearStore[k]||{}).formData||{};return f.prepaid_supply_balance!=null||f.prepaid_fee_balance!=null;});
+    if(!anyPre)return;
+    row('Prepaid supply balance — Type A (index418)', fdg('prepaid_supply_balance'));
+    row('Prepaid supply addition (index418)', fdg('prepaid_supply_add'));
+    row('Prepaid supply growth share (index418)', fdg('prepaid_supply_growth_share'));
+    row('Prepaid fee balance — Type B (index418)', fdg('prepaid_fee_balance'));
+    row('Prepaid fee addition (index418)', fdg('prepaid_fee_add'));
+    row('Prepay REP timing correction (index418, =Δcombined balance vs prior annual)', function(yr){var r=(typeof repaWcFor==='function')?repaWcFor(yr):null;return (r&&typeof r.prepayDelta==='number'&&r.hasPrepay)?m$(r.prepayDelta):null;});
+    nl('');
+    nl('> **Prepaid-supplier note (index418).** A multi-year supplier prepayment distorts CFO at both ends: the single-period working-capital engine crushes the signing year and strips the drawdown years. The full prepay balance is carved OUT of both Operating NWC and the WC-Δ line (so it never touches the growth/efficiency split or normalized REP), and the period change is added back to REP as a pure timing correction — +addition in the signing year, −consumption/−amortization each use year. Type A = returning prepayment (goods bought anyway); Type B = amortizing non-refundable fee. Both instruments net algebraically to Δ(combined balance) vs the prior ANNUAL anchor. The "Operating NWC" row above is the reported balance-sheet level; the WC panel and the growth/efficiency split run on the ex-prepay level.');
+  })();
   row('Diluted shares (M)', fdg('shares', function(x){return n2(x);}));
   nl('');
   nl('### 10c. Capital returns & price');
