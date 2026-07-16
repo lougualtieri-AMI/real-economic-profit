@@ -878,7 +878,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index418 \u00b7 v5.2.0'; // index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index420 \u00b7 v5.2.2'; // index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -7472,9 +7472,23 @@ function _histExpDraw(keys){
     s+='<text x="'+(W-pR+6)+'" y="'+(pT-9)+'" fill="#999" font-size="8.5" text-anchor="start">'+Rcap+(AR.log?' (log)':'')+'</text>';}
   if(!AL.log&&AL.lo<0&&AL.hi>0){var z=yL(0);s+='<line x1="'+pL+'" y1="'+z+'" x2="'+(W-pR)+'" y2="'+z+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
   else if(hasR&&AR&&!AR.log&&AR.lo<0&&AR.hi>0){var z2=yR(0);s+='<line x1="'+pL+'" y1="'+z2+'" x2="'+(W-pR)+'" y2="'+z2+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
-  EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_histExpXByDate(g,te);
-    s+='<line x1="'+ex.toFixed(1)+'" y1="'+pT+'" x2="'+ex.toFixed(1)+'" y2="'+(pT+iH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
-    var _lx=Math.max(pL+16,Math.min(W-pR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(pT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): edge labels clamped (Symantec fix)
+  // index419: event-marker legibility (History chart) — same vertical-stagger + halo fix as the Co-Movement
+  // chart: lines first, then labels packed into the fewest non-overlapping rows, so close-dated events don't
+  // collapse into one unreadable line. Replaces the single-row clamp (index387).
+  (function(){
+    var _evS=EVENTS.slice().filter(function(ev){return isFinite(Date.parse(ev.date));})
+                   .sort(function(a,b){return Date.parse(a.date)-Date.parse(b.date);});
+    _evS.forEach(function(ev){var ex=_histExpXByDate(g,Date.parse(ev.date));
+      s+='<line x1="'+ex.toFixed(1)+'" y1="'+pT+'" x2="'+ex.toFixed(1)+'" y2="'+(pT+iH)+'" stroke="#6b5626" stroke-width="1" stroke-dasharray="3 4"/>';});
+    var _rows=[];
+    _evS.forEach(function(ev){var ex=_histExpXByDate(g,Date.parse(ev.date));
+      var _lx=Math.max(pL+2,Math.min(W-pR-2,ex)), _w=String(ev.label).length*5.4+8;
+      var _row=0; while(_row<_rows.length && (_lx-_w/2) < _rows[_row]+5) _row++;
+      _rows[_row]=_lx+_w/2;
+      var _ly=pT+10+_row*12, _anchor='middle', _tx=_lx;
+      if(_lx-_w/2 < pL){_anchor='start';_tx=pL+2;} else if(_lx+_w/2 > W-pR){_anchor='end';_tx=W-pR-2;}
+      s+='<text x="'+_tx.toFixed(1)+'" y="'+_ly.toFixed(1)+'" fill="var(--accent)" font-size="9.5" font-weight="500" text-anchor="'+_anchor+'" paint-order="stroke" stroke="#141109" stroke-width="2.5" stroke-linejoin="round">'+ev.label+'</text>';});
+  })();
   // index412: time-proportional x can crowd close-dated labels (TTM vs FY). Place newest-first;
   // skip any label landing within 40px of one already placed — newest annual always wins.
   var _placedL1=[],_placedL2=[];
@@ -8536,9 +8550,25 @@ function _caDraw(keys,hasL,hasR){
     if(rLo<0&&rHi>0){var z=padT+innerH-((0-rLo)/(rHi-rLo))*innerH;
       s+='<line x1="'+padL+'" y1="'+z+'" x2="'+(W-padR)+'" y2="'+z+'" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>';}
   }
-  EVENTS.forEach(function(ev){var te=Date.parse(ev.date); if(!isFinite(te))return; var ex=_caXByDate(g,te);
-    s+='<line x1="'+ex.toFixed(1)+'" y1="'+padT+'" x2="'+ex.toFixed(1)+'" y2="'+(padT+innerH)+'" stroke="#5a4a20" stroke-width="1" stroke-dasharray="3 4"/>';
-    var _lx=Math.max(padL+16,Math.min(W-padR-16,ex)); s+='<text x="'+_lx.toFixed(1)+'" y="'+(padT+9)+'" fill="var(--accent)" font-size="8.5" text-anchor="middle">'+ev.label+'</text>';}); // index387 (Lou): label clamped inside the plot so edge events (e.g. Symantec) are not cut off
+  // index419: event-marker legibility. Draw the vertical lines first, then place labels with a vertical
+  // stagger + a dark halo, so close-dated events (an acquisition and a supply agreement days apart, or
+  // clustered deals like ANET's) no longer collapse into an unreadable smear at one y-position. Labels sort
+  // by date and drop to the lowest row that clears the previous label in that row; the dashed line still
+  // ties each label back to its date. Replaces the single-row clamp (index387).
+  var _evSorted=EVENTS.slice().filter(function(ev){return isFinite(Date.parse(ev.date));})
+                       .sort(function(a,b){return Date.parse(a.date)-Date.parse(b.date);});
+  _evSorted.forEach(function(ev){var ex=_caXByDate(g,Date.parse(ev.date));
+    s+='<line x1="'+ex.toFixed(1)+'" y1="'+padT+'" x2="'+ex.toFixed(1)+'" y2="'+(padT+innerH)+'" stroke="#6b5626" stroke-width="1" stroke-dasharray="3 4"/>';});
+  var _evRows=[]; // right-edge x of the last label placed in each row — pack labels into the fewest non-overlapping rows
+  _evSorted.forEach(function(ev){var ex=_caXByDate(g,Date.parse(ev.date));
+    var _lx=Math.max(padL+2,Math.min(W-padR-2,ex));
+    var _w=String(ev.label).length*5.4+8;               // approx label width at 9.5px
+    var _row=0; while(_row<_evRows.length && (_lx-_w/2) < _evRows[_row]+5) _row++;
+    _evRows[_row]=_lx+_w/2;
+    var _ly=padT+10+_row*12;                             // stagger downward from the top edge of the plot
+    var _anchor='middle', _tx=_lx;                       // edge-clamp a wide label so it stays inside the plot
+    if(_lx-_w/2 < padL){_anchor='start';_tx=padL+2;} else if(_lx+_w/2 > W-padR){_anchor='end';_tx=W-padR-2;}
+    s+='<text x="'+_tx.toFixed(1)+'" y="'+_ly.toFixed(1)+'" fill="var(--accent)" font-size="9.5" font-weight="500" text-anchor="'+_anchor+'" paint-order="stroke" stroke="#141109" stroke-width="2.5" stroke-linejoin="round">'+ev.label+'</text>';});
   // index412: time-proportional x can crowd close-dated labels (TTM vs FY). Place newest-first;
   // skip any label landing within 40px of one already placed — newest annual always wins.
   var _placedL1=[],_placedL2=[];
@@ -12648,8 +12678,9 @@ function calculate(opts){opts=opts||{};
   // index414: same growth-WC addback as computeMetrics, so the verdict and every panel agree.
   var _vWcRec=(typeof repaWcFor==='function'&&currentYearKey&&yearStore[currentYearKey])?repaWcFor(yearStore[currentYearKey]):null;
   var _vWcGrowth=(_vWcRec&&typeof _vWcRec.growthWc==='number'&&isFinite(_vWcRec.growthWc))?_vWcRec.growthWc:0;
-  var realProfit=cfo-realSBC-maintCapex-restructuring-onetimeAdj+investmentIncome+_vWcGrowth;
-  var realProfitLight=hasLightView?(cfo-realSBC-maintCapexLight-restructuring-onetimeAdj+investmentIncome+_vWcGrowth):null;
+  var _vWcPrepay=(_vWcRec&&typeof _vWcRec.prepayDelta==='number'&&isFinite(_vWcRec.prepayDelta))?_vWcRec.prepayDelta:0; // index420: the verdict/yield-ladder panel has its OWN inline REP (parallel to computeMetrics) — it must carry the same index418 prepay timing correction, or the yield ladder / Best Guess / ownership yield show pre-prepay REP while the history chart (via computeMetrics) shows corrected. 0 when no prepay fields.
+  var realProfit=cfo-realSBC-maintCapex-restructuring-onetimeAdj+investmentIncome+_vWcGrowth+_vWcPrepay;
+  var realProfitLight=hasLightView?(cfo-realSBC-maintCapexLight-restructuring-onetimeAdj+investmentIncome+_vWcGrowth+_vWcPrepay):null;
   var unleverProfit=realProfit+interest;
   var marketCap=price*shares;
   var ev=marketCap+debt-(cash+sti);
@@ -13039,6 +13070,13 @@ function calculate(opts){opts=opts||{};
     formula:'prior NWC intensity \u00d7 \u0394revenue = '+fmtM(_vWcGrowth),
     why:'Working capital invested to get bigger \u2014 inventory, receivables and the like scaling with revenue at the business\u2019s intensity rate. It is reinvestment, not a cost of standing still, so it returns to the profit line (and feeds b). Negative means growth GENERATES working-capital cash (customer-funded).',
     detail:'<strong>The index414 fix:</strong> REP starts from CFO, and working-capital changes crash into CFO unfiltered \u2014 so every dollar invested to grow was being subtracted as if the company were shrinking to stand still. The engine splits the cash-flow-statement working-capital line into <em>growth WC</em> (prior-year intensity \u00d7 revenue change \u2014 recurring, scales forever, added back here and counted in b) and <em>efficiency WC</em> (the residual drift \u2014 real cash but bounded and non-recurring; kept as an expense when a leak, stripped from the normalized series when a windfall). The full split, both REP series, and the float ratio live in the \ud83d\udca7 Working Capital panel below.'});
+  // index418/419b: prepaid-supplier timing correction — the returning-prepayment / amortizing-fee bucket.
+  // Shown as its own waterfall row so the bars still reconcile to REP when prepay is active.
+  if(typeof _vWcPrepay==='number'&&isFinite(_vWcPrepay)&&Math.abs(_vWcPrepay)>0.05)wfItems.push({
+    label:(_vWcPrepay>=0?'+ Prepaid-Supplier Timing':'\u2212 Prepaid-Supplier Timing'),value:_vWcPrepay,type:(_vWcPrepay>=0?'delta':'negative'),
+    formula:'\u0394 prepay balance vs prior annual = '+fmtM(_vWcPrepay),
+    why:'A multi-year supplier prepayment (cash out early, returned as goods or amortized over several years) distorts CFO at both ends. This re-times it: + in the signing year (the cash was a claim, not a cost), \u2212 as the goods are consumed / the fee amortizes. Over the full round trip it nets to zero \u2014 it only moves REP to the right year.',
+    detail:'<strong>The index418 fix:</strong> the full prepay balance is carved OUT of both Operating NWC and the working-capital cash-flow line (so it never touches the growth/efficiency split or normalized REP), and the period-over-period balance change is added back here as a pure timing correction. Type A = returning prepayment (goods bought anyway); Type B = amortizing non-refundable fee. Per-period schedule and the ex-prepay working-capital levels are in the \ud83d\udca7 Working Capital panel and the data export.'});
   wfItems.push({label:'= Real Profit (Full D&A)',value:realProfit,type:'result',
     why:'Full D&A estimate of real economic profit. Assumes every dollar of D&A represents an asset that truly needs replacing at 1.05× the historical cost.',
     detail:'<strong>This is the "capital-intensity-assumed" view.</strong> For companies like Colgate, Union Pacific, or most utilities — real physical assets wearing out — this is close to economic truth. For companies with heavy <em>acquired intangible</em> amortization (software rolled up via M&A, pharma with acquired drug rights, acquisition-heavy businesses), this view is overly punitive because purchase-price allocation amortization is not a real replacement cost. See the Best Guess add-backs below — the slider-calibrated path the rest of the app runs on — and Panel 2 of the Yield Ladder for the fixed 100% ceiling.'});
