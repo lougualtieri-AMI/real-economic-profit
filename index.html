@@ -878,7 +878,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index421 \u00b7 v5.2.3'; // index421: chart REP-basis labels (display-only) \u2014 the Capital Allocation co-movement chart now labels its REP line 'REP (Best Guess)' / 'REP (Full D&A)' per the active view toggle, and the Historical chart labels its line 'REP (Full D&A)' (it is always Full D&A). Resolves the confusion where the two charts show different REP levels for the same period because they plot different bases. index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index421 \u00b7 v5.3.0'; // index421: BASIS CHANGEOVER (Decision B). The RATE/GROWTH layer is now MECHANICAL and view-INDEPENDENT (Full-D&A REP); the LEVEL layer (y / three-yield ladder / REP displays) keeps the view/Best-Guess. Concretely: (1) _rkRepBasis pinned to the Full-D&A floor (base=realProfit, +normDelta=realProfitNorm) so the historic g, the g\u00f7b r-anchor, realized-k and buyback-ROI stop inheriting the Best-Guess amort/R&D addbacks \u2014 VRT historic g went 99.55% (Best-Guess) \u2192 48.08% (mechanical); r stayed capped at 100% so k is unchanged. (2) FTR r-anchors (roic/roiic/ronta/acqRatio) flipped to Full-D&A REP \u00f7 PLAIN invested capital (icEff/rdAssetL kept ONLY for the component-bar visual \u00a75b + export). (3) Capital-Allocation roiicData rep/ic flipped to the same Full-D&A + plain-IC basis so the ROIIC cells stay byte-identical to _fyRoiicW; co-movement & realized b\u00b7r=g move with it; Cap-Alloc header ROIC now reads m.fullDA. (4) _rkBasisLabel \u2192 'Full D&A' always; r-anchor note & export \u00a74b labels relabeled (raw IC / mechanical). (5) \u00a75 maint-capex MIN-branch neutral encoding (D = D&A\u00d7mult binds, C = bound by total CapEx, \u2022 = disclosed) added to the per-year detail column + legend. VRT golden fixture reproduces: Full-D&A REP TTM $2,112.1M, Best Guess $2,393.3M, ownership yield 1.77%, k 16.80%, y 2.00%, b 15.10%. Three-yield display & FTR y stay Best Guess (RESOLVED 1). Field Dictionary + registry signpost bump pending (external doc). index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -3843,8 +3843,12 @@ function renderForwardYield(){
   var icEff=ic+rdAssetL;
   var icEffOk=icOk;
 
-  var roic=icEffOk?(repL/icEff):null;
-  var ronta=(nta>0)?(repL/nta):null;
+  // index421 (Decision B — RESOLVED 2+3): the r-anchors are RATE metrics -> MECHANICAL and view-independent.
+  // Full-D&A REP over PLAIN invested capital. icEff/rdAssetL above stay computed ONLY for the component-bar
+  // visual (§5b) and the export; the subjective Best-Guess addback lives in the LEVEL layer (y / yield ladder).
+  var repFullDA=mL.realProfit; // Full-D&A REP floor — mechanical numerator for r-anchors (roic/roiic/ronta)
+  var roic=icOk?(repFullDA/ic):null;
+  var ronta=(nta>0)?(repFullDA/nta):null;
   // index88: windowed rolling ROIIC -- DeltaREP / DeltaIC_eff over window w, same IC basis and guards as the prior single 3-yr.
   function _fyRoiicW(w){
     // index284: step back w ANNUAL years, skipping interim/TTM rows so a loaded TTM period
@@ -3854,10 +3858,10 @@ function renderForwardYield(){
     var bk=_ann[_ann.length-w];
     var mB=ms[bk];
     var span=(mB.label||'')+' \u2192 '+(mL.label||'');
-    var icEffB=mB.investedCapital+((mB.investedCapital>0)?_fyCapAdj(bk):0);
-    var dIC=icEff-icEffB, dREP=repL-_fyRepForView(mB);
-    var icBase=Math.max(Math.abs(icEff),Math.abs(icEffB),1);
-    if(!icEffOk||mB.investedCapital<=0) return {val:null,note:'IC floored (negative equity)',span:span};
+    var icB=mB.investedCapital; // index421 (B): PLAIN back-year IC (no capitalized-R&D addition)
+    var dIC=ic-icB, dREP=repFullDA-mB.realProfit; // index421 (B): ΔFull-D&A REP ÷ Δraw IC — mechanical, view-independent
+    var icBase=Math.max(Math.abs(ic),Math.abs(icB),1);
+    if(!icOk||mB.investedCapital<=0) return {val:null,note:'IC floored (negative equity)',span:span};
     if(dIC<=0) return {val:null,note:'\u0394IC \u2264 0 \u2014 not meaningful',span:span};
     if(Math.abs(dIC)<icBase*0.05) return {val:null,note:'\u0394IC too small \u2014 not meaningful',span:span};
     return {val:dREP/dIC,note:'',span:span};
@@ -3867,7 +3871,7 @@ function renderForwardYield(){
   var roiic=roiic3, roiicNote=_ri3.note, roiicSpan=_ri3.span; // 3-yr stays the canonical signal feeding the sensitivity band and the "Recent trend" line
 
   var gw=mL.goodwill||0;
-  var acqRatio=icEffOk?(gw/icEff):null;
+  var acqRatio=icOk?(gw/ic):null; // index421 (B): goodwill share of PLAIN invested capital
   var acqFlag=(acqRatio!==null&&acqRatio>0.20);
 
   // Seeds.
@@ -3880,7 +3884,7 @@ function renderForwardYield(){
   var bVals=ms.map(_fyBForYear).filter(function(v){return v!==null&&isFinite(v)&&v>=0;});
   // index227 (Item 6): per-year {label,b} on the active view's basis — lets the b-sensitivity readout anchor to the seed, draw a per-year bar strip, and flag denominator-collapse outliers (b>1) instead of letting them drive the range.
   var bDetail=ms.map(function(m){return {label:(m.label||''),b:_fyBForYear(m)};}).filter(function(o){return o.b!==null&&isFinite(o.b)&&o.b>=0;});
-  var rSeed=icEffOk?roic:null;
+  var rSeed=icOk?roic:null;
 
   // Store seeds for snap-back + refresh the "default: X%" hints.
   _fySeeds={r:rSeed,b:bSeed,rcash:rCashSeed,f:fSeed};
@@ -3953,14 +3957,10 @@ function renderForwardYield(){
       _live='Feeding r now: <strong style="color:var(--text)">a manual value</strong> <span style="color:var(--text3)">('+pct(r,1)+')</span> \u2014 no anchor selected';
     }
     var _legend='<span style="color:var(--text3)">Seeded at <strong style="color:var(--text2)">Real ROIC</strong> \u2014 the return on all the company\u2019s capital, always available. <strong style="color:var(--text2)">\u2605 = 3-yr ROIIC</strong>, the sharper read once recent reinvestment is steady (the return on just the last three years\u2019 new capital): switch to it when the recent run is clean, stay on ROIC when it\u2019s lumpy.</span>';
-    var _basis;
-    if(_fyView==='bestguess'){
-      _basis=(rdAssetL>0)
-        ? 'Best Guess basis: growth R&amp;D is treated as real profit and counted in the capital base (so the return isn\u2019t overstated). Return on NTA keeps R&amp;D in the profit but measures it against tangible assets only, on purpose.'
-        : 'Best Guess basis: profit includes the amortization addback (no growth R&amp;D to capitalize on this name).';
-    } else {
-      _basis='Full D&amp;A basis: the most conservative profit \u2014 R&amp;D fully expensed, nothing added back.';
-    }
+    // index421 (Decision B): the r-anchors are RATE metrics — always mechanical (Full-D&A REP over plain IC),
+    // independent of the display-view basis. The Best-Guess addback is a LEVEL knob (y / yield ladder) and never
+    // tilts a rate, so this note no longer branches on _fyView.
+    var _basis='r-anchors are measured on the mechanical <strong>Full D&amp;A</strong> basis \u2014 the conservative profit (R&amp;D fully expensed, no addbacks) over plain invested capital \u2014 regardless of the yield-ladder view above. A rate stays mechanical; the Best-Guess addback only moves the <em>level</em> (the yield y).';
     var _gw=acqFlag?('<div style="color:var(--orange);margin-top:5px;line-height:1.5">\u26d1 This company carries a lot of acquisition goodwill ('+pct(acqRatio,0)+' of its capital), which can make ROIC understate the true operating return \u2014 Return on NTA is often the better anchor here.</div>'):'';
     var _ne=(!icOk)?('<div style="color:var(--orange);margin-top:5px;line-height:1.5">\u26d1 Negative equity: ROIC can\u2019t be computed and Return on NTA is unreliable on a tiny tangible base, so set r by judgment.</div>'):'';
     g.innerHTML='<div style="margin-bottom:4px;color:var(--text2)">'+_live+'</div><div>'+_legend+'</div>'
@@ -6572,9 +6572,9 @@ function computeMetrics(entry){
   // REP (normalized = reported + normDelta, so it inherits this), matching "reported is real cash, corrected only
   // for the multi-year round trip the single-period WC engine cannot see."
   var _wcPrepay=(_wcRec&&typeof _wcRec.prepayDelta==='number'&&isFinite(_wcRec.prepayDelta))?_wcRec.prepayDelta:0;
-  var maintCapex,maintCapped=false;
-  if(mcIn!==null&&mcIn>0){maintCapex=mcIn;}
-  else{var _mc=calcMaintCapex(capex,da,null,deprOnly);maintCapex=_mc.value;maintCapped=_mc.capped;} // index220: carry the physical-cap flag for the deferred-maintenance note
+  var maintCapex,maintCapped=false,maintBasis='dnaMult'; // index421 §5: which input the MIN selected — 'disclosed' | 'dnaMult' (D&A×mult binds) | 'capex' (physical estimate bound by total CapEx)
+  if(mcIn!==null&&mcIn>0){maintCapex=mcIn;maintBasis='disclosed';}
+  else{var _mc=calcMaintCapex(capex,da,null,deprOnly);maintCapex=_mc.value;maintCapped=_mc.capped;maintBasis=_mc.capped?'capex':'dnaMult';} // index220: carry the physical-cap flag for the deferred-maintenance note. index421 §5: derive the neutral MIN-branch encoding.
   // All Amortization Added Back maintenance CapEx (depreciation-only × multiplier)
   var mult=1.05;
   var multEl=document.getElementById('maintMultiplier');
@@ -6605,7 +6605,7 @@ function computeMetrics(entry){
   var nta=totalAssets>0?(totalAssets-goodwill-intangibles-cash-sti):0;
   var returnOnNTA=nta>0?realProfit/nta:0;
   return {wc:_wcRec,wcGrowth:_wcGrowth,wcPrepay:_wcPrepay,realProfitNorm:realProfitNorm, /* index414 / index418 */
-    cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapped:maintCapped,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,ncSec:ncSec,realROIC:realROIC,reinvestRate:reinvestRate,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
+    cfo:cfo,realSBC:realSBC,maintCapex:maintCapex,maintCapped:maintCapped,maintBasis:maintBasis,maintCapexLight:maintCapexLight,deprOnly:deprOnly,growthCapex:growthCapex,realProfit:realProfit,realProfitLight:realProfitLight,realROICLight:realROICLight,returnOnNTALight:returnOnNTALight,investedCapital:investedCapital,ncSec:ncSec,realROIC:realROIC,reinvestRate:reinvestRate,reportedFCF:reportedFCF,equity:equity,debt:debt,sbcExp:sbcExp,sbcGrant:sbcGrant,capex:capex,da:da,totalAssets:totalAssets,goodwill:goodwill,intangibles:intangibles,nta:nta,returnOnNTA:returnOnNTA,revenue:(entry.extra||{}).revenue||(entry.extra||{}).total_revenue||(entry.extra||{}).net_revenue||null,net_income:(entry.extra||{}).net_income||null,rd_expense:getRD(entry)};
 }
 
 // Shared helper: build enriched years array from yearStore keys
@@ -7362,7 +7362,7 @@ function renderHistExplorer(allKeys){
     if(Array.isArray(evs)) EVENTS=evs.filter(function(e){return e&&e.date;}).map(function(e){return {date:e.date,label:e.label||''};});
   }catch(e){}
   var SER={
-    rep:   {label:'REP (Full D&A)',color:'#e67e22',kind:'$',data:years.map(function(y){return y.realProfit;})},
+    rep:   {label:'REP',color:'#e67e22',kind:'$',data:years.map(function(y){return y.realProfit;})},
     rev:   {label:'Revenue',color:'#2ecc71',kind:'$',data:years.map(function(y){return (y.revenue!=null?y.revenue:null);})},
     roic:  {label:'Real ROIC',color:'#3498db',kind:'%',data:years.map(function(y){return y.realROIC!=null?y.realROIC*100:null;})},
     ronta: {label:'Return on NTA',color:'#9b59b6',kind:'%',data:years.map(function(y){return y.returnOnNTA!=null?y.returnOnNTA*100:null;})},
@@ -7583,12 +7583,17 @@ function _rkRepBasis(yr){
   // the WC fields, so pre-414 behavior is untouched. The view basis (Best Guess amort/R&D) stacks on top.
   try{
     var m=computeMetrics(yr);
-    var base=(typeof _fyRepForView==='function')?(_fyRepForView(m)||0):(m.realProfit||0);
+    // index421 (Decision B): the RATE/GROWTH series is MECHANICAL — Full-D&A REP floor, view-INDEPENDENT.
+    // Before B this rode _fyRepForView (the active-view REP), so at the default Best-Guess view the historic g
+    // (and the g÷b r-anchor, realized-k, buyback ROI) inherited the subjective amort/R&D addbacks — the exact
+    // "slider tilts the measured growth rate" artifact index421 removes. The Best-Guess addbacks now live ONLY
+    // in the LEVEL layer (y / yield ladder). base+normDelta == realProfitNorm (Full-D&A, efficiency-normalized).
+    var base=(m.realProfit||0);
     var normDelta=(typeof m.realProfitNorm==='number'&&typeof m.realProfit==='number')?(m.realProfitNorm-m.realProfit):0;
     return base+normDelta;
   }catch(e){return 0;}
 }
-function _rkBasisLabel(){ return (typeof _fyView!=='undefined'&&_fyView==='bestguess')?'Best Guess':'Full D&A'; }
+function _rkBasisLabel(){ return 'Full D&A'; } // index421 (B): realized g/k ride the mechanical Full-D&A series, view-independent
 
 function _rkRefs(){
   var keys=getSortedYearKeys();
@@ -8038,8 +8043,10 @@ function renderProfitCapitalSummary(years, rdMaintPct){
   var first=ann[0], last=ann[ann.length-1], _nyr=ann.length-1;
   // index392: view-aware basis — Best-Guess REP (_fyRepForView) over Best-Guess IC (_repaBestGuessIC) when
   // the view is Best Guess, so Profit/Capital CAGR reconcile with the FTR's realized g; Full D&A unchanged.
-  var _fRep=_fyRepForView(first), _lRep=_fyRepForView(last);
-  var _fIC=_repICv(ann,0), _lIC=_repICv(ann,ann.length-1);
+  // index421 (Decision B): Profit/Capital CAGR are RATE metrics — mechanical Full-D&A REP over plain IC,
+  // view-independent, so they keep reconciling with the FTR realized g (now mechanical too; was Best-Guess).
+  var _fRep=first.realProfit, _lRep=last.realProfit;
+  var _fIC=first.investedCapital, _lIC=last.investedCapital;
   var useCagr=ann.length>=3 && _fRep>0;
   var profitRate, capitalRate, profitLbl, capitalLbl, _capNM=false;
   if(useCagr){
@@ -8107,11 +8114,15 @@ function renderRoiicAnalysis(){
     var growthCapex=y.growthCapex||0;
     var wcGrowth=y.wcGrowth||0; // index414: growth WC is reinvestment — b was missing it (FN: app said 33.7%; truth ~97%)
     var totalReinvestment=growthCapex+trueGrowthRD+wcGrowth;
-    var _repV=_fyRepForView(y);                 // index392: view-aware REP (Best Guess default) — reconciles ROIIC + b·r with the FTR
-    var reinvestmentRate=_repV>0?totalReinvestment/_repV:0;
+    // index421 (Decision B): the Capital-Allocation RATE layer is MECHANICAL and view-independent — Full-D&A REP
+    // (rep, for ROIIC ΔREP/ΔIC + co-movement) over PLAIN invested capital. Byte-identical to the FTR r-anchor
+    // _fyRoiicW inputs (also flipped to Full-D&A + plain IC), so the two ROIIC reads never diverge. The FTR's
+    // LEVEL-basis b feeding k is computed separately in renderForwardYield and is intentionally distinct (level vs rate).
+    var _repMech=y.realProfit;
+    var reinvestmentRate=_repMech>0?totalReinvestment/_repMech:0;
     return {
-      label:y.label, endDate:y.endDate, rep:_repV, ic:_repICv(years,i), nta:y.nta,
-      totalCapex:y.capex, da:y.da, maintCapex:y.maintCapex,
+      label:y.label, endDate:y.endDate, rep:_repMech, ic:y.investedCapital, nta:y.nta,
+      totalCapex:y.capex, da:y.da, maintCapex:y.maintCapex, maintBasis:y.maintBasis, /* index421 §5: which input the maint-capex MIN selected — neutral scannable encoding */
       growthCapex:growthCapex, rd:rd, maintenanceRD:maintenanceRD,
       trueGrowthRD:trueGrowthRD,
       totalReinvestment:totalReinvestment, reinvestmentRate:reinvestmentRate,
@@ -8251,6 +8262,15 @@ function renderRoiicAnalysis(){
     catch(e){ bucketArea.innerHTML='<div style="color:var(--red);font-size:.8rem;padding:10px">Chart error: '+e.message+'</div>'; }
   }
 
+  // index421 §5: neutral MIN-branch encoding for the Maint CapEx column. NOT an error marker — it names which
+  // input the maint-capex MIN selected, so a run that flips is caught peripherally (the capex posture changed).
+  // Both branches fully legible: D = D&A×mult binds (the usual state), C = physical estimate bound by total CapEx,
+  // • = company-disclosed. VRT never crosses the boundary in-window, so it reads a clean column of D.
+  function _mcBranchTag(basis){
+    if(basis==='capex')  return '<sup title="Maintenance bound by total CapEx — the physical D&amp;A\u00d7mult estimate exceeded actual CapEx this year" style="color:var(--accent);font-size:.62em;font-weight:700;margin-left:1px;letter-spacing:.3px">C</sup>';
+    if(basis==='disclosed') return '<sup title="Company-disclosed maintenance CapEx (no formula)" style="color:var(--text3);font-size:.62em;margin-left:1px">\u2022</sup>';
+    return '<sup title="Maintenance = D&amp;A \u00d7 mult (the D&amp;A\u00d7mult estimate binds)" style="color:var(--text3);font-size:.62em;font-weight:600;margin-left:1px;opacity:.7">D</sup>'; // dnaMult (default)
+  }
   var tbl='<tr><th style="text-align:left">Year</th><th>REP</th><th>IC</th><th>NTA</th><th>Maint CapEx</th><th>Growth CapEx</th>';
   if(roiicData.some(function(d){return d.rd>0})){
     tbl+='<th>Maint R\u0026D</th><th>True Growth R\u0026D</th>';
@@ -8261,7 +8281,7 @@ function renderRoiicAnalysis(){
     tbl+='<td style="color:var(--blue)">'+fmtM(d.rep)+'</td>';
     tbl+='<td style="color:var(--orange)">'+fmtM(d.ic)+'</td>';
     tbl+='<td style="color:#16a085">'+fmtM(d.nta)+'</td>';
-    tbl+='<td style="color:var(--red)">'+fmtM(d.maintCapex)+'</td>';
+    tbl+='<td style="color:var(--red)">'+fmtM(d.maintCapex)+_mcBranchTag(d.maintBasis)+'</td>';
     tbl+='<td style="color:var(--orange)">'+fmtM(d.growthCapex)+'</td>';
     if(roiicData.some(function(dd){return dd.rd>0})){
       tbl+='<td style="color:var(--red)">'+fmtM(d.maintenanceRD)+'</td>';
@@ -8276,6 +8296,8 @@ function renderRoiicAnalysis(){
     });
     tbl+='</tr>';
   });
+  // index421 §5: neutral branch legend for the Maint CapEx column (state info, not a warning)
+  tbl+='<tr><td colspan="'+(roiicData.some(function(d){return d.rd>0})?12:10)+'" style="font-size:.68rem;color:var(--text3);padding:8px 6px 2px;border-bottom:none;font-family:DM Sans,sans-serif">Maint CapEx basis: <sup style="color:var(--text3);font-weight:600;opacity:.7">D</sup>\u2009D&amp;A\u00d7mult binds &nbsp;\u00b7&nbsp; <sup style="color:var(--accent);font-weight:700">C</sup>\u2009bound by total CapEx &nbsp;\u00b7&nbsp; <sup style="color:var(--text3)">\u2022</sup>\u2009disclosed &nbsp;\u2014 a run of one letter that flips signals a change in capex posture.</td></tr>';
   // Bridge note to Future Total Return trajectory (#47)
   tbl+='<tr><td colspan="'+(roiicData.some(function(d){return d.rd>0})?12:10)+'" style="font-size:.75rem;color:var(--text3);font-style:italic;padding:10px 6px;border-bottom:none;font-family:DM Sans,sans-serif">The ROIIC above is what actually happened (backward-looking). The Future Total Return section models what you expect going forward — expand its Year-by-year trajectory — using those returns as a starting point.</td></tr>';
   document.getElementById('roiicTable').innerHTML=tbl;
@@ -8315,7 +8337,7 @@ function renderRoiicAnalysis(){
     // caVal5: replicate Step 5's exact CAGR calc (annual-only, enriched realProfit/investedCapital) so the teaser matches the panel
     if(_ann.length>=2){
       var _f=_ann[0],_l=_ann[_ann.length-1],_ny=_ann.length-1;
-      var _fR=_fyRepForView(_f),_lR=_fyRepForView(_l),_fI=_repICv(_ann,0),_lI=_repICv(_ann,_ann.length-1),_uc=_ann.length>=3&&_fR>0; // index392: view-aware, matches renderProfitCapitalSummary
+      var _fR=_f.realProfit,_lR=_l.realProfit,_fI=_f.investedCapital,_lI=_l.investedCapital,_uc=_ann.length>=3&&_fR>0; // index421 (B): mechanical Full-D&A + plain IC, matches renderProfitCapitalSummary
       var _pr=_uc?Math.pow(_lR/_fR,1/_ny)-1:(Math.abs(_fR)>0?(_lR-_fR)/Math.abs(_fR):0);
       var _cr=_uc?(_fI>0?Math.pow(_lI/_fI,1/_ny)-1:0):(Math.abs(_fI)>0?(_lI-_fI)/Math.abs(_fI):0);
       _sv('caVal5','<span style="font-family:JetBrains Mono,ui-monospace,monospace;font-size:1rem;font-weight:700;color:'+(_pr>=0?'var(--green)':'var(--red)')+'">'+pct(_pr,0)+'</span><span style="font-size:.58rem;color:var(--text3);font-weight:600;margin:0 9px 0 4px">PROFIT/YR</span><span style="font-family:JetBrains Mono,ui-monospace,monospace;font-size:1rem;font-weight:700;color:var(--text)">'+pct(_cr,0)+'</span><span style="font-size:.58rem;color:var(--text3);font-weight:600;margin-left:4px">CAPITAL/YR</span>'); // index382 (Lou): teaser promoted to full-size labeled readout -- must carry even when the card is collapsed. Profit colored by sign; capital neutral (fast base growth is not good or bad by itself).
@@ -8343,10 +8365,10 @@ function renderRoiicAnalysis(){
   function _caHeadSync(){
     try{
       var roic=null;
-      try{var m=_caRdCapModel(); if(m && m.ic>0){ roic=(m.hasRd? m.sym : m.fullDA); }}catch(e){}
+      try{var m=_caRdCapModel(); if(m && m.ic>0){ roic=m.fullDA; }}catch(e){} // index421 (B): header ROIC is the MECHANICAL read — Full-D&A REP over plain IC. The Best-Guess/effective-IC tiles stay in _caRoicTilesHtml (visual, §5b).
       var ronta=(window._caHeadRonta!=null&&isFinite(window._caHeadRonta))?window._caHeadRonta:null;
       if(roic==null && ronta==null){ _setHead('caHeadSum',''); return; }
-      _setHead('caHeadSum','<span class="dim">Best Guess ROIC</span> '+_pctH(roic)+' <span class="dim">\u00b7</span> <span class="dim">RoNTA</span> '+_pctH(ronta));
+      _setHead('caHeadSum','<span class="dim">ROIC (Full D&A)</span> '+_pctH(roic)+' <span class="dim">\u00b7</span> <span class="dim">RoNTA</span> '+_pctH(ronta));
     }catch(e){}
   }
 
@@ -8455,7 +8477,7 @@ function _caInit(roiicData, icNote){
   // stay: a trailing-twelve-month flow is level-comparable with an annual row.
   roiicData=roiicData.filter(function(d){var l=String(d.label||'').toUpperCase().replace(/\s+/g,'');return !(/^Q\d/.test(l)||/^H\d/.test(l));});
   var SER={
-    rep:{label:'REP ('+((typeof _rkBasisLabel==='function')?_rkBasisLabel():'Best Guess')+')',color:'var(--accent2)',axis:'R',data:roiicData.map(function(d){return d.rep;})},
+    rep:{label:'REP',color:'var(--accent2)',axis:'R',data:roiicData.map(function(d){return d.rep;})},
     rev:{label:'Revenue',color:'var(--blue)',axis:'L',data:roiicData.map(function(d){return (d.revenue!=null?d.revenue:null);})},
     ic :{label:'Invested Capital',color:'var(--purple)',axis:'L',data:roiicData.map(function(d){return d.ic;})},
     nta:{label:'NTA',color:'var(--green)',axis:'L',data:roiicData.map(function(d){return d.nta;})},
@@ -9060,12 +9082,12 @@ function _reinvClassifierModel(){
     var ann=ys.filter(function(y){return y&&!y.isInterim&&String(y.label||'').indexOf('TTM')!==0;});
     if(ann.length>=1){
       var li=ann.length-1;
-      roicRep=_fyRepForView(ann[li]); roicIC=_repICv(ann,li);
+      roicRep=ann[li].realProfit; roicIC=ann[li].investedCapital; // index421 (B): mechanical Full-D&A REP over plain IC (view-independent)
       if(roicRep>0&&roicIC>0)roic=roicRep/roicIC;
-      var fi=-1; for(var j=0;j<ann.length;j++){ if(_fyRepForView(ann[j])>0){fi=j;break;} }
+      var fi=-1; for(var j=0;j<ann.length;j++){ if(ann[j].realProfit>0){fi=j;break;} }
       if(fi>=0&&fi<li){
-        var dRep=_fyRepForView(ann[li])-_fyRepForView(ann[fi]);
-        var dIC=_repICv(ann,li)-_repICv(ann,fi);
+        var dRep=ann[li].realProfit-ann[fi].realProfit;
+        var dIC=ann[li].investedCapital-ann[fi].investedCapital;
         if(dIC>0&&dRep>0)roiic=dRep/dIC;   // ΔIC ≤ 0 or ΔREP ≤ 0: not measurable — footer drops the sentence
       }
     }
@@ -11295,19 +11317,19 @@ function exportDataMarkdown(){
     nl('| '+m.label+' | '+m$(m.investedCapital)+' | '+m$(m.nta)+' | '+m$(m.goodwill)+' | '+m$(m.intangibles)+' | '+p2(m.investedCapital>0?m.realROIC:null)+' | '+p2(m.nta>0?m.returnOnNTA:null)+' | '+p2(m.investedCapital>0?m.reinvestRate:null)+' | '+p2(m.canonReinvest)+' |');
   });
   nl('');
-  nl('### 4b. Current-period r-anchors (latest active year: '+lbl(currentYearKey)+', '+(FY.view||'Full D&A')+' basis)');
+  nl('### 4b. Current-period r-anchors (latest active year: '+lbl(currentYearKey)+', Full D&A basis \u2014 mechanical / view-independent [index421])');
   if(_repaFyLast){
     var an=FY.anchors||{}, anN=FY.anchorNotes||{};
     nl('- invested_capital_raw: '+m$(FY.ic)+(FY.icEff!=null?('   invested_capital_effective (incl. capitalized growth R&D): '+m$(FY.icEff)):''));
     nl('- net_tangible_assets: '+m$(FY.nta));
-    nl('- real_roic: '+p2(an.roic)+'  [REP \u00f7 effective IC]'+(an.roic==null?'  (IC floored / negative equity)':''));
+    nl('- real_roic: '+p2(an.roic)+'  [Full-D&A REP \u00f7 raw IC \u2014 index421]'+(an.roic==null?'  (IC floored / negative equity)':''));
     nl('- roiic_1yr: '+p2(an.roiic1)+(anN.roiic1?('  ['+anN.roiic1+']'):(anN.roiic1Span?('  ['+anN.roiic1Span+']'):'')));
     nl('- roiic_3yr: '+p2(an.roiic3)+'  [\u2605 recommended sharper read]'+(anN.roiic3?('  ['+anN.roiic3+']'):(anN.roiic3Span?('  ['+anN.roiic3Span+']'):'')));
     nl('- roiic_5yr: '+p2(an.roiic5)+(anN.roiic5?('  ['+anN.roiic5+']'):(anN.roiic5Span?('  ['+anN.roiic5Span+']'):'')));
     nl('- return_on_nta: '+p2(an.ronta)+(an.ronta==null?'  (NTA \u2264 0)':''));
     nl('- feeding_r_now: '+(_fyRSourceLabel(FY)||(FY.r==null?'r not set':'a manual value'))+(FY.r!=null?('  (r = '+p2(FY.r)+')'):''));
     nl('- goodwill_share_of_capital: '+p1(FY.acqRatio)+(FY.acqFlag?'  \u26d1 high acquisition goodwill — ROIC may understate; Return on NTA often the better anchor':''));
-    nl('- roiic_definition: \u0394REP \u00f7 \u0394(effective IC) over the window; null when \u0394IC \u2264 0, too small (<5% of base), or IC floored.');
+    nl('- roiic_definition: \u0394(Full-D&A REP) \u00f7 \u0394(raw IC) over the window; null when \u0394IC \u2264 0, too small (<5% of base), or IC floored. [index421: mechanical, view-independent]');
   } else {
     nl('- (Future Total Return not applicable for the current period — EV \u2264 0 or REP \u2264 0 — so no r-anchors were computed.)');
   }
