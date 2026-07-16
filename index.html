@@ -878,7 +878,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index421 \u00b7 v5.3.0'; // index421: BASIS CHANGEOVER (Decision B). The RATE/GROWTH layer is now MECHANICAL and view-INDEPENDENT (Full-D&A REP); the LEVEL layer (y / three-yield ladder / REP displays) keeps the view/Best-Guess. Concretely: (1) _rkRepBasis pinned to the Full-D&A floor (base=realProfit, +normDelta=realProfitNorm) so the historic g, the g\u00f7b r-anchor, realized-k and buyback-ROI stop inheriting the Best-Guess amort/R&D addbacks \u2014 VRT historic g went 99.55% (Best-Guess) \u2192 48.08% (mechanical); r stayed capped at 100% so k is unchanged. (2) FTR r-anchors (roic/roiic/ronta/acqRatio) flipped to Full-D&A REP \u00f7 PLAIN invested capital (icEff/rdAssetL kept ONLY for the component-bar visual \u00a75b + export). (3) Capital-Allocation roiicData rep/ic flipped to the same Full-D&A + plain-IC basis so the ROIIC cells stay byte-identical to _fyRoiicW; co-movement & realized b\u00b7r=g move with it; Cap-Alloc header ROIC now reads m.fullDA. (4) _rkBasisLabel \u2192 'Full D&A' always; r-anchor note & export \u00a74b labels relabeled (raw IC / mechanical). (5) \u00a75 maint-capex MIN-branch neutral encoding (D = D&A\u00d7mult binds, C = bound by total CapEx, \u2022 = disclosed) added to the per-year detail column + legend. VRT golden fixture reproduces: Full-D&A REP TTM $2,112.1M, Best Guess $2,393.3M, ownership yield 1.77%, k 16.80%, y 2.00%, b 15.10%. Three-yield display & FTR y stay Best Guess (RESOLVED 1). Field Dictionary + registry signpost bump pending (external doc). index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index423 \u00b7 v5.4.1'; // index423: HOUSEKEEPING (no behavior change; fixture byte-identical to index422). Removed orphaned vars left by the changeover: icEffOk (renderForwardYield — every anchor guard now uses plain icOk) and _cmpLife (Compare scorecard — its _repICv(...,life) calls were dropped in the ROIC flip). Corrected stale user-visible labels now that the FTR defaults to Full D&A: the Panel-3 "Best-Guess Real Profit" waterfall detail (was "the number the rest of the app runs on … ties to the FTR default basis" — the FTR default is now the Full D&A floor, so it ties to Best Guess only via the toggle) and the #fyView standing-note comment. index422: DEFAULT \u2192 FULL D&A + LABELING. (1) FTR default view flipped Best Guess \u2192 Full D&A (init 2874, per-load resetFyViewDefault, static #fyView dropdown) so the first k seen is the PURE read, not the mixed case; the growth/rate layer was already always-Full-D&A (index421) \u2014 only y (yield) and k (total return) move with the toggle. Headline-basis note rewritten to state the split explicitly and name the Best-Guess k as intentionally mixed. (2) Panel 3 'Profit vs Capital Base' rebuilt as the LABELING TEMPLATE: FULL D&A basis chip, explicit window (first-positive annual \u2192 last annual, with end-dates + N yrs, annual-only stated), endpoint REP/IC values, per-year REP strip with START/END/SKIP badges, leading-loss-year skip note, and a reconcile line vs the headline historic g (which normalizes efficiency WC). caVal5 collapsed teaser aligned to the same first-positive window. (3) Compare scorecard ROIC/ROIIC flipped to mechanical Full-D&A REP \u00f7 PLAIN IC (view-independent) \u2014 the last rate readout still on the old effective-IC basis; realYield/realPE stay on the LEVEL (view) REP, so Compare k is the same mixed structure as the FTR. Golden fixture unchanged & reproducible: toggle Best Guess \u2192 k 16.80%, y 2.00%, b 15.10%; default Full D&A \u2192 k ~18.27%, y 1.77%. Three REP bases 2112.1 / 2367.2 / 2393.3 unchanged. index421: BASIS CHANGEOVER (Decision B) \u2014 (1) _rkRepBasis pinned to the Full-D&A floor (base=realProfit, +normDelta=realProfitNorm) so the historic g, the g\u00f7b r-anchor, realized-k and buyback-ROI stop inheriting the Best-Guess amort/R&D addbacks \u2014 VRT historic g went 99.55% (Best-Guess) \u2192 48.08% (mechanical); r stayed capped at 100% so k is unchanged. (2) FTR r-anchors (roic/roiic/ronta/acqRatio) flipped to Full-D&A REP \u00f7 PLAIN invested capital (icEff/rdAssetL kept ONLY for the component-bar visual \u00a75b + export). (3) Capital-Allocation roiicData rep/ic flipped to the same Full-D&A + plain-IC basis so the ROIIC cells stay byte-identical to _fyRoiicW; co-movement & realized b\u00b7r=g move with it; Cap-Alloc header ROIC now reads m.fullDA. (4) _rkBasisLabel \u2192 'Full D&A' always; r-anchor note & export \u00a74b labels relabeled (raw IC / mechanical). (5) \u00a75 maint-capex MIN-branch neutral encoding (D = D&A\u00d7mult binds, C = bound by total CapEx, \u2022 = disclosed) added to the per-year detail column + legend. VRT golden fixture reproduces: Full-D&A REP TTM $2,112.1M, Best Guess $2,393.3M, ownership yield 1.77%, k 16.80%, y 2.00%, b 15.10%. Three-yield display & FTR y stay Best Guess (RESOLVED 1). Field Dictionary + registry signpost bump pending (external doc). index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -1457,14 +1457,16 @@ var REPA_BUILD_TAG='index421 \u00b7 v5.3.0'; // index421: BASIS CHANGEOVER (Deci
       <div class="fyhl-comp" id="fyHeadComp" style="display:none"></div>
       <div class="fyhl-anat" id="fyHeadLedger"></div>
     </div>
-    <!-- index333: view-basis selector pulled OUT of the building-blocks dropdown to top-level, directly under the k headline, so the basis the headline is computed on is never ambiguous (standing note: the first number seen should clearly be the Best-Guess case). Same #fyView select + _fySetView wiring — relocated only; exactly one #fyView in the DOM. -->
+    <!-- index333: view-basis selector pulled OUT of the building-blocks dropdown to top-level, directly under the k headline, so the basis the headline is computed on is never ambiguous. index422: default is now Full D&A (the pure, non-mixed k) — the old "first number should be the Best-Guess case" standing note is retired. Same #fyView select + _fySetView wiring — relocated only; exactly one #fyView in the DOM. -->
     <div id="fyViewTop" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 14px;padding:8px 11px;background:var(--card2);border:1px solid var(--border);border-radius:8px">
       <label style="font-size:.74rem;font-weight:600;color:var(--text2)">Headline basis</label>
       <select id="fyView" onchange="_fySetView(this.value)" style="padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem">
-        <option value="fullda">Full D&amp;A (conservative floor)</option>
-        <option value="bestguess" selected>Best Guess (slider-calibrated central case)</option>
+        <option value="fullda" selected>Full D&amp;A (conservative floor)</option>
+        <option value="bestguess">Best Guess (slider-calibrated central case)</option>
       </select>
-      <span style="font-size:.68rem;color:var(--text3)">which earnings yield (y) the headline k builds on</span>
+      <span style="font-size:.68rem;color:var(--text3)">sets the starting yield (y) and total return (k) only</span>
+      <div style="flex-basis:100%;height:0"></div>
+      <span style="font-size:.66rem;color:var(--text3);line-height:1.5">Growth &amp; returns \u2014 <b style="color:var(--text2)">g</b>, <b style="color:var(--text2)">r</b>, ROIC/ROIIC \u2014 are <b style="color:var(--text2)">always Full D&amp;A</b>, unchanged by this toggle. Only the level (y, and therefore k) moves. In Best Guess the k is intentionally mixed: Full-D&amp;A rate machinery on a Best-Guess yield base.</span>
     </div>
     <!-- index317: forward-vs-history sanity strip (mock v3 step 2). The guardrail on any asserted g: realized history beside the live forward number for both g and k, with a flag when forward g departs from history. Populated by _fySanity() in the render wrapper chain. -->
     <div id="fySanity">
@@ -2384,10 +2386,11 @@ function runCompare(selectedTickers){
     var debt=m.debt||0;
     var ev=mktCap+debt-(cash+sti);
     var _cmpMs=keys.map(function(kk){return computeMetrics(ys[kk]);});           // index393: view-aware Compare scorecard
-    var _cmpLife=_repaSectorPreset(t).assetLife;                                  // this ticker's own sector asset life
-    var _repV=_fyRepForView(m);                                                   // Best-Guess REP (default) / Full D&A per active view
-    var _icV=_repICv(_cmpMs,_cmpMs.length-1,_cmpLife);                            // matching effective IC (BG adds the R&D asset)
-    var _roicV=(_icV>0&&_repV!=null)?(_repV/_icV):null;
+    // index422 housekeeping: _cmpLife removed — orphaned after the Compare ROIC flip dropped its _repICv(...,life) calls.
+    var _repV=_fyRepForView(m);                                                   // LEVEL REP (active view) — feeds realYield / realPE only
+    // index422: Compare ROIC is a RATE — mechanical Full-D&A REP over PLAIN IC, view-independent (matches the FTR/Cap-Alloc changeover). The view REP + effective IC stay on the LEVEL readouts (yield, PE) only.
+    var _repMech=m.realProfit, _icPlain=m.investedCapital;
+    var _roicV=(_icPlain>0&&_repMech!=null)?(_repMech/_icPlain):null;
     var realYield=ev>0?_repV/ev:0;
     var realPE=shares>0&&_repV>0?price/(_repV/shares):0;
     var sbcPctCFO=m.cfo>0?m.realSBC/m.cfo:0;
@@ -2396,8 +2399,8 @@ function runCompare(selectedTickers){
     var roicFirst=null,roicLast=_roicV;
     if(keys.length>=2){
       var fm=_cmpMs[0];
-      var _fRepV=_fyRepForView(fm), _fICV=_repICv(_cmpMs,0,_cmpLife);
-      roicFirst=(_fICV>0)?(_fRepV/_fICV):null;
+      var _fRepM=fm.realProfit, _fICp=fm.investedCapital; // index422: mechanical Full-D&A + plain IC (matches _roicV)
+      roicFirst=(_fICp>0)?(_fRepM/_fICp):null;
     }
     // index140: default FTR total-return k for this ticker — same formula and seeds as the FTR panel
     // (r = Real ROIC, b = all-years profit-weighted via _fyPwB, f = financing seed). Uses the shared repaK helper.
@@ -2871,7 +2874,7 @@ function selectLast3Years(){
 // View toggle Full D&A <-> Best Guess flips the REP basis under y, r, AND b.
 // In Best Guess view the r anchors capitalize growth R&D into the base
 // (symmetric ROIC); Full D&A leaves R&D out of both sides.
-var _fyView='bestguess'; // 'fullda' | 'bestguess'  // index246 (Item 3): default basis = Best Guess (was 'fullda'); static dropdown 'selected' mirrors this at cold start
+var _fyView='fullda'; // 'fullda' | 'bestguess'  // index422 (Lou): default basis = Full D&A. Under the index421 changeover the growth/rate layer (g, r, ROIC/ROIIC) is ALWAYS Full D&A regardless of this toggle; only y (starting yield) and k (total return) follow it. Defaulting to Full D&A means the first k seen is a pure read, not the mixed Best-Guess-level/Full-D&A-rate case. (Was 'bestguess' index246; the standing "first number is Best Guess" note is retired.)
 var _piYield=null;             // index232: user-chosen owner-yield for the private-investments callout (null = TBILL_REF default). Session-only; deliberately NOT saved to export/backup (it's a what-if overlay, not part of the audit record).
 var _piHold=0,_piEV=0,_piIC=0; // stashed at render so the live oninput handler can recompute without a full panel rebuild
 function _piSetYield(v){
@@ -3841,7 +3844,7 @@ function renderForwardYield(){
   var lastIdx=ms.length-1;
   var rdAssetL=icOk?_fyCapAdj(lastIdx):0;
   var icEff=ic+rdAssetL;
-  var icEffOk=icOk;
+  // index422 housekeeping: icEffOk removed — orphaned after index421 flipped every anchor guard to plain icOk.
 
   // index421 (Decision B — RESOLVED 2+3): the r-anchors are RATE metrics -> MECHANICAL and view-independent.
   // Full-D&A REP over PLAIN invested capital. icEff/rdAssetL above stay computed ONLY for the component-bar
@@ -8039,20 +8042,22 @@ function renderProfitCapitalSummary(years, rdMaintPct){
   var ann=years.filter(function(e){return e&&!e.isInterim&&String(e.label||'').indexOf('TTM')!==0;});
   if(ann.length<2){el.innerHTML='';return;}
 
-  // Rates over the full ANNUAL range: CAGR when >=3 annual years and profit is positive at start; otherwise period-over-period change
-  var first=ann[0], last=ann[ann.length-1], _nyr=ann.length-1;
-  // index392: view-aware basis — Best-Guess REP (_fyRepForView) over Best-Guess IC (_repaBestGuessIC) when
-  // the view is Best Guess, so Profit/Capital CAGR reconcile with the FTR's realized g; Full D&A unchanged.
-  // index421 (Decision B): Profit/Capital CAGR are RATE metrics — mechanical Full-D&A REP over plain IC,
-  // view-independent, so they keep reconciling with the FTR realized g (now mechanical too; was Best-Guess).
+  // index422 (Lou): window = first POSITIVE annual -> last annual, matching the FTR realized g (_fyrGReal),
+  // so this panel and the headline "historic g" never pick different endpoints. Leading loss years are skipped
+  // and badged. REP shown is the Full-D&A floor (realProfit) — the intuitive per-year REP; where efficiency
+  // normalization is active the normalized headline g is noted below so the two reads stay reconciled.
+  var _startIdx=-1; for(var _si=0;_si<ann.length;_si++){ if(ann[_si].realProfit>0){_startIdx=_si;break;} }
+  var _endIdx=ann.length-1;
+  var _skipped=[]; for(var _sk=0;_sk<(_startIdx<0?ann.length:_startIdx);_sk++){ _skipped.push(ann[_sk]); }
+  var _haveWin=(_startIdx>=0 && _startIdx<_endIdx);
+  var first=_haveWin?ann[_startIdx]:ann[0], last=ann[_endIdx], _nyr=_haveWin?(_endIdx-_startIdx):(ann.length-1);
   var _fRep=first.realProfit, _lRep=last.realProfit;
   var _fIC=first.investedCapital, _lIC=last.investedCapital;
-  var useCagr=ann.length>=3 && _fRep>0;
+  var useCagr=_haveWin && _nyr>=2 && _fRep>0;
   var profitRate, capitalRate, profitLbl, capitalLbl, _capNM=false;
   if(useCagr){
     profitRate=Math.pow(_lRep/_fRep, 1/_nyr)-1;
-    // index397 (Lou): was a silent 0.00% when the starting IC was <= 0 (PLTR: FY2023 IC −$199M, cash-rich).
-    // A CAGR across a zero-crossing is undefined, not zero — show n/m and say why (394 handoff open item §7.2).
+    // index397 (Lou): n/m (not 0.00%) when starting IC <= 0 — a CAGR across a zero-crossing is undefined.
     if(_fIC>0){ capitalRate=Math.pow(_lIC/_fIC, 1/_nyr)-1; _capNM=false; } else { capitalRate=null; _capNM=true; }
     profitLbl='Profit CAGR'; capitalLbl='Capital CAGR';
   }else{
@@ -8062,15 +8067,44 @@ function renderProfitCapitalSummary(years, rdMaintPct){
   }
   var profitColor=profitRate>=0?'var(--green)':'var(--red)';
 
-  // index165: capex/growth-intensity block removed. For amortization-heavy names the Full-D&A maintenance proxy (D&A x 1.05) exceeds actual capex, forcing growthCapex -> $0 and a sub-1x "growth intensity" that misreads as "no growth investment" — an artifact, not a finding. The capital-allocation story belongs in a proper composition (Use of Cash / forthcoming Base panel); the calcs that only fed this block are gone.
+  // index165: capex/growth-intensity block removed (Full-D&A maintenance proxy artifact).
+
+  function _fyLbl(e){ return (e&&e.label)?String(e.label):''; }
+  function _dt(e){ return (e&&e.endDate)?String(e.endDate):''; }
+  var _normG=null; try{ if(typeof _fyrGReal==='function') _normG=_fyrGReal(); }catch(e){}
+  var _rawEq=(_normG!=null && useCagr) ? (Math.abs(_normG-profitRate)<0.0005) : true;
 
   var html='';
   html+='<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">';
-  html+='<p style="font-size:.78rem;color:var(--text3);margin:0 0 12px"><strong style="color:var(--text2)">Profit vs. Capital Base</strong> — how is REP growing relative to invested capital?</p>';
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">';
-  html+='<div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'JetBrains Mono\',monospace;font-size:1.3rem;font-weight:700;color:'+profitColor+'">'+pct(profitRate,1)+'</div><div style="font-size:.7rem;color:var(--text3);margin-top:4px">'+profitLbl+'</div></div>';
-  html+='<div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'JetBrains Mono\',monospace;font-size:1.3rem;font-weight:700;color:'+(_capNM?'var(--text3)':'var(--text2)')+'">'+(_capNM?'n/m':pct(capitalRate,1))+'</div><div style="font-size:.7rem;color:var(--text3);margin-top:4px">'+capitalLbl+(_capNM?' · IC crossed zero — start IC ≤ 0, CAGR undefined':'')+'</div></div>';
+  html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px">';
+  html+='<strong style="color:var(--text2);font-size:.82rem">Profit vs. Capital Base</strong>';
+  html+='<span style="font-size:.62rem;font-weight:700;letter-spacing:.4px;color:var(--accent2);background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 6px">FULL D&amp;A</span>';
   html+='</div>';
+  html+='<p style="font-size:.72rem;color:var(--text3);margin:0 0 10px">How is REP growing relative to invested capital? Window and endpoints are explicit below.</p>';
+  if(_haveWin){
+    html+='<div style="font-size:.72rem;color:var(--text2);margin:0 0 8px">Window: <strong>'+_fyLbl(first)+'</strong> <span style="color:var(--text3)">('+_dt(first)+')</span> \u2192 <strong>'+_fyLbl(last)+'</strong> <span style="color:var(--text3)">('+_dt(last)+')</span> <span style="color:var(--text3)">\u00b7 '+_nyr+' yr'+(_nyr===1?'':'s')+' \u00b7 annual-only (interim/TTM excluded)</span></div>';
+  }
+  if(_skipped.length){
+    html+='<div style="font-size:.68rem;color:var(--orange);margin:0 0 8px">Skipped '+_skipped.map(function(e){return _fyLbl(e);}).join(', ')+' \u2014 leading loss year'+(_skipped.length>1?'s':'')+' (REP \u2264 0); start advances to the first profitable year, same rule as the FTR historic g.</div>';
+  }
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">';
+  html+='<div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'JetBrains Mono\',monospace;font-size:1.3rem;font-weight:700;color:'+profitColor+'">'+pct(profitRate,1)+'</div><div style="font-size:.7rem;color:var(--text3);margin-top:4px">'+profitLbl+'</div><div style="font-size:.64rem;color:var(--text3);margin-top:3px;font-family:\'JetBrains Mono\',monospace">'+fmtM(_fRep)+' \u2192 '+fmtM(_lRep)+'</div></div>';
+  html+='<div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'JetBrains Mono\',monospace;font-size:1.3rem;font-weight:700;color:'+(_capNM?'var(--text3)':'var(--text2)')+'">'+(_capNM?'n/m':pct(capitalRate,1))+'</div><div style="font-size:.7rem;color:var(--text3);margin-top:4px">'+capitalLbl+(_capNM?' \u00b7 start IC \u2264 0':'')+'</div><div style="font-size:.64rem;color:var(--text3);margin-top:3px;font-family:\'JetBrains Mono\',monospace">'+fmtM(_fIC)+' \u2192 '+fmtM(_lIC)+'</div></div>';
+  html+='</div>';
+  html+='<div style="font-size:.66rem;color:var(--text3);margin:0 0 4px">REP by year (Full D&amp;A floor \u2014 the per-year value the CAGR is built from):</div>';
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+  ann.forEach(function(e,i){
+    var isStart=_haveWin&&i===_startIdx, isEnd=i===_endIdx, isSkip=_haveWin&&i<_startIdx;
+    var bd=isStart?'var(--green)':isEnd?'var(--accent2)':isSkip?'var(--orange)':'var(--border)';
+    var badge=isStart?'<div style="font-size:.54rem;font-weight:700;color:var(--green);letter-spacing:.3px">START</div>':isEnd?'<div style="font-size:.54rem;font-weight:700;color:var(--accent2);letter-spacing:.3px">END</div>':isSkip?'<div style="font-size:.54rem;font-weight:700;color:var(--orange);letter-spacing:.3px">SKIP</div>':'<div style="font-size:.54rem;color:var(--text3)">&nbsp;</div>';
+    html+='<div style="flex:1;min-width:62px;background:var(--card2);border:1px solid '+bd+';border-radius:6px;padding:6px 4px;text-align:center">'+badge+'<div style="font-size:.62rem;color:var(--text2);font-weight:600">'+_fyLbl(e)+'</div><div style="font-family:\'JetBrains Mono\',monospace;font-size:.66rem;color:'+(e.realProfit>0?'var(--text)':'var(--red)')+'">'+fmtM(e.realProfit)+'</div></div>';
+  });
+  html+='</div>';
+  if(_normG!=null && useCagr && !_rawEq){
+    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">Headline <em>historic g</em> reads <strong>'+pct(_normG,1)+'</strong> \u2014 same window, but it normalizes efficiency working-capital swings out of REP (the durable growth spine). The '+pct(profitRate,1)+' here is on the raw Full-D&amp;A floor, so the per-year values above add up.</div>';
+  } else if(_normG!=null && useCagr){
+    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">Matches the FTR headline <em>historic g</em> ('+pct(_normG,1)+') \u2014 same basis, same window.</div>';
+  }
   html+='</div>';
   el.innerHTML=html;
 }
@@ -8334,10 +8368,12 @@ function renderRoiicAnalysis(){
         ?(_grChip+'<div class="ca-sum-metric">'+pct(_lr.roiic3,1)+'<div style="font-size:.55rem;color:var(--text3);font-weight:600;letter-spacing:.4px;margin-top:2px;font-family:\'DM Sans\',sans-serif">3-YR ROIIC</div></div><div class="ca-sum-expl">'+_grPhrase+'The gauge compares the return on <em>new</em> capital to the whole base; the causes menu and audit trail are inside.</div>')
         :(_grChip+'<div class="ca-sum-expl">'+_grPhrase+'<b style="color:var(--text)">Rolling ROIIC</b> \u2014 the return on recently added capital; windows and the growth read inside.</div>'));
     }
-    // caVal5: replicate Step 5's exact CAGR calc (annual-only, enriched realProfit/investedCapital) so the teaser matches the panel
+    // caVal5: replicate Step 5's window (first POSITIVE annual -> last annual) so the teaser matches the panel [index422]
     if(_ann.length>=2){
-      var _f=_ann[0],_l=_ann[_ann.length-1],_ny=_ann.length-1;
-      var _fR=_f.realProfit,_lR=_l.realProfit,_fI=_f.investedCapital,_lI=_l.investedCapital,_uc=_ann.length>=3&&_fR>0; // index421 (B): mechanical Full-D&A + plain IC, matches renderProfitCapitalSummary
+      var _st=-1; for(var _z=0;_z<_ann.length;_z++){ if(_ann[_z].realProfit>0){_st=_z;break;} }
+      var _hw=(_st>=0 && _st<_ann.length-1);
+      var _f=_hw?_ann[_st]:_ann[0],_l=_ann[_ann.length-1],_ny=_hw?(_ann.length-1-_st):(_ann.length-1);
+      var _fR=_f.realProfit,_lR=_l.realProfit,_fI=_f.investedCapital,_lI=_l.investedCapital,_uc=_hw&&_ny>=2&&_fR>0; // index422: Full-D&A + plain IC, first-positive window — matches renderProfitCapitalSummary
       var _pr=_uc?Math.pow(_lR/_fR,1/_ny)-1:(Math.abs(_fR)>0?(_lR-_fR)/Math.abs(_fR):0);
       var _cr=_uc?(_fI>0?Math.pow(_lI/_fI,1/_ny)-1:0):(Math.abs(_fI)>0?(_lI-_fI)/Math.abs(_fI):0);
       _sv('caVal5','<span style="font-family:JetBrains Mono,ui-monospace,monospace;font-size:1rem;font-weight:700;color:'+(_pr>=0?'var(--green)':'var(--red)')+'">'+pct(_pr,0)+'</span><span style="font-size:.58rem;color:var(--text3);font-weight:600;margin:0 9px 0 4px">PROFIT/YR</span><span style="font-family:JetBrains Mono,ui-monospace,monospace;font-size:1rem;font-weight:700;color:var(--text)">'+pct(_cr,0)+'</span><span style="font-size:.58rem;color:var(--text3);font-weight:600;margin-left:4px">CAPITAL/YR</span>'); // index382 (Lou): teaser promoted to full-size labeled readout -- must carry even when the card is collapsed. Profit colored by sign; capital neutral (fast base growth is not good or bad by itself).
@@ -12377,7 +12413,7 @@ function resetTaxRate(){TAX_RATE=0.21;var _t=document.getElementById('taxRateInp
 var bestGuessNeedsAttention=true; // index30 (B4 2a): raised on every load; cleared ONLY by explicit saveBestGuessSettings() (Option B). Presets/sliders preview without clearing.
 var _currentSavedSettings=null; // index31 (B4): cached portfolio[ticker].settings for the current company so getBgState reads it without parsing localStorage every slider tick; set on load/save, cleared for a new company
 var _bgMode='default'; // index34 (B4): provenance of the live assumptions — 'saved' (loaded-saved / just-saved / reverted), 'default' (loaded-unsaved / reset to default), 'custom' (changed via slider/preset, not yet saved). The highlight follows this, NOT value coincidence.
-function resetFyViewDefault(){if(typeof _fyView!=='undefined')_fyView='bestguess';var s=document.getElementById('fyView');if(s)s.value='bestguess';var c=document.getElementById('forwardYieldCard');if(c)c.dataset.fySeedSig='';} // index396 (Lou): the view basis leaked ticker-to-ticker (flip AAPL to Full D&A, load PLTR, PLTR opens Full D&A) \u2014 violating the index333 standing note that the first number seen should clearly be the Best-Guess case. Snap to Best Guess on every company load; state+select only, calculate() re-renders after.
+function resetFyViewDefault(){if(typeof _fyView!=='undefined')_fyView='fullda';var s=document.getElementById('fyView');if(s)s.value='fullda';var c=document.getElementById('forwardYieldCard');if(c)c.dataset.fySeedSig='';} // index422 (Lou): snap to Full D&A on every company load — the pure (non-mixed) k is the first read. (index396: prevents view leaking ticker-to-ticker; the default is now Full D&A, not Best Guess.)
 function resetDollarGrowthDefault(){var h=document.querySelector('#ddWbh .dd-header'),b=document.querySelector('#ddWbh .dd-body');if(h)h.classList.add('open');if(b)b.classList.add('open');} // index395 (Lou): Dollar Growth defaults EXPANDED. Static DOM, so a collapse would otherwise leak ticker-to-ticker \u2014 same index380 pattern as resetCapAllocDefaults below.
 function resetCapAllocDefaults(){var w=document.getElementById('roiicWrap');if(w)w.style.display='block';var _cc=document.getElementById('roiicCard');var _ca=_cc?_cc.querySelector('.collapse-arrow'):null;if(_ca)_ca.textContent='\u25bc';document.querySelectorAll('#roiicCard details.ca-card').forEach(function(d){d.open=(d.id!=='caCard3'&&d.id!=='caCard7');});} // index380 (Lou): the CA card and its numbered mini-panels are static DOM, so open/closed toggles leaked from ticker to ticker (loading a company repaints their contents, never their state). Canonical default restored on every company load. index381 (Lou): mini-panels 4 (caCard3, ROIC metrics) and 5 (caCard7, ROIC-over-time) default collapsed, matching their original markup; the rest open. Dropdowns inside capBaseBridge need no reset -- that block is rebuilt (closed) on every calculate().
 function resetBestGuessDefaults(){rdMaintPct=70;adjAmortPct=70;rdCurrentPreset=null;adjAmortPresetId=null;bestGuessNeedsAttention=true;_bgMode='default';var _r=document.getElementById('adjRdSlider');if(_r)_r.value=30;var _a=document.getElementById('adjAmortSlider');if(_a)_a.value=70;var _m=document.getElementById('maintMultiplier');if(_m)_m.value='1.05';} // index28 (B4): generalized default on every ticker load — 70% amortization addback, 30% R&D growth, no preset highlighted (= unconfirmed default). No auto-detect. index29: + D&A multiplier reset to 1.05 (assumption applied to the 10-K D&A; never touches the data). index30: + raise attention flag (unconfirmed until Save). A change never carries across companies.
@@ -13121,8 +13157,8 @@ function calculate(opts){opts=opts||{};
         detail:'<strong>Why add growth R&D back?</strong> GAAP expenses all R&D immediately, so a company investing heavily in its future looks less profitable than it really is. REPA splits R&D into maintenance (required to defend the existing business — stays a cost) and growth (discretionary investment — added back). Applied after tax because expensing R&D generates an immediate tax shield that capitalizing would forgo.<br><br><strong>The math:</strong> R&D <code>'+fmtM(rdExpVZ)+'</code> × '+rdGrowthPctVZ+'% growth share × '+Math.round((1-TAX_RATE)*100)+'% after-tax = <code>+'+fmtM(rdAddbackVZ)+'</code>.<br><br>In Best Guess views the same growth R&D is also capitalized into the asset base, so the ROIC built on this profit is symmetric — see the R&D deep-dive below.'});
     }
     wfItems.push({label:'= Real Profit (Best Guess ★)',value:p3REP,type:'result',
-      why:'The slider-calibrated central case — the basis Panel 3 of the Yield Ladder shows and the Future Total Return panel runs on by default.',
-      detail:'<strong>This is the number the rest of the app runs on.</strong> Full D&A Real Profit <code>'+fmtM(realProfit)+'</code>'+(p3AmortAdd>0.5?' + amortization add-back <code>'+fmtM(p3AmortAdd)+'</code>':'')+(rdAddbackVZ>0.5?' + after-tax growth R&D <code>'+fmtM(rdAddbackVZ)+'</code>':'')+' = <code>'+fmtM(p3REP)+'</code> — ties exactly to Best Guess ★ (Panel 3) in the Yield Ladder above and to the FTR default basis.<br><br><strong>The fixed reference points:</strong> Panel 1 (Full D&A) is the conservative floor; Panel 2 (100% amort added back) is the ceiling on the amortization question. Best Guess is your calibrated position between them, plus the R&D treatment — tune it with the sliders in Best Guess Controls below.'});
+      why:'The slider-calibrated central case \u2014 the basis Panel 3 of the Yield Ladder shows. The FTR builds k on this number when its headline-basis toggle is set to Best Guess (the FTR now defaults to the Full D&A floor).',
+      detail:'<strong>This is the Best-Guess Real Profit.</strong> Full D&A Real Profit <code>'+fmtM(realProfit)+'</code>'+(p3AmortAdd>0.5?' + amortization add-back <code>'+fmtM(p3AmortAdd)+'</code>':'')+(rdAddbackVZ>0.5?' + after-tax growth R&D <code>'+fmtM(rdAddbackVZ)+'</code>':'')+' = <code>'+fmtM(p3REP)+'</code> \u2014 ties exactly to Best Guess \u2605 (Panel 3) in the Yield Ladder above. The FTR builds k on this only when its headline-basis toggle is set to Best Guess; by default the FTR runs on the Full D&A floor (Panel 1).<br><br><strong>The fixed reference points:</strong> Panel 1 (Full D&A) is the conservative floor; Panel 2 (100% amort added back) is the ceiling on the amortization question. Best Guess is your calibrated position between them, plus the R&D treatment \u2014 tune it with the sliders in Best Guess Controls below.'});
   }
   var maxVal=Math.max.apply(null,wfItems.map(function(w){return Math.abs(w.value)}).concat([1]));
   // Build HTML with tooltips and dropdowns
