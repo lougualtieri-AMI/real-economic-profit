@@ -894,7 +894,7 @@ button.secondary:hover{border-color:var(--accent);color:var(--text)}
 <p style="text-align:center;margin:-2px 0 6px"><a href="https://github.com/lougualtieri-AMI/real-economic-profit#readme" target="_blank" rel="noopener" style="font-size:.82rem;font-family:'DM Sans',sans-serif;color:var(--accent);text-decoration:none;opacity:.85;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">📘 What is this? How it works &amp; methodology →</a></p>
 <p style="text-align:center;font-size:.8rem;color:var(--text2);margin:-4px 0 10px;font-family:'JetBrains Mono',monospace;opacity:.8;letter-spacing:.3px" id="buildStamp"></p>
 <script>
-var REPA_BUILD_TAG='index427 \u00b7 v5.6.2'; // index427: RETURN-ATTRIBUTION CHART + STYLE UPGRADE (display-only). ca-* controls were unstyled because the existing ca-* CSS is scoped to #roiicCard only \u2014 added #raCard-scoped copies (colored dots + checkboxes now render). Chart brought to the Co-Movement standard: axis note naming visible series, two-pass newest-first x-labels (40px min, 2nd-row stagger) fixing cramped labels on long histories (CRUS), point circles, heavier lines. Margins now READ gross_profit/cogs + operating_income/opex when present (auto-light); absent in today's schema so shown as disabled 'needs data' toggles + a 'Margins' preset. Engine + golden fixture byte-identical. index426: RETURN-ATTRIBUTION UI CONSISTENCY (display-only follow-up to 425). (1) Per-line toggles converted from clickable-legend to the Co-Movement checkbox idiom (ca-chk/ca-dot) + a 'View' preset row (All / Per-share / Aggregate) mirroring the Cap-Alloc chart; controls now sit above the chart. (2) raCard registered in the section jump-nav (_REPA_NAV_SECTIONS, after Historical) so it appears in the 'Jump to' dropdown. Stubbed margins render as disabled checkboxes. No engine/series-math change; computeMetrics + golden fixture byte-identical. index425: RETURN-ATTRIBUTION PANEL (additive, display-only). New standalone card: 7 fundamentals (revenue, normalized CFO, diluted shares, gross margin*, operating margin*, price/share, REP/share) each rebased to 100 at the first visible year, dynamic start-year rebase, per-line toggles, 100 reference line, raw+indexed hover. REP/share = Full-D&A normalized realProfitNorm/shares; normalized CFO = cfo + prepay timing. *Gross/operating margin stubbed & flagged \u2014 not in the extraction schema (Field Dictionary gap); never faked from net income. NO engine/basis/plowback math touched; computeMetrics + golden fixture byte-identical. index424: BASIS-CONSISTENCY SWEEP (finishes the index421 changeover). Flipped the last three rate/ROIIC readouts still on the old Best-Guess-effective-IC basis to mechanical Full-D&A REP \u00f7 PLAIN IC (view-independent), matching the FTR anchors + Cap-Alloc: (1) _reinvClassifierModel archetype block (first-positive on realProfit, dIC on plain investedCapital \u2014 was inconsistent with roicIC right above it, already flipped in 421); (2) _growthReadModel g(REP)/g(IC)/roiic/roicNow (first-positive on realProfit, REP=realProfit, IC=investedCapital \u2014 the panel's ROIC was flipped in 421 but its g-calc wasn't, so it was internally split; g(REP) here now matches Panel 3's Profit CAGR); (3) exportBrief ROIIC table (\u0394realProfit \u00f7 \u0394plain-IC \u2014 its 'matches Cap-Alloc ROIIC' claim had been FALSE since 421, now true again). Display/export only \u2014 FTR k/y/b/g/anchors and the golden fixture are untouched (verified byte-identical). NOTE: _repICv + _repaBestGuessIC now have zero live call sites (dead code, safe to remove in a future housekeeping pass). index423: HOUSEKEEPING (no behavior change; fixture byte-identical to index422). Removed orphaned vars left by the changeover: icEffOk (renderForwardYield — every anchor guard now uses plain icOk) and _cmpLife (Compare scorecard — its _repICv(...,life) calls were dropped in the ROIC flip). Corrected stale user-visible labels now that the FTR defaults to Full D&A: the Panel-3 "Best-Guess Real Profit" waterfall detail (was "the number the rest of the app runs on … ties to the FTR default basis" — the FTR default is now the Full D&A floor, so it ties to Best Guess only via the toggle) and the #fyView standing-note comment. index422: DEFAULT \u2192 FULL D&A + LABELING. (1) FTR default view flipped Best Guess \u2192 Full D&A (init 2874, per-load resetFyViewDefault, static #fyView dropdown) so the first k seen is the PURE read, not the mixed case; the growth/rate layer was already always-Full-D&A (index421) \u2014 only y (yield) and k (total return) move with the toggle. Headline-basis note rewritten to state the split explicitly and name the Best-Guess k as intentionally mixed. (2) Panel 3 'Profit vs Capital Base' rebuilt as the LABELING TEMPLATE: FULL D&A basis chip, explicit window (first-positive annual \u2192 last annual, with end-dates + N yrs, annual-only stated), endpoint REP/IC values, per-year REP strip with START/END/SKIP badges, leading-loss-year skip note, and a reconcile line vs the headline historic g (which normalizes efficiency WC). caVal5 collapsed teaser aligned to the same first-positive window. (3) Compare scorecard ROIC/ROIIC flipped to mechanical Full-D&A REP \u00f7 PLAIN IC (view-independent) \u2014 the last rate readout still on the old effective-IC basis; realYield/realPE stay on the LEVEL (view) REP, so Compare k is the same mixed structure as the FTR. Golden fixture unchanged & reproducible: toggle Best Guess \u2192 k 16.80%, y 2.00%, b 15.10%; default Full D&A \u2192 k ~18.27%, y 1.77%. Three REP bases 2112.1 / 2367.2 / 2393.3 unchanged. index421: BASIS CHANGEOVER (Decision B) \u2014 (1) _rkRepBasis pinned to the Full-D&A floor (base=realProfit, +normDelta=realProfitNorm) so the historic g, the g\u00f7b r-anchor, realized-k and buyback-ROI stop inheriting the Best-Guess amort/R&D addbacks \u2014 VRT historic g went 99.55% (Best-Guess) \u2192 48.08% (mechanical); r stayed capped at 100% so k is unchanged. (2) FTR r-anchors (roic/roiic/ronta/acqRatio) flipped to Full-D&A REP \u00f7 PLAIN invested capital (icEff/rdAssetL kept ONLY for the component-bar visual \u00a75b + export). (3) Capital-Allocation roiicData rep/ic flipped to the same Full-D&A + plain-IC basis so the ROIIC cells stay byte-identical to _fyRoiicW; co-movement & realized b\u00b7r=g move with it; Cap-Alloc header ROIC now reads m.fullDA. (4) _rkBasisLabel \u2192 'Full D&A' always; r-anchor note & export \u00a74b labels relabeled (raw IC / mechanical). (5) \u00a75 maint-capex MIN-branch neutral encoding (D = D&A\u00d7mult binds, C = bound by total CapEx, \u2022 = disclosed) added to the per-year detail column + legend. VRT golden fixture reproduces: Full-D&A REP TTM $2,112.1M, Best Guess $2,393.3M, ownership yield 1.77%, k 16.80%, y 2.00%, b 15.10%. Three-yield display & FTR y stay Best Guess (RESOLVED 1). Field Dictionary + registry signpost bump pending (external doc). index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
+var REPA_BUILD_TAG='index450 \u00b7 v5.9.0'; // index450: MAINTENANCE-CAPEX D&A MULTIPLIER -- SUB-1.0 PRESETS (Batch F / F1, UBER #3; D2 RESOLVED by Lou 2026-07-19: default 1.05, add lower options 0.75/0.85/0.95). The #maintMultiplier select previously offered only 1.05 (default) / 1.10 / 1.15 / 1.20 -- all >= 1, so maintenance capex (= D&A x mult, physical portion capped at total CapEx per index219/421) could never be set BELOW reported D&A even on capital-light names whose D&A is dominated by non-replacement amortization (UBER: ~$604M D&A x 1.05 vs $327M total capex -- the amortization penalty is NOT capex-capped, so it overstated maintenance and understated REP). Added 0.75 / 0.85 / 0.95 options + a rewritten hint; 1.05 stays the selected default. ENGINE UNTOUCHED -- the maint-capex math (_maintCapex: est=da*mult, physEst=deprOnly*mult capped at capex, amortization penalty kept) is byte-identical; only NEW selectable input values are added. maintMult feeds realProfit (the Full-D&A floor) and therefore historic g / k / yields, so a NON-default pick legitimately moves REP upward on capital-light names (the intent); the DEFAULT 1.05 reproduces the golden fixture BYTE-IDENTICAL. Per-ticker: the pick already saves to settings.maintMult (index29), restores on load (applyBestGuessSettings), and resets to 1.05 on a fresh company (resetBestGuessDefaults) -- all pre-existing plumbing, unchanged. jsdom-verified: at 1.05, VRT + FN REP vectors / canonG / k-y-b-r BYTE-IDENTICAL to index449; at 0.75, VRT + FN realProfit RISES by exactly da*(1.05-0.75) per year where physEst<capex (uncapped path) -- FN FY2023 maint 46.0->32.9, REP +13.1; VRT FY2021 maint 238.4->170.25, REP +68.2. Next (register order): Batch D (float / funding-stack presentation), E1, F2, G. // index449: DOLLAR-GROWTH MOBILE +/- STEPPERS (Batch C / C4, DG #19 -- display/state only; engine + golden fixture BYTE-IDENTICAL). Added touch-friendly \u2212/+ buttons flanking the four nudge-able inputs in the Dollar-Growth panel -- y (the PRICE\u21c4YIELD lever), g%, b%, and the benchmark bY% -- so the panel is usable on the phone without popping the numeric keyboard. New _dgStep(id,dir) nudges an input by its OWN step attribute and fires that input's EXISTING commit path via a native 'change' event, so all state routing (_wbhSetY for y; the onchange handlers for tG/tB/bY) is unchanged and untouched -- the button is purely a keyboard-free way to reach the same handler. Clamps: y and bY floored at one step (both feed a 1/y multiple, must stay > 0); b held 0-100 (mirrors its onchange clamp); g uncapped (can go negative like a typed entry). _dgStepBtn renders a 28px min-target button with touch-action:manipulation + aria-label. Register named 'y / g / benchmark'; b was included too since it sits in the same row as g and a gap there would read as an oversight (flagged for veto). The END MULTIPLE already has a slider (mobile-fine) so it was left alone. jsdom-verified: default panel render byte-identical model to index448 (steppers are additive, inert until tapped); tapping +/- moves the matching state (tY/tG/tB/bY) by exactly one step and re-renders; y & bY steppers refuse to cross 0. Engine (computeMetrics / renderForwardYield) + golden fixture BYTE-IDENTICAL. Next: Batch D (float / funding-stack presentation). // index448: DOLLAR-GROWTH MULTIPLE RE-FLOWS ON MANUAL y (Batch C / C3, DG #18 -- display/state only; engine + golden fixture BYTE-IDENTICAL). Bug: in _wbhModel, today's multiple peNow (=1/y, the reference the END MULTIPLE panel below the y-lever is built on) was computed from live.y (the live Best-Guess yield), NOT from the ACTIVE y (tY, the lever value set by _wbhSetY / or the locked-REP-derived yield). So typing a manual y moved tY but the multiple below stayed pinned to the live value and never re-flowed -- and the 'today's EV/REP N×', the '× of today's N×' ratio, the held-band, R, the '↻ today (N×)' snap and the endPE reseed all read the stale live multiple. Fix (one line): peNow=(tY>0)?(1/tY):null. Because tY===live.y whenever y is untouched (and =repLock/EV when a REP is locked), the DEFAULT read is byte-identical; only a deliberate y override moves the multiple -- exactly as a price change already does. Consequence, intended: a manual y now re-anchors endPE to the new today's multiple via the existing _peCalib guard (peNow.toFixed(2) is in the key), so 'held' follows the new 1/y instead of silently becoming an expansion/compression; an r/b nudge still leaves endPE alone (peNow is not r/b-driven). Bonus: in linked/locked mode the multiple now reflects the LOCKED REP at today's EV (evT/repLock) instead of the stale live yield -- closes a latent index436 inconsistency. Scope: ONLY the Dollar-Growth _wbhModel peNow; the separate FTR multiple-lever (renderForwardYield, _peNow=1/y off the FTR y) is untouched. jsdom-verified: VRT/FN default panel (y untouched) byte-identical to index447 (peNow, endPE, held, R, FT, doubling years all equal); after _wbhSetY to half the live y, peNow ~doubles, endPE reseeds to round(new peNow), held stays true. Engine (computeMetrics / renderForwardYield / repaWcSeriesCompute) + golden fixture BYTE-IDENTICAL. Next: C4 (mobile +/- steppers, LOW), then Batch D. // index447: CANONICAL HISTORIC-G SIGNPOSTING (Batch B / B6 -- display-only; engine + golden fixture BYTE-IDENTICAL). Three growth readouts on different bases/windows are now cross-signposted to ONE canonical historic g = the FTR NORMALIZED-REP CAGR (_fyrGReal: first profitable annual -> latest annual). (a) The FTR historic-g legend footer states its basis (normalized REP) + window (FYxx->FYyy, N yrs) INLINE and names itself the canonical rate the others reconcile to. (b) Panel-3 'Profit vs Capital Base' reconcile note now names the canonical FTR g explicitly and is DIRECTION-AWARE: when normalized g > raw Full-D&A g (VRT: 64.48% > 56.48% -- the early-year efficiency windfalls stripped were proportionally larger than the late-year ones, so normalizing pulled the START base down more than the end, which LIFTS the CAGR) it says so ('higher, not lower -- expected, not an error') instead of implying normalization always lowers g; the normalized-LOWER case (FN: 20.32% < 24.90%, from a mid-history windfall) and the exactly-equal case each get their own accurate line. (c) The measured b*r box in Capital Efficiency names the canonical FTR g and flags its own g as the reinvestment-identity counterpart (same window, different construct) so it is not misread as the same number. jsdom-verified against real ticker JSONs: _fyrGReal VRT 64.48% / FN 20.32% UNCHANGED; window FY2023->FY2025; VRT start-stripped 36.24% vs end 29.56% (drives the '>' direction), FN start 0% vs end 7.20% (drives the '<'). Engine (computeMetrics / repaWcSeriesCompute / renderForwardYield) + golden fixture BYTE-IDENTICAL -- all four edits are display strings. B6a canonical-numbers panel SCRAPPED (Lou 2026-07-19); Batch B display items COMPLETE. // index446: WC-INTENSITY TREND SIGNAL (Batch B / B5 -- display-only; engine + golden fixture BYTE-IDENTICAL). DG #6: the working-capital-intensity chip previously showed only the current level + a one-word status (Flat/Rising/Cliff/Negative). Renamed 'WC intensity trend' and its subtitle now reads the explicit trajectory 'first -> last * <status>' (e.g. 12% -> 18% * Rising -- getting worse at converting), so the STRUCTURAL trend is a standing signal you can read at a glance -- distinct from the one-time efficiency transfers (the reported-normalized earnings-quality gap chip beside it). Uses the firstInt/lastInt already computed from the intensity series; falls back to the status alone when the trend is negligible. Batch B display items complete through B5; B6 (canonical historic-g signposting) and B6a (canonical-numbers panel, parked pending Lou's figure list) remain. // index445: WC-PANEL LABEL CLARITY (Batch B / B4 -- label-only; engine + golden fixture BYTE-IDENTICAL). Two wording fixes in the working-capital panel. (a) The 'Distortion (of REP)' chip (= WC intensity x revenue growth / net margin = the GROWTH-WC addback's share of REP) is renamed 'Growth-WC distortion (of REP)', and its footnote now states it measures the growth-WC addback ONLY and is SEPARATE from the reported-normalized earnings-quality gap (the efficiency windfall) shown in the adjacent chip -- the two are sized independently and mean different things. (b) 'borrowed from next year' (the earnings-quality gap chip subtitle + the reported-vs-normalized explanation) -> 'non-recurring / growth-contingent -- not extrapolable': the old phrasing implied a clawback that does not exist for a working-capital release / float. Next: B5 (WC-intensity trend). // index444: BLANK-TICKER STAMP (CMP-fix-6) -- makes the on-demand WC fix reliable for entries with an empty ticker tag. Some saved year entries carry formData.ticker='' (early-year extraction gaps; e.g. LYFT FY2023/FY2024 while FY2025/TTM read 'LYFT'). repaWcFor identifies a NON-active entry's owning ticker from formData.ticker, so a blank tag left that year with a null WC record -> no growth-WC and no normalization in any portfolio-wide read that goes through the on-demand path (future screeners / B6a; today's Compare sidesteps it via the index441 identity install, and the loaded card resolves by identity, so nothing on screen was wrong). Fix: getPortfolio() now stamps each year's formData.ticker from its owning portfolio key when blank (authoritative; only-if-blank; idempotent). Verified in jsdom: on-demand repaWcFor on LYFT FY2023 now returns the record (growthWc -175.7, matching the loaded build) instead of null. WC engine + golden fixture BYTE-IDENTICAL. Note for data hygiene: the source JSONs still carry the blank tags; the stamp papers over them at read time, so a future re-extract could tag every year at the source. // index443: CUMULATIVE LIFETIME WC-BORROWED GAP (Batch B / B3 -- display only; engine + golden fixture BYTE-IDENTICAL). Lifetime companion to B2 on the Real Ownership Yield card: a 'Lifetime' line sums over ANNUAL filings only (TTM/Q/H skipped by label -- a TTM overlaps its latest annual and would double-count; same annual-only rule as the buyback tracker) and reads 'reported REP $Z - working-capital-release-sourced $X -> durable $D' where D = Z - X = cumulative NORMALIZED REP. Chose reported->durable over a '% of total' because the % blows up when cumulative reported REP is small/negative (LYFT: reported $99.6M, releases $594.7M -> durable -$495.1M, flagged red 'cumulative REP is entirely working-capital-financed'); FN: reported $951.5M, releases $124.2M -> durable $827.3M. Shown only when releases are material (>$0.5M). Per-year realProfit/realProfitNorm from enrichYears -- correct for any ticker via the CMP-fix-5 on-demand WC map. Next: B4 (WC-panel label clarity). // index442: CENTRAL computeMetrics WC FIX (CMP-fix-5) -- repaWcFor now builds a NON-ACTIVE ticker's WC map ON DEMAND. Root of the Compare-number problem generalized: repaWcRebuild only ever built the LOADED ticker's map, so computeMetrics on any OTHER portfolio ticker (Compare today; screeners / the planned B6a canonical-numbers panel tomorrow) got a null WC record -> REP without growth-WC / prepay AND zero normalization. Fix: on a miss, repaWcFor resolves the entry's ticker, builds that ticker's isolated map via repaWcRebuild(years,keys,ticker) (which never touches the global window._repaWcMap), caches it per ticker, and resolves the record by fiscal_year_end. Cache cleared on every active-ticker rebuild (portfolio may have changed). The active-ticker path is unchanged (it hits the global map first). This makes computeMetrics correct for EVERY ticker regardless of which is loaded, so callers no longer need per-site WC installs. The index441 Compare per-ticker install is retained (identity-precise, and preempts the on-demand path). Verified in jsdom: direct computeMetrics on FN/LYFT (no ticker loaded) now returns WC-adjusted REP + normalization (FN 327.0; LYFT reported 632.3 / normalized -84.1), and the full Compare flow still renders those. WC engine math + golden fixture BYTE-IDENTICAL. // index441: COMPARE WORKING-CAPITAL FIX (CMP-fix-4) -- Compare REP was wrong for every non-active ticker. repaWcRebuild builds the WC map from the LOADED ticker only (yearStore + #ticker), and repaWcFor resolves only the active ticker's records; so in Compare, every OTHER ticker got a null WC record -> its REP was computed WITHOUT growth-WC / prepay AND with zero normalization (realProfitNorm===realProfit -> no divergence, no 'rep' suffix, wrong yield). Latent since index414's WC engine; only visible now that Compare renders (index440). Fix: repaWcRebuild is parametrized (repaWcRebuild(ys,keys,ticker) returns an isolated map WITHOUT touching the global window._repaWcMap); runCompare builds each ticker's own map and installs it (byEntry keyed on that ticker's actual portfolio year-objects, so repaWcFor hits by identity) for the span of its computeMetrics calls, then restores the global. The active-ticker path is untouched. Verified in jsdom (FN + LYFT): after the fix each ticker's realProfitNorm reflects its own normDelta (LYFT divergence restored). Engine math + golden fixture BYTE-IDENTICAL (the WC engine itself is unchanged; only WHICH ticker's rows it runs over in Compare). // index440: COMPARE FIX -- runCompare ReferenceError + browser-proof picker (CMP-fix-2/3). PRIMARY: the Compare scorecard threw 'ReferenceError: _icV is not defined' on the first ticker of companies.map (c-object line investedCapital:_icV) -- so Compare rendered NOTHING for every selection since the index422/423 ROIC refactor renamed the var to _icPlain and left this call site orphaned. THIS is why Compare 'never worked on 436/427'. Fix: investedCapital:_icPlain (the value the 'Invested Capital' row reads). SECONDARY (hardening): the picker chips no longer wrap a display:none checkbox in a <label> (whose native label->hidden-checkbox activation is browser-flaky) -- each chip is now a plain <div> that toggles a .selected class on click; pickerGo reads .picker-chip.selected data-ticker; pickerSelectAll toggles the class. No checkbox/label/native-activation dependency anywhere. Verified END-TO-END in jsdom with a real 2-ticker portfolio (FN + LYFT): picker populates, chips select, pickerGo -> runCompare -> compareOverlay opens with a populated table. Supersedes the index438 onchange picker fix. Engine + golden fixture BYTE-IDENTICAL. // index439: REPORTED<->NORMALIZED DIVERGENCE FLAG (Batch B / B2 -- display only; engine + golden fixture BYTE-IDENTICAL). One-bit earnings-quality signal on the Real Ownership Yield card + the verdict flags: fires when the non-recurring working-capital release (normDelta = reported - normalized REP) is material vs reported Full-D&A REP. Tiers (as % of reported REP): >=25% -> 'heavily WC-inflated' (red warn); 10-25% -> 'WC-inflated' (orange caution); a top 'fully WC-funded' tier when normalized REP flips <=0 (reported yield entirely borrowed, e.g. LYFT). Below 10% keeps the quiet strip; 0 reads 'normalized equals reported'. The card footnote becomes a colored divergence box (the % + the $ release + normalized-vs-reported yields); a matching flag lands in the verdict flags list. Thresholds inline (10% / 25%), easy to retune. Pairs with B3 (cumulative lifetime gap) next. VRT ~29% -> warn; UBER ~17% -> caution; LYFT normalized<=0 -> fully-WC-funded; FN 0 -> no flag. // index438: TWO-COLUMN NORMALIZED OWNERSHIP-YIELD HEADLINE (B1-num) + COMPARE PICKER FIX (CMP-fix). Engine + golden fixture BYTE-IDENTICAL to index437. B1-num: the Real Ownership Yield card (above the Yield Ladder) now shows BOTH normalized lenses in ONE box, side by side -- LEFT Full D&A normalized/EV, RIGHT Best Guess normalized/EV -- resolving the yield-headline numerator Decision N left open (Lou 2026-07-19: show both, same box, like the Yield Ladder panels but combined). normDelta (efficiency-WC strip, <=0) is identical for both columns; each column shows the other lens beside + a per-column 'REP -> normalized REP' readout; one shared footnote states the single WC-release windfall stripped from both. The toggle flips BOTH columns normalized<->reported. The verdict CLASS + Yield-Assessment/T-bill flags stay driven by the Full D&A column (ratingYield, unchanged from index437) so the border tracks the conservative floor. Compare row + .md/brief export still lead with Full-D&A normalized (the rating driver); extend to Best Guess later if wanted. CMP-fix: the company-picker chips wrapped a checkbox inside <label onclick=togglePickerChip(this)> -- clicking fired the native label->checkbox toggle AND the onclick, which cancelled, so no chip ever became :checked and Compare silently bailed (alert 'select 2'). PRE-EXISTING since <=index427, NOT a B1 regression. Fix: drop the redundant onclick, let the checkbox toggle natively, sync the .selected highlight via the input onchange; pickerSelectAll unaffected. togglePickerChip left in place (now unused, harmless). // index437: NORMALIZED OWNERSHIP-YIELD HEADLINE (Batch B / B1 -- display/state only; engine + golden fixture BYTE-IDENTICAL to index436). Decision N: normalization is the DEFAULT lens for the headline ownership yield (/EV) and the rating it drives. Normalized REP = active-view REP + normDelta (normDelta = min(0, efficiencyWc) <= 0), READ inline off the already-computed WC record (_vWcRec.normDelta) / metrics (realProfitNorm - realProfit) -- it NEVER touches the engine, so reported REP, k, b, r, forward g and the fixture are untouched; toggling normalization OFF reproduces index436 exactly. Orthogonal toggle window._repaYieldNormOff (default OFF => normalization ON) on a NEW Real Ownership Yield headline card (verdict, above the Yield Ladder): big number = active yield (normalized default) + rating, other lens shown beside, + a 'reported REP - WC-release windfall = normalized REP' strip. FOUR surfaces move coherently: (1) verdict headline card + the verdict-class rating (yieldRating(ratingYield)) + the live Yield-Assessment & T-bill flags; (2) Compare 'Real Ownership Yield' row shows the active yield with the other lens beside and SORTS on realYieldNorm -- the realYield that FEEDS k is untouched, k byte-identical; (3) export: .md exec-summary leads normalized + a reported line + a table note, and the HTML brief routes its Yield flags to the active yield + adds a normalization note flag; (4) shared helpers repaYieldNormOn()/repaNormDeltaFrom()/repaYieldNormToggle(). normDelta <= 0 always => normalized yield <= reported; a net-USE year with no windfall reads identical (FN control). VRT eyeball: reported REP TTM still $2,112.1M, reported yield ~1.77%, normalized yield ~1.26% (normalized REP $1,501.2M, strip ~$610.9M); OFF => index436 numbers exactly. The Yield Ladder REP figures, the three-tier table and the Reported-vs-Adjusted matrix stay on REPORTED REP by design (they are amort-decomposition / GAAP-vs-REP constructs). index436: DOLLAR-GROWTH LOCK = FIXED REP, YIELD FLOATS (fix \u2014 answers "what happens when the live price changes?"). The lock saves a REP ($M, price-independent), so when price later moves the yield must RE-DERIVE from it, never go stale / force a reset. Restructured _wbhModel: the price/EV/lock primitives now compute BEFORE tY, and when linked the OPENING yield = repLock \u00f7 today's EV (previously it reverted to the app's live Best-Guess yield \u2014 internally inconsistent with the locked REP). Reopen a saved-locked company at any price and y opens at the yield your fixed REP implies there (price up \u2192 yield down), implied price = today's price, no reset. Sliding y (session-only, not saved) moves the price off today's; next open re-derives from the fixed REP at the new price. Display/state only; engine + golden fixture byte-identical. index435: DOLLAR-GROWTH PRICE-LOCK PERSISTENCE (fix). The y\u21c4price lock (repLock = your corrected REP) now SAVES + auto-restores with g/b in the portfolio dgSave \u2014 it was session-only before (reset on company load, not in the save), so it vanished on a company switch while saved g/b stuck. Save now captures {g, b, repLock, note, date}; load restores all three; 'clear saved' clears the lock too; the saved badge shows the locked REP. Hardened: _wbhLive now carries the FTR EV and the model falls back to it, so 'lock y to today's price' can never silently no-op on a missing price/shares. Display/state + one portfolio field; engine + golden fixture byte-identical. index434: DOLLAR-GROWTH y\u21c4PRICE LOCK (DGP1-price; display/state only, engine + golden fixture byte-identical). A 'PRICE \u21c4 YIELD' lever now sits at the TOP of the panel, above the chips. Unlinked: shows today's price and the REP your current y implies at it (y = REP/EV). Correct y for Best-Guess distortions (working capital etc.), then '\uD83D\uDD17 lock y to today's price' freezes REP = y \u00d7 today's EV (_wbhState.repLock). Linked: y becomes the lever and price = (repLock/y \u2212 net debt)/shares recomputes live \u2014 slide y until the grower curve overlaps the benchmark and read off the buy/sell price. 'unlink' recalibrates. Fully contained to this panel; nothing migrates, and repLock resets on company load. The y input moved OUT of the source box (now g/b only) up into the lever, and stays visible even when the race is undefined (y\u22640) so y is always adjustable. index433: DOLLAR-GROWTH SAVE g/b + WHY-NOTE (DGP1-save). '\uD83D\uDCBE Save g/b + note' persists {g, b, note, date} to p[ticker].dgSave in the portfolio JSON \u2014 travels with Share/Backup, AUTO-RESTORES on company load (lands on the company's OWN calibration, after reset-on-load clears cross-company carryover). y is NOT saved (it tracks price). An orange 'g & b MANUALLY SET \u2014 saved [date]' badge + a free-text why-note sit WITH the numbers, so saved judgments never read as measured fact; 'clear saved' drops back to live. Unsaved note text survives re-renders via _wbhState._noteDraft (cleared on load/save/clear). Also: b input \u2192 one-decimal precision (step 0.5) \u2014 native growers live in the low single digits (MA \u22481%). Display/state + one additive portfolio field (dgSave); engine + golden fixture byte-identical. NEXT: y\u21c4price lock (index434). index432: DOLLAR-GROWTH b LEVER (DGP7 \u2014 display/state only; engine + golden fixture byte-identical). Added an editable b% input beside y% and g% in the source box, defaulting to the FTR's GROWTH-INVESTMENT b (growth capex + growth WC + after-tax growth R&D \u00f7 REP), null = live. keepT now = (1\u2212tB); the implied r reads as your g \u00f7 your b (sanity check). 'reset to live' clears y/g/b together; b also resets on company load; clamped 0\u2013100% (over-reinvestment / financing cost f stays the FTR's job). RESOLUTION recorded: b here is growth-investment b, NOT retention/use-of-cash b \u2014 retention b would park hoarded cash in b, which BOTH suppresses the kept-yield (1\u2212b)y leg AND inflates g=b\u00b7r (double-count off one cash pile). Cash hoarding & buybacks are returns, not growth. PLTR is the test: low growth-investment b \u2192 keepT\u22481 \u2192 keeps its yield AND grows natively. Lower b = more native; higher b = more yield spent to buy the growth. index431: DOLLAR-GROWTH QUICK TRIO (DGP2/3/4 \u2014 display/state only; engine + golden fixture byte-identical). DGP2: panel scale defaults to LOG (was linear) \u2014 Lou always reads it on log. DGP3: steady-earner benchmark presets \u2192 5 / 7 / 10 / 12 / 15% (was 6/8/10/12); 15% = the exceptional hurdle. DGP4: added a '\u21bb today (N\u00d7)' snap-back beside the END MULTIPLE slider (_wbhMultResetToday) \u2014 sets endPE to today's EV/REP origin, so no more dragging until the held-band chip greys. Deferred: DGP1 (yield\u2194price coupling) needs a design pass. index430: DOLLAR-GROWTH PANEL \u2014 the REAL A2 + A3 target (LYFT Bugs 1 & 2; index429 mis-mapped them to the FTR panel). The register's A2/A3 name THIS panel: 'reset to live' is its link, and y/g are its editable Best-Guess overrides (_wbhState.tY/.tG). A3 (carryover): tY/tG persisted company-to-company \u2014 resetDollarGrowthDefault only re-opened the panel; it now also clears tY/tG every load (back to live Best-Guess y + FTR forward g). bY (steady-earner hurdle) intentionally kept as a standing preference; endPE self-recalibrates on its _peCalib key. A2 (y\u22640 gate): _wbhModel/_wbhGraph drew the $100 race even when starting yield y\u22640 (manual negative entry, or LYFT-style negative REP). Added raceOk = (tY>0 && FT finite && FTR base valid); _wbhGraph + _wbhFaceHtml now return an error box when !raceOk. Because _wbhLive reads the FTR snapshot (which is STALE when the FTR base is invalid), the FTR render wrapper now publishes window._fyFwdBaseOk each render and repaints Dollar Growth on the invalid path \u2014 so LYFT shows the error, not a stale graph. index429's FTR-panel A2/A3 fixes are RETAINED (same class of bug in the neighboring panel \u2014 real, if less-noticed). Engine + golden fixture byte-identical (all display/state layer). index429: FORWARD-PANEL CORRECTNESS (Batch A finish \u00b7 A2 + A3 \u2014 both DISPLAY/STATE layer; renderForwardYield BYTE-FROZEN, engine + golden fixture byte-identical to index428). A2 (LYFT Bug 1): the frozen engine self-gates its main panel (#fyResults) when active-view REP or EV \u2264 0 but returns WITHOUT refreshing _repaFyLast, so the snapshot-driven painters (k-head, r/b sensitivity, multiple-lever, math box, ripen/parked) kept repainting the PRIOR render's k \u2014 a plausible-but-meaningless number on a negative-base ticker/view (LYFT). Added _fyForwardBaseOk() (a READ-ONLY mirror of the frozen `ev>0 && repL>0` guard) to the render wrapper; when it trips, _fySuppressForwardDisplays() hides every snapshot-driven sub-panel so the frozen 'EV/REP \u2264 0' warning stands alone. No frozen edit; _repaFyLast is NOT mutated (export + other readers keep the last VALID snapshot); falls back to current behavior on any error. Also covers the mid-session view-toggle case (Full D&A \u2192 a basis whose REP \u2264 0). A3 (LYFT Bug 2): the FTR r-slider carried A's manual r into B \u2014 the reSeed block resets the #fyR input but _fyrState.rVal (slider session value) survives and _fyrSync re-applies it over the seed. Added resetForwardSlidersDefault() (rVal=null, = the g\u00f7b anchor) to BOTH company-load sequences alongside resetFyViewDefault. b resets via reSeed; the multiple-lever already self-recalibrates on its calib key (~line 4261) \u2014 verified neither carries over, so r was the only leak. index428: NORMALIZED-REP DOUBLE-COUNT FIX (Batch A / A1 \u00b7 UBER #2). repaWcSeriesCompute normDelta was min(0, dNwcCf); REP(reported) already adds growthWc back, so on any net-SOURCE year (dNwcCf<0) dNwcCf=growthWc+efficiencyWc and the whole-source strip re-counted growthWc a second time \u2014 INFLATING normalized on positive-intensity names, UNDER-stating the floor on negative-intensity (customer-funded) names. Fixed to min(0, efficiencyWc) (strip the efficiency windfall ONLY); whole-source fallback kept only where there is no growth split (no anchor \u2192 reported carries no growthWc \u2192 cannot double-count). REPORTED REP, y, b, r, forward g and k are UNTOUCHED \u2014 only realProfitNorm (the g-feeding series) and its downstream move (historic g, the WC-panel normalized column, the reported\u2212normalized gap, index425 REP/share). Node-verified \u0394normalized = \u2212growthWc per net-source year: UBER +463.8, LYFT +109.9 (floors RISE); VRT \u221239.0, DG \u221211.1 (dip in WC-release years); FN 0 (net-USE year, no windfall \u2014 regression control). VRT RE-BASELINE (Lou ratified 2026-07-18, regression anchor): normalized TTM 1540.2\u21921501.2; historic g (normalized CAGR FY2023\u2192FY2025) 48.08%\u219264.48%; the FTR line HOLDS byte-identical (k 16.80%, y 2.00%, b 15.10%, forward g 15.1%) because r stays capped at 100% (implied r = 64.48%\u00f715.10% = 427%, off-scale exactly as the old 318% was). CAUTION re-gating the neg-intensity names: their r is NOT capped, so a moved historic g can move opening forward g / k \u2014 capture the new k/g anchors from the jsdom gate suite. Field Dictionary + registry signpost bump pending (external doc). Batch A A2 (forward-k y>0 gate \u2014 stale-snapshot in the display painters, not the frozen self-gate at 3844) and A3 (FTR slider reset on load) deferred to their own indexed builds. index427: RETURN-ATTRIBUTION CHART + STYLE UPGRADE (display-only). ca-* controls were unstyled because the existing ca-* CSS is scoped to #roiicCard only \u2014 added #raCard-scoped copies (colored dots + checkboxes now render). Chart brought to the Co-Movement standard: axis note naming visible series, two-pass newest-first x-labels (40px min, 2nd-row stagger) fixing cramped labels on long histories (CRUS), point circles, heavier lines. Margins now READ gross_profit/cogs + operating_income/opex when present (auto-light); absent in today's schema so shown as disabled 'needs data' toggles + a 'Margins' preset. Engine + golden fixture byte-identical. index426: RETURN-ATTRIBUTION UI CONSISTENCY (display-only follow-up to 425). (1) Per-line toggles converted from clickable-legend to the Co-Movement checkbox idiom (ca-chk/ca-dot) + a 'View' preset row (All / Per-share / Aggregate) mirroring the Cap-Alloc chart; controls now sit above the chart. (2) raCard registered in the section jump-nav (_REPA_NAV_SECTIONS, after Historical) so it appears in the 'Jump to' dropdown. Stubbed margins render as disabled checkboxes. No engine/series-math change; computeMetrics + golden fixture byte-identical. index425: RETURN-ATTRIBUTION PANEL (additive, display-only). New standalone card: 7 fundamentals (revenue, normalized CFO, diluted shares, gross margin*, operating margin*, price/share, REP/share) each rebased to 100 at the first visible year, dynamic start-year rebase, per-line toggles, 100 reference line, raw+indexed hover. REP/share = Full-D&A normalized realProfitNorm/shares; normalized CFO = cfo + prepay timing. *Gross/operating margin stubbed & flagged \u2014 not in the extraction schema (Field Dictionary gap); never faked from net income. NO engine/basis/plowback math touched; computeMetrics + golden fixture byte-identical. index424: BASIS-CONSISTENCY SWEEP (finishes the index421 changeover). Flipped the last three rate/ROIIC readouts still on the old Best-Guess-effective-IC basis to mechanical Full-D&A REP \u00f7 PLAIN IC (view-independent), matching the FTR anchors + Cap-Alloc: (1) _reinvClassifierModel archetype block (first-positive on realProfit, dIC on plain investedCapital \u2014 was inconsistent with roicIC right above it, already flipped in 421); (2) _growthReadModel g(REP)/g(IC)/roiic/roicNow (first-positive on realProfit, REP=realProfit, IC=investedCapital \u2014 the panel's ROIC was flipped in 421 but its g-calc wasn't, so it was internally split; g(REP) here now matches Panel 3's Profit CAGR); (3) exportBrief ROIIC table (\u0394realProfit \u00f7 \u0394plain-IC \u2014 its 'matches Cap-Alloc ROIIC' claim had been FALSE since 421, now true again). Display/export only \u2014 FTR k/y/b/g/anchors and the golden fixture are untouched (verified byte-identical). NOTE: _repICv + _repaBestGuessIC now have zero live call sites (dead code, safe to remove in a future housekeeping pass). index423: HOUSEKEEPING (no behavior change; fixture byte-identical to index422). Removed orphaned vars left by the changeover: icEffOk (renderForwardYield — every anchor guard now uses plain icOk) and _cmpLife (Compare scorecard — its _repICv(...,life) calls were dropped in the ROIC flip). Corrected stale user-visible labels now that the FTR defaults to Full D&A: the Panel-3 "Best-Guess Real Profit" waterfall detail (was "the number the rest of the app runs on … ties to the FTR default basis" — the FTR default is now the Full D&A floor, so it ties to Best Guess only via the toggle) and the #fyView standing-note comment. index422: DEFAULT \u2192 FULL D&A + LABELING. (1) FTR default view flipped Best Guess \u2192 Full D&A (init 2874, per-load resetFyViewDefault, static #fyView dropdown) so the first k seen is the PURE read, not the mixed case; the growth/rate layer was already always-Full-D&A (index421) \u2014 only y (yield) and k (total return) move with the toggle. Headline-basis note rewritten to state the split explicitly and name the Best-Guess k as intentionally mixed. (2) Panel 3 'Profit vs Capital Base' rebuilt as the LABELING TEMPLATE: FULL D&A basis chip, explicit window (first-positive annual \u2192 last annual, with end-dates + N yrs, annual-only stated), endpoint REP/IC values, per-year REP strip with START/END/SKIP badges, leading-loss-year skip note, and a reconcile line vs the headline historic g (which normalizes efficiency WC). caVal5 collapsed teaser aligned to the same first-positive window. (3) Compare scorecard ROIC/ROIIC flipped to mechanical Full-D&A REP \u00f7 PLAIN IC (view-independent) \u2014 the last rate readout still on the old effective-IC basis; realYield/realPE stay on the LEVEL (view) REP, so Compare k is the same mixed structure as the FTR. Golden fixture unchanged & reproducible: toggle Best Guess \u2192 k 16.80%, y 2.00%, b 15.10%; default Full D&A \u2192 k ~18.27%, y 1.77%. Three REP bases 2112.1 / 2367.2 / 2393.3 unchanged. index421: BASIS CHANGEOVER (Decision B) \u2014 (1) _rkRepBasis pinned to the Full-D&A floor (base=realProfit, +normDelta=realProfitNorm) so the historic g, the g\u00f7b r-anchor, realized-k and buyback-ROI stop inheriting the Best-Guess amort/R&D addbacks \u2014 VRT historic g went 99.55% (Best-Guess) \u2192 48.08% (mechanical); r stayed capped at 100% so k is unchanged. (2) FTR r-anchors (roic/roiic/ronta/acqRatio) flipped to Full-D&A REP \u00f7 PLAIN invested capital (icEff/rdAssetL kept ONLY for the component-bar visual \u00a75b + export). (3) Capital-Allocation roiicData rep/ic flipped to the same Full-D&A + plain-IC basis so the ROIIC cells stay byte-identical to _fyRoiicW; co-movement & realized b\u00b7r=g move with it; Cap-Alloc header ROIC now reads m.fullDA. (4) _rkBasisLabel \u2192 'Full D&A' always; r-anchor note & export \u00a74b labels relabeled (raw IC / mechanical). (5) \u00a75 maint-capex MIN-branch neutral encoding (D = D&A\u00d7mult binds, C = bound by total CapEx, \u2022 = disclosed) added to the per-year detail column + legend. VRT golden fixture reproduces: Full-D&A REP TTM $2,112.1M, Best Guess $2,393.3M, ownership yield 1.77%, k 16.80%, y 2.00%, b 15.10%. Three-yield display & FTR y stay Best Guess (RESOLVED 1). Field Dictionary + registry signpost bump pending (external doc). index420: PREPAY VERDICT PARITY FIX \u2014 the live verdict/yield-ladder panel computes its OWN inline REP (parallel to computeMetrics) and was adding index414 growth WC but NOT the index418 prepay timing term, so the yield ladder / Best Guess / ownership yield / REP-per-share showed PRE-prepay REP while the history chart, trend table and WC panel (via computeMetrics) showed corrected. Added _vWcPrepay to the verdict's realProfit + realProfitLight and a 'Prepaid-Supplier Timing' waterfall row so the bars reconcile. Null-safe (0 when no prepay fields). index419: event-marker legibility (Co-Movement chart) \u2014 display-layer only, engine untouched. Vertical-stagger the per-event labels into non-overlapping rows + dark halo (paint-order stroke) + font 8.5\u21929.5, so close-dated events (e.g. CRUS Lion 2021-07-20 and GF capacity agmt 2021-07-28, eight days apart; or ANET's clustered deals) no longer overlap into an unreadable smear at one y-position. Replaces the single-row clamp (index387). index418: PREPAID SUPPLIER bucket \u2014 two-instrument prepay engine. Type A (returning wafer/goods prepay: +add signing year, \u2212consumption each use year) + Type B (amortizing capacity fee: +full fee signing year, \u2212amortization each period). Carve ALL prepay dollars out of BOTH operating_nwc (level) AND wc_change_cf (flow) via \u0394balance vs the prior-ANNUAL anchor (mirrors index415), so the WC engine never sees them; the timing correction (+add\u2212consumption / +fee\u2212amort, which equals \u0394combined-balance) is added to REP directly. Null-safe: a ticker with no prepaid_supply_balance/prepaid_fee_balance is byte-identical to index417 (the regression control). repaWcSeriesCompute UNCHANGED (fingerprint-clean); all new logic lives in repaWcRebuild + computeMetrics. New fields: prepaid_supply_balance/_add/_growth_share, prepaid_fee_balance/_add, prior_prepaid_supply_balance/_fee_balance. Both live YES tickers (CRUS Type A+B fixture, QCOM Type A at scale) are maintenance \u2192 nothing feeds b. Field Dictionary bump to v1.3 (external doc). index417: copyright + PolyForm Noncommercial 1.0.0 license header (comment-only, no code changes). index416: operating_nwc scope rule copy sync (CRUS memo: follow the item, not the shelf). index415: WC annual-anchor rule, base-year anchor pair, warnings. // single source of truth for build identity (index # \u00b7 version); mirrored into REPA_DATA_BUILD (the .md export header) below so the on-screen stamp and the export can never drift. Bump on every build.
 (function(){
   var el=document.getElementById('buildStamp');
   // Build info from file metadata
@@ -1139,7 +1139,7 @@ var REPA_BUILD_TAG='index427 \u00b7 v5.6.2'; // index427: RETURN-ATTRIBUTION CHA
     <div class="field"><label>Maint. CapEx ($M)</label><input type="number" id="maint_capex" step="1" placeholder="If disclosed"><div class="hint">Leave blank to auto-estimate using multiplier →</div></div>
   </div>
   <div class="row">
-    <div class="field"><label>D&A Multiplier</label><select id="maintMultiplier" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem"><option value="1.05" selected>1.05x (default — asset-light)</option><option value="1.10">1.10x (moderate capital intensity)</option><option value="1.15">1.15x (capital intensive)</option><option value="1.20">1.20x (heavy infrastructure)</option></select><div class="hint">Inflation buffer on D&A for maintenance estimate. Higher for capital-intensive businesses.</div></div>
+    <div class="field"><label>D&A Multiplier</label><select id="maintMultiplier" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem"><option value="0.75">0.75x (very capital-light — D&amp;A well above maintenance)</option><option value="0.85">0.85x (capital-light)</option><option value="0.95">0.95x (slightly light)</option><option value="1.05" selected>1.05x (default — D&amp;A + 5% inflation buffer)</option><option value="1.10">1.10x (moderate capital intensity)</option><option value="1.15">1.15x (capital intensive)</option><option value="1.20">1.20x (heavy infrastructure)</option></select><div class="hint">Maintenance-capex estimate = D&amp;A &times; this multiplier. 1.05 (default) adds a 5% inflation buffer; go <b>below 1.0</b> for capital-light names where reported D&amp;A overstates the cash to maintain the asset base (e.g. platforms whose D&amp;A is mostly non-replacement amortization). The physical portion is still capped at total CapEx.</div></div>
   </div>
   <div class="row">
     <div class="field"><label>Depreciation Only ($M)</label><input type="number" id="depr_only" step="1" placeholder="Optional"><div class="hint">Physical depreciation only (excl. intangible amortization). Enables All Amortization Added Back view for acquisitive companies.</div></div>
@@ -1939,7 +1939,16 @@ const TBILL_REF=0.043;
 const REPA_DATA_BUILD=REPA_BUILD_TAG; // index243: single source = REPA_BUILD_TAG (declared with the on-screen build stamp). On-screen stamp and export header now stay in lockstep automatically.
 
 function getPortfolio(){
-  try{return JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};}catch(e){return {};}
+  try{
+    var _p=JSON.parse(localStorage.getItem(PORTFOLIO_KEY))||{};
+    // CMP-fix-6 (index444): stamp each year's formData.ticker from its OWNING portfolio key when blank. Some saved
+    // entries carry an empty ticker (early-year extraction gaps, e.g. LYFT FY2023/FY2024), which broke the on-demand
+    // WC-map resolution -- repaWcFor identifies a NON-active entry's ticker from formData.ticker, so a blank tag left
+    // that year with a null WC record (no growth-WC / no normalization) in any portfolio-wide read. The portfolio key
+    // is authoritative; only-if-blank so a real value is never overridden. Idempotent, cheap.
+    for(var _t in _p){ var _e=_p[_t]; if(_e&&_e.years){ for(var _k in _e.years){ var _y=_e.years[_k]; if(_y&&_y.formData&&!_y.formData.ticker)_y.formData.ticker=_t; } } }
+    return _p;
+  }catch(e){return {};}
 }
 function putPortfolio(p){localStorage.setItem(PORTFOLIO_KEY,JSON.stringify(p));}
 
@@ -2116,7 +2125,7 @@ function saveToPortfolio(){
 }
 
 function loadFromPortfolio(){
-  resetTaxRate();resetBestGuessDefaults();resetCapAllocDefaults();resetDollarGrowthDefault();resetFyViewDefault(); // index380: snap Capital Allocation open-state to canonical default on every ticker load
+  resetTaxRate();resetBestGuessDefaults();resetCapAllocDefaults();resetDollarGrowthDefault();resetFyViewDefault();resetForwardSlidersDefault(); // index428 (A3): also snap FTR r-slider to anchor. index380: snap Capital Allocation open-state to canonical default on every ticker load
   var sel=document.getElementById('portfolioSelect');
   var ticker=sel.value;
   if(!ticker){clearForNewCompany();return;}
@@ -2125,6 +2134,11 @@ function loadFromPortfolio(){
   if(!entry)return;
   _currentSavedSettings = entry.settings || null; // index31 (B4): cache this company's saved assumptions for getBgState
   if(entry.settings) applyBestGuessSettings(entry.settings); // index30 (B4 2a): restore this company's saved assumptions (flag clears). resetBestGuessDefaults() above already raised the flag for the no-settings case.
+  if(entry.dgSave&&typeof _wbhState!=='undefined'&&_wbhState){ // index433 (DGP1-save): restore this company's saved qualitative g/b (y stays live) — resetDollarGrowthDefault() above already cleared cross-company carryover, so this lands on the company's OWN saved calibration
+    _wbhState.tG=(typeof entry.dgSave.g==='number')?entry.dgSave.g:null;
+    _wbhState.tB=(typeof entry.dgSave.b==='number')?entry.dgSave.b:null;
+    _wbhState.repLock=(typeof entry.dgSave.repLock==='number'&&isFinite(entry.dgSave.repLock))?entry.dgSave.repLock:null; // index435: restore the price lock too
+  }
   // Clear current state
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
@@ -2193,7 +2207,7 @@ function onPortfolioSelect(){
 }
 
 function clearForNewCompany(){
-  resetTaxRate();resetBestGuessDefaults();resetCapAllocDefaults();resetDollarGrowthDefault();resetFyViewDefault();_currentSavedSettings=null; // index31 (B4): a brand-new company has no saved assumptions
+  resetTaxRate();resetBestGuessDefaults();resetCapAllocDefaults();resetDollarGrowthDefault();resetFyViewDefault();resetForwardSlidersDefault();_currentSavedSettings=null; // index31 (B4): a brand-new company has no saved assumptions
   for(var k in yearStore)delete yearStore[k];
   currentYearKey=null;
   selectedYears=[];
@@ -2352,7 +2366,7 @@ function showPicker(mode){
   var grid=document.getElementById('pickerGrid');
   grid.innerHTML=tickers.map(function(t){
     var wasSelected=_lastPickerSelections.indexOf(t)>=0;
-    return '<label class="picker-chip'+(wasSelected?' selected':'')+'" onclick="togglePickerChip(this)"><span class="picker-check">✓</span><input type="checkbox" value="'+t+'"'+(wasSelected?' checked':'')+'>'+t+'</label>';
+    return '<div class="picker-chip'+(wasSelected?' selected':'')+'" data-ticker="'+t+'" onclick="this.classList.toggle(\'selected\')"><span class="picker-check">✓</span>'+t+'</div>';
   }).join('');
   // Add Select All / Deselect All / Reset buttons
   var btnRow=document.createElement('div');
@@ -2364,8 +2378,7 @@ function showPicker(mode){
 
 function pickerSelectAll(state){
   document.querySelectorAll('#pickerGrid .picker-chip').forEach(function(el){
-    var cb=el.querySelector('input');
-    if(cb){cb.checked=state;el.classList.toggle('selected',state);}
+    el.classList.toggle('selected',state);
   });
 }
 
@@ -2378,9 +2391,9 @@ function togglePickerChip(el){
 function closePicker(){document.getElementById('pickerModal').classList.remove('active')}
 
 function pickerGo(){
-  var checks=document.querySelectorAll('#pickerGrid input:checked');
+  var chips=document.querySelectorAll('#pickerGrid .picker-chip.selected');
   var selected=[];
-  checks.forEach(function(cb){selected.push(cb.value)});
+  chips.forEach(function(el){var t=el.getAttribute('data-ticker');if(t)selected.push(t);});
   if(selected.length<2){alert('Select at least 2 companies.');return;}
   _lastPickerSelections=selected; // remember for next time
   closePicker();
@@ -2397,6 +2410,11 @@ function runCompare(selectedTickers){
     var keys=Object.keys(ys).sort(function(a,b){
       var da=ys[a].fiscal_year_end||a;var db=ys[b].fiscal_year_end||b;return da<db?-1:da>db?1:0;
     });
+    // CMP-fix-4 (index441): the WC engine builds its map from the LOADED ticker only, so every OTHER ticker in
+    // Compare got a null WC record -> REP computed WITHOUT growth-WC/prepay AND with zero normalization. Build THIS
+    // ticker's WC map and install it for the duration of its computeMetrics calls (restored right after _cmpMs).
+    var _cmpSavedWcMap=window._repaWcMap;
+    try{ var _cmpMap=repaWcRebuild(ys,keys,t); if(_cmpMap) window._repaWcMap=_cmpMap; }catch(e){}
     // Use latest year
     var latestKey=keys[keys.length-1];
     var yr=ys[latestKey];
@@ -2409,6 +2427,7 @@ function runCompare(selectedTickers){
     var debt=m.debt||0;
     var ev=mktCap+debt-(cash+sti);
     var _cmpMs=keys.map(function(kk){return computeMetrics(ys[kk]);});           // index393: view-aware Compare scorecard
+    window._repaWcMap=_cmpSavedWcMap; // CMP-fix-4: this ticker's computeMetrics calls are done -> restore the global WC map
     // index422 housekeeping: _cmpLife removed — orphaned after the Compare ROIC flip dropped its _repICv(...,life) calls.
     var _repV=_fyRepForView(m);                                                   // LEVEL REP (active view) — feeds realYield / realPE only
     // index422: Compare ROIC is a RATE — mechanical Full-D&A REP over PLAIN IC, view-independent (matches the FTR/Cap-Alloc changeover). The view REP + effective IC stay on the LEVEL readouts (yield, PE) only.
@@ -2435,7 +2454,8 @@ function runCompare(selectedTickers){
     return {
       ticker:t,price:price,latestYear:latestLabel,yearsCount:keys.length,
       realProfit:_repV,realYield:realYield,realPE:realPE,realROIC:_roicV,k:_kVal,
-      ev:ev,investedCapital:_icV,
+      realProfitNorm:m.realProfitNorm,realYieldNorm:(ev>0?((_repV+repaNormDeltaFrom(m))/ev):realYield), /* B1: normalized ownership yield = (view REP + normDelta)/EV; realYield (which feeds k) is untouched, k byte-identical */
+      ev:ev,investedCapital:_icPlain, /* CMP-fix-2 (index440): _icV was orphaned in the index422/423 ROIC refactor -> runCompare threw ReferenceError on EVERY compare. */
       cfo:m.cfo,realSBC:m.realSBC,sbcPctCFO:sbcPctCFO,
       capex:m.capex,growthCapex:m.growthCapex,maintCapex:m.maintCapex,
       reportedFCF:m.reportedFCF,gap:_repV-m.reportedFCF,
@@ -2458,7 +2478,7 @@ function runCompare(selectedTickers){
     {label:'Enterprise Value',f:function(c){return fmtM(c.ev)},vk:'ev'},
     {label:'',f:function(){return ''}},
     {label:'Real Economic Profit',f:function(c){return fmtM(c.realProfit)},hl:true,vk:'realProfit'},
-    {label:'Real Ownership Yield',f:function(c){return pct(c.realYield)},hl:true,vk:'realYield'},
+    {label:'Real Ownership Yield',f:function(c){var on=repaYieldNormOn();var a=on?c.realYieldNorm:c.realYield;var o=on?c.realYield:c.realYieldNorm;var strip=(on&&a!=null&&o!=null&&Math.abs(o-a)>0.0005);return pct(a)+(strip?' <span style="color:var(--text3);font-size:.85em">'+(on?'rep':'nrm')+' '+pct(o)+'</span>':'');},hl:true,vk:'realYieldNorm'},
     {label:'Future Total Return (k)',f:function(c){return c.k!=null?pct(c.k):'\u2014'},hl:true,vk:'k'},
     {label:'Real P/E',f:function(c){return c.realPE>0?c.realPE.toFixed(1)+'x':'N/A'},vk:'realPE'},
     {label:'Real ROIC',f:function(c){return pct(c.realROIC)},hl:true,vk:'realROIC'},
@@ -3413,7 +3433,11 @@ function _fyKHead(){
   var fwdEl=document.getElementById('fykIvFwd');
   if(fwdEl){ fwdEl.textContent=(fwdG!=null)?pct(fwdG):'\u2014'; fwdEl.style.color=(diff!=null)?col:'var(--text)'; }
   var legG=document.getElementById('fykLegG'); if(legG) legG.style.display=(rg!=null||fwdG!=null)?'flex':'none';
-  var lf=document.getElementById('fykLegFoot'); if(lf) lf.innerHTML='<b>historic g</b> = historical REP growth \u2014 the CAGR actually delivered over the full history. <b>forward g</b> = b \u00d7 r \u2014 your reinvestment rate b times return r. The default r above is the value that opens forward g on historic g; move r to bet above or below.';
+  var lf=document.getElementById('fykLegFoot');
+  if(lf){
+    var _gWin=''; try{ var _grr=_rkRefs(); if(_grr&&_grr.ann&&_grr.ann.length){ var _gs=null; for(var _gi=0;_gi<_grr.ann.length;_gi++){ if(_grr.ann[_gi].rep>0){_gs=_grr.ann[_gi];break;} } var _ge=_grr.ann[_grr.ann.length-1]; if(_gs&&_ge&&_ge.yr>_gs.yr){ var _gnw=_ge.yr-_gs.yr; _gWin=' (FY'+_gs.label+'\u2192FY'+_ge.label+' \u00b7 '+_gnw+' yr'+(_gnw===1?'':'s')+')'; } } }catch(e){}
+    lf.innerHTML='<b>historic g</b> \u2014 the app\u2019s <b>canonical</b> growth rate: <b>normalized REP</b> (efficiency working-capital stripped), first profitable annual \u2192 latest annual'+_gWin+'. Every other growth read reconciles to this number. <b>forward g</b> = b \u00d7 r \u2014 your reinvestment rate times return; its default opens on historic g, so move r to bet above or below.';
+  }
   // keep box
   document.getElementById('fykKeepN').textContent=pct(keep);
   document.getElementById('fykKeepD').innerHTML=(b<=1)?('<span class="sym">(1&minus;b)</span> <span class="val">'+pct0(1-b)+'</span> &times; <span class="sym">y</span> <span class="val">'+pct(y)+'</span>'):('<span class="sym">y</span> <span class="val">'+pct(y)+'</span> all reinvested');
@@ -3768,7 +3792,32 @@ function _fyDebloat270(){
     }
   }catch(e){}
 }
-  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);try{_ftrHeadSync();}catch(e){}try{_fyHeadline();}catch(e){}try{_fySanity();}catch(e){}try{_fyGSlide();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyDecompTable();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fySensCompact();}catch(e){}try{_fyRipenClone();}catch(e){}try{_fyDebloat270();}catch(e){}try{_renderWbh();}catch(e){}return out;};
+  // index428 (A2 / LYFT Bug 1): the FROZEN renderForwardYield self-gates its MAIN panel (#fyResults) when the
+  // active-view REP base or EV is <= 0 (top-of-function guard) but returns WITHOUT refreshing _repaFyLast \u2014 so the
+  // display-layer painters below (k-head, r/b sensitivity, multiple-lever, math box, ripen/parked) keep repainting
+  // the PRIOR render's snapshot: a plausible-but-meaningless k on a ticker/view whose profit base is negative
+  // (LYFT). Mirror that guard here (READ-ONLY) and, when it trips, suppress every snapshot-driven sub-panel so only
+  // the frozen warning shows. No frozen-function change; _repaFyLast is NOT mutated (export + other readers keep the
+  // last VALID snapshot). Falls back to today's behavior on any unexpected error (never wrongly suppresses).
+  function _fyForwardBaseOk(){
+    try{
+      var keys=getActiveYearKeys(); if(!keys||keys.length===0) return false;
+      var latestKey=keys[keys.length-1], yr=yearStore[latestKey]; if(!yr) return false;
+      var ms=enrichYears(keys), mL=ms[ms.length-1], d=yr.formData||{};
+      var price=getEffectivePrice(yr), shares=d.shares||0;
+      var ev=price*shares+(d.debt||0)-(d.cash||0)-(d.sti||0);
+      var repL=_fyRepForView(mL);
+      return (ev>0 && repL>0);   // identical condition to the frozen guard at the top of renderForwardYield
+    }catch(e){ return true; }
+  }
+  function _fySuppressForwardDisplays(){
+    ['fyKHead','fyKStep','fySensLite','fyMultLever','fyRipenLite','fyParked'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.style.display='none';
+    });
+    var mb=document.getElementById('fyMathBody'); if(mb) mb.innerHTML='';
+    var live=document.getElementById('fyBlocksLive'); if(live) live.textContent='';
+  }
+  renderForwardYield=function(){var out=_origRFY.apply(this,arguments);var _fwdOk=_fyForwardBaseOk();try{window._fyFwdBaseOk=_fwdOk;}catch(e){}if(!_fwdOk){try{_fySuppressForwardDisplays();}catch(e){}try{_renderWbh();}catch(e){}return out;}try{_ftrHeadSync();}catch(e){}try{_fyHeadline();}catch(e){}try{_fySanity();}catch(e){}try{_fyGSlide();}catch(e){}try{_fyrSync();}catch(e){}try{_fybSync();}catch(e){}try{_fyKHead();}catch(e){}try{_fyDecompTable();}catch(e){}try{_fyParked();}catch(e){}try{_fyReRate();}catch(e){}try{_fyMathBox();}catch(e){}try{_fySensCompact();}catch(e){}try{_fyRipenClone();}catch(e){}try{_fyDebloat270();}catch(e){}try{_renderWbh();}catch(e){}return out;};
 })();
 
 // REP for the active view. Full D&A = the conservative floor (m.realProfit).
@@ -6271,7 +6320,14 @@ function repaWcSeriesCompute(rows){
       if(nwc!==null&&pNwc!==null)rec.dNwcBs=nwc-pNwc;
       if(pNwc!==null&&pRev!==null&&pRev>0&&rev!==null)rec.growthWc=(pNwc/pRev)*(rev-pRev); // cost of getting bigger — REINVESTMENT (anchor-year intensity × Δrevenue)
       if(rec.dNwcCf!==null&&rec.growthWc!==null)rec.efficiencyWc=rec.dNwcCf-rec.growthWc;   // real cash, but non-recurring and bounded
-      if(rec.dNwcCf!==null)rec.normDelta=Math.min(0,rec.dNwcCf);                            // strip any net WC SOURCE from the g-feeding series
+      // index428 (A1 / UBER #2): strip the EFFICIENCY windfall only. `reported` already added growthWc back
+      // (reinvestment, feeds b), so on any net-SOURCE year dNwcCf = growthWc + efficiencyWc and subtracting the
+      // whole dNwcCf re-counts growthWc a second time — inflating normalized on positive-intensity names and
+      // UNDER-stating the floor on negative-intensity (customer-funded) names. Fix = min(0, efficiencyWc).
+      // Fall back to the whole-source strip only when there is no growth split (no anchor): then `reported`
+      // carries no growthWc, so stripping the full source cannot double-count. efficiencyWc = dNwcCf − growthWc.
+      if(rec.efficiencyWc!==null)rec.normDelta=Math.min(0,rec.efficiencyWc);
+      else if(rec.dNwcCf!==null)rec.normDelta=Math.min(0,rec.dNwcCf);
       if(defRev!==null&&pDef!==null){rec.custFinWc=-(defRev-pDef); if(rec.efficiencyWc!==null)rec.residEffWc=rec.efficiencyWc-rec.custFinWc;}
       if(rec.dNwcBs!==null&&rec.dNwcCf!==null)rec.acqFxGap=rec.dNwcBs-rec.dNwcCf;           // acquisitions + FX (+ any residual horizon offset) — disclosed, not an operating event
       if(pRev!==null&&pRev>0&&rev!==null)rec.revGrowth=rev/pRev-1;
@@ -6288,11 +6344,13 @@ function repaWcSeriesCompute(rows){
 // Rebuilds the app-wide WC map from yearStore. Called at the top of calculate() (after captureForm) so
 // computeMetrics can look up per-year adjustments. Keys: yearStore key AND fiscal_year_end (belt & braces).
 window._repaWcMap=null;
-function repaWcRebuild(){
+function repaWcRebuild(_ys,_keysArg,_tickerArg){
   try{
-    var keys=getSortedYearKeys(), rows=[];
+    var _store=_ys||yearStore;
+    if(!_ys){window._repaWcTickerCache={};} // CMP-fix-5: invalidate the non-active-ticker cache whenever the active map rebuilds
+    var keys=_keysArg||getSortedYearKeys(), rows=[];
     keys.forEach(function(k){
-      var yr=yearStore[k]; if(!yr||!yr.formData)return;
+      var yr=_store[k]; if(!yr||!yr.formData)return;
       var fd=yr.formData, ex=yr.extra||{};
       // index418: PREPAID SUPPLIER carve. Read the new fields (null-safe). A ticker carrying none of these
       // behaves byte-identically to index417 — that is the regression control.
@@ -6356,20 +6414,49 @@ function repaWcRebuild(){
     // tickers' saved years; a bare fiscal_year_end key would cross-contaminate any two tickers sharing a
     // year-end date. Identity can't. A ticker-guarded key fallback below covers active-ticker COPIES.
     res.byEntry=(typeof WeakMap!=='undefined')?new WeakMap():null;
-    keys.forEach(function(k){var yr=yearStore[k];if(yr&&res.byKey[k]){if(res.byEntry)res.byEntry.set(yr,res.byKey[k]);if(yr.fiscal_year_end&&!res.byKey[yr.fiscal_year_end])res.byKey[yr.fiscal_year_end]=res.byKey[k];}});
+    keys.forEach(function(k){var yr=_store[k];if(yr&&res.byKey[k]){if(res.byEntry)res.byEntry.set(yr,res.byKey[k]);if(yr.fiscal_year_end&&!res.byKey[yr.fiscal_year_end])res.byKey[yr.fiscal_year_end]=res.byKey[k];}});
     var _tEl=document.getElementById('ticker');
-    res.ticker=_tEl?String(_tEl.value||'').trim().toUpperCase():'';
+    res.ticker=(_tickerArg!==undefined&&_tickerArg!==null)?String(_tickerArg).trim().toUpperCase():(_tEl?String(_tEl.value||'').trim().toUpperCase():'');
+    if(_ys){return res;}                 // CMP-fix-4: isolated/Compare build -> return the map, don't disturb the global
     window._repaWcMap=res;
-  }catch(e){window._repaWcMap=null;}
+  }catch(e){if(_ys)return null; window._repaWcMap=null;}
   return window._repaWcMap;
 }
 // Resolve this entry's WC record (or null). Used by computeMetrics and the WC panel.
 function repaWcFor(entry){
-  var m=window._repaWcMap; if(!m||!m.byKey||!entry)return null;
-  if(m.byEntry){var hit=m.byEntry.get(entry); if(hit)return hit;}
-  // fallback for same-ticker COPIES only (e.g. Compare reading portfolio objects): ticker must match
-  var fdT=(entry.formData&&entry.formData.ticker)?String(entry.formData.ticker).trim().toUpperCase():'';
-  if(m.ticker&&fdT===m.ticker&&entry.fiscal_year_end&&m.byKey[entry.fiscal_year_end])return m.byKey[entry.fiscal_year_end];
+  if(!entry)return null;
+  var m=window._repaWcMap;
+  if(m&&m.byKey){
+    if(m.byEntry){var hit=m.byEntry.get(entry); if(hit)return hit;}
+    // fast path for the ACTIVE ticker's own COPIES (e.g. Compare's loaded ticker): ticker must match
+    var fdT=(entry.formData&&entry.formData.ticker)?String(entry.formData.ticker).trim().toUpperCase():'';
+    if(m.ticker&&fdT===m.ticker&&entry.fiscal_year_end&&m.byKey[entry.fiscal_year_end])return m.byKey[entry.fiscal_year_end];
+  }
+  // CMP-fix-5 (index442): ON-DEMAND WC map for a NON-ACTIVE ticker. repaWcRebuild only builds the LOADED ticker's
+  // map, so computeMetrics on ANY other portfolio ticker (Compare, screeners, the planned canonical-numbers panel)
+  // otherwise gets a null record -> REP without growth-WC/prepay + zero normalization. Build that ticker's map once,
+  // cache per ticker, resolve by fiscal_year_end. Cache is cleared on every active-ticker rebuild (portfolio may
+  // have changed). repaWcRebuild(...) in isolated mode never touches window._repaWcMap, so the active read is safe.
+  try{
+    if(!entry.formData)return null;
+    var t=entry.formData.ticker?String(entry.formData.ticker).trim().toUpperCase():'';
+    if(!t)return null;
+    var cache=window._repaWcTickerCache||(window._repaWcTickerCache={});
+    if(!(t in cache)){
+      var cm=null, port=(typeof getPortfolio==='function')?getPortfolio():null, pe=port&&port[t];
+      if(pe&&pe.years){
+        var yobj=pe.years;
+        var yk=Object.keys(yobj).sort(function(a,b){var da=(yobj[a]&&yobj[a].fiscal_year_end)||a,db=(yobj[b]&&yobj[b].fiscal_year_end)||b;return da<db?-1:da>db?1:0;});
+        cm=repaWcRebuild(yobj,yk,t);
+      }
+      cache[t]=cm;
+    }
+    var cmap=cache[t];
+    if(cmap&&cmap.byKey){
+      if(cmap.byEntry){var h2=cmap.byEntry.get(entry); if(h2)return h2;}
+      if(entry.fiscal_year_end&&cmap.byKey[entry.fiscal_year_end])return cmap.byKey[entry.fiscal_year_end];
+    }
+  }catch(e){}
   return null;
 }
 // ===== end index414 working-capital engine =====
@@ -6450,10 +6537,13 @@ function renderWcPanel(){
     +'<div style="'+mono+';font-size:1.3rem;font-weight:700;color:'+col+'">'+val+'</div>'
     +(sub?'<div style="font-size:.64rem;color:var(--text2);margin-top:4px;line-height:1.35">'+sub+'</div>':'')+'</div>';}
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 12px">';
-  h+=chip('WC intensity now',fp(lastInt),stCol,esc(stTxt));
+  // B5 (index446): surface the WC-intensity TREND explicitly (first -> last), a standing structural signal
+  // distinct from the one-time efficiency transfers (the earnings-quality gap chip beside it).
+  var _wcTrendSub=(firstInt!==null&&lastInt!==null&&Math.abs(lastInt-firstInt)>0.003)?(fp(firstInt)+' \u2192 '+fp(lastInt)+' \u00b7 '+esc(stTxt)):esc(stTxt);
+  h+=chip('WC intensity trend',fp(lastInt),stCol,_wcTrendSub);
   if(lastFloat!==null)h+=chip('Float ratio (def. rev / revenue)',fp(lastFloat),'var(--blue)','customers financing the build');
-  if(lastDist!==null)h+=chip('Distortion (of REP)',fp(lastDist,0),(lastTag==='Material'?'var(--red)':(lastTag==='Moderate'?'var(--orange)':'var(--green)')),lastTag+(lastTag==='Material'?' \u2014 REP is materially wrong without adjustment':''));
-  if(gapM!==null&&Math.abs(gapM)>0.005)h+=chip('Earnings-quality gap',fm(gapM),(gapM>0?'var(--orange)':'var(--green)'),(gapPct!==null?pct(Math.abs(gapPct),0)+' of reported REP ':'')+(gapM>0?'borrowed from next year':''));
+  if(lastDist!==null)h+=chip('Growth-WC distortion (of REP)',fp(lastDist,0),(lastTag==='Material'?'var(--red)':(lastTag==='Moderate'?'var(--orange)':'var(--green)')),lastTag+(lastTag==='Material'?' \u2014 REP is materially wrong without adjustment':''));
+  if(gapM!==null&&Math.abs(gapM)>0.005)h+=chip('Earnings-quality gap',fm(gapM),(gapM>0?'var(--orange)':'var(--green)'),(gapPct!==null?pct(Math.abs(gapPct),0)+' of reported REP ':'')+(gapM>0?'non-recurring / growth-contingent \u2014 not extrapolable':''));
   h+='</div>';
 
   // partial-state warnings
@@ -6548,7 +6638,7 @@ function renderWcPanel(){
     +'<div style="font-size:.64rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:6px">Two REP series, not one</div>'
     +'<strong style="color:var(--text)">REP (reported)</strong> includes any efficiency windfall. It is real cash \u2014 what the company actually collected \u2014 and it is the headline REP everywhere in the app. '
     +'<strong style="color:var(--text)">REP (normalized)</strong> strips working capital arriving as a net cash source; it is the series that feeds historic g (and therefore the g\u00f7b anchor for r) \u2014 and only this one. '
-    +'The <strong style="color:var(--orange)">gap</strong> between them is the earnings-quality diagnostic'+((gapM!==null&&gapPct!==null&&gapM>0.005)?(': currently '+fmtM(gapM)+', or '+pct(gapPct,0)+' of reported REP, is borrowed from next year.'):'.')+'</div>';
+    +'The <strong style="color:var(--orange)">gap</strong> between them is the earnings-quality diagnostic'+((gapM!==null&&gapPct!==null&&gapM>0.005)?(': currently '+fmtM(gapM)+', or '+pct(gapPct,0)+' of reported REP, is non-recurring / growth-contingent \u2014 not extrapolable.'):'.')+'</div>';
 
   // sub-split meaning (only when deferred revenue is in play)
   if(anyCust||lastFloat!==null){
@@ -6566,7 +6656,7 @@ function renderWcPanel(){
   }
 
   // materiality footnote (always show the number)
-  h+='<p style="font-size:.64rem;color:var(--text3);margin:10px 0 0;line-height:1.5">Distortion \u2248 WC intensity \u00d7 revenue growth \u00f7 net margin = share of REP consumed (or supplied) by working capital. &lt;10% Immaterial \u00b7 10\u201330% Moderate \u00b7 &gt;30% Material \u2014 the number is shown even when immaterial. b now includes growth WC in its numerator; r is derived (r = g \u00f7 b), never entered.</p>';
+  h+='<p style="font-size:.64rem;color:var(--text3);margin:10px 0 0;line-height:1.5">Distortion \u2248 WC intensity \u00d7 revenue growth \u00f7 net margin = share of REP consumed (or supplied) by working capital. &lt;10% Immaterial \u00b7 10\u201330% Moderate \u00b7 &gt;30% Material \u2014 the number is shown even when immaterial. b now includes growth WC in its numerator; r is derived (r = g \u00f7 b), never entered. This <strong>growth-WC distortion</strong> measures the GROWTH-WC addback (the cost of getting bigger) only \u2014 it is separate from the reported\u2212normalized earnings-quality gap (the efficiency windfall) shown in the chip beside it.</p>';
 
   body.innerHTML=h;
   if(head){
@@ -6752,6 +6842,15 @@ function yieldRating(y){
   if(y>=0.02) return {text:'Growth Priced In',cls:'growth',color:'#e67e22',cssColor:'var(--orange)',bg:'rgba(230,126,34,.15)'};
   return {text:'Expensive',cls:'expensive',color:'#e74c3c',cssColor:'var(--red)',bg:'rgba(231,76,60,.15)'};
 }
+
+// ===== B1 (index437): normalized ownership-yield lens -- shared helpers (display/state; never touches the engine). =====
+// Orthogonal display toggle, DEFAULT ON (normalization applied). window._repaYieldNormOff===true => reported lens.
+// normDelta = min(0, efficiencyWc) <= 0, read off the metrics/WC record (realProfitNorm - realProfit). Reported REP, k, b, r,
+// forward g and the golden fixture are UNTOUCHED; toggling OFF reproduces index436 exactly.
+window._repaYieldNormOff=window._repaYieldNormOff||false;
+function repaYieldNormOn(){return window._repaYieldNormOff!==true;}
+function repaNormDeltaFrom(m){if(m&&typeof m.realProfitNorm==='number'&&typeof m.realProfit==='number'){var d=m.realProfitNorm-m.realProfit;return isFinite(d)?Math.min(0,d):0;}return 0;}
+function repaYieldNormToggle(){window._repaYieldNormOff=(window._repaYieldNormOff!==true);try{if(typeof calculate==='function')calculate();}catch(e){}}
 
 // Shared helper: estimate maintenance CapEx from inputs
 function calcMaintCapex(capex,da,mcOverride,deprOnly){
@@ -8124,9 +8223,12 @@ function renderProfitCapitalSummary(years, rdMaintPct){
   });
   html+='</div>';
   if(_normG!=null && useCagr && !_rawEq){
-    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">Headline <em>historic g</em> reads <strong>'+pct(_normG,1)+'</strong> \u2014 same window, but it normalizes efficiency working-capital swings out of REP (the durable growth spine). The '+pct(profitRate,1)+' here is on the raw Full-D&amp;A floor, so the per-year values above add up.</div>';
+    var _dirTxt=(_normG>profitRate)
+      ? ' Normalized reads <em>higher</em> here, not lower \u2014 the early-year efficiency windfalls stripped were proportionally larger than the late-year ones, so normalizing pulled the start base down more than the end, which lifts the CAGR. Expected on a name like this, not an error.'
+      : ' Normalizing pulls g <em>down</em> here \u2014 the stripped windfalls sat proportionally more in the later years than at the start.';
+    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">The <b>canonical historic g</b> (the FTR headline \u2014 the number every other growth read reconciles to) reads <strong>'+pct(_normG,1)+'</strong> over this same window; it rides <b>normalized</b> REP (efficiency working-capital stripped), while the <strong>'+pct(profitRate,1)+'</strong> here is the <b>raw Full-D&amp;A</b> floor, so the per-year values above add up.'+_dirTxt+'</div>';
   } else if(_normG!=null && useCagr){
-    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">Matches the FTR headline <em>historic g</em> ('+pct(_normG,1)+') \u2014 same basis, same window.</div>';
+    html+='<div style="font-size:.66rem;color:var(--text3);line-height:1.5;margin-top:2px">Equal to the <b>canonical historic g</b> (the FTR headline, <strong>'+pct(_normG,1)+'</strong>) over this same window \u2014 the two coincide here because no efficiency working-capital was stripped across this history (normalized REP = raw Full-D&amp;A).</div>';
   }
   html+='</div>';
   el.innerHTML=html;
@@ -8283,7 +8385,7 @@ function renderRoiicAnalysis(){
       +'<div style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5">Endpoints vs depressed-base guard <span style="opacity:.8">(\u25bc = start &lt;0.85\u00d7 / end &lt;0.90\u00d7 of neighbors)</span>: start '+_brgMark(_stNeg,_stDep)+' \u00b7 end '+_brgMark(_enNeg,_enDep)+'</div>'
     +'</div>'
     +'<div style="font-size:.72rem;color:var(--text3);line-height:1.55;margin:11px 2px 0"><b style="color:var(--orange)">Endpoint read.</b> r is taken off these two endpoints'+_pathNote+'. The depressed-base guard above catches an atypical start or end year; a loss or trough <em>inside</em> the window it can\u2019t \u2014 the rolling 1/3/5-yr ROIIC below is the cross-check on whether r holds.</div>'
-    +'<div style="font-size:.74rem;color:var(--text2);background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:10px 13px;margin:14px 0 2px;line-height:1.55"><b style="color:var(--text)">Measured, not projected.</b> This is what the company actually compounded REP at over the loaded years \u2014 the backward read this card owns. FTR takes it forward and may temper it (the durable forward g runs lower than the b\u00b7r number when capital added is modest). g can read <em>below</em> the Profit CAGR above; that gap is growth the b\u00b7r identity doesn\u2019t capture \u2014 typically acquisitions.</div>'
+    +'<div style="font-size:.74rem;color:var(--text2);background:var(--card2);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:10px 13px;margin:14px 0 2px;line-height:1.55"><b style="color:var(--text)">Measured, not projected.</b> This is what the company actually compounded REP at over the loaded years \u2014 the backward read this card owns. FTR takes it forward and may temper it (the durable forward g runs lower than the b\u00b7r number when capital added is modest). g can read <em>below</em> the Profit CAGR above; that gap is growth the b\u00b7r identity doesn\u2019t capture \u2014 typically acquisitions. The app\u2019s <b>canonical</b> historic g is the FTR <em>normalized-REP CAGR</em>; this measured b\u00b7r is its reinvestment-identity counterpart over the same window \u2014 a different construct, so the two need not match.</div>'
     ):(''
     +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin:14px 0 0;font-size:.72rem;color:var(--text3);line-height:1.55"><b style="color:var(--orange)">r is non-meaningful here.</b> A measured r = \u0394REP \u00f7 \u0394IC needs at least two positive annual years with growing invested capital; here '+_nmReason+'. Lean on the <b style="color:var(--text2)">rolling 1/3/5-yr ROIIC</b> below and the canonical historic g.</div>'
     ));
@@ -8883,14 +8985,14 @@ function _caBridgeHtml(){
 // (1-b)*y remains for buybacks; factor F=(1+g)(1+(1-b)y) ~ (1+k) -- this module is the FTR's own k,
 // raced. The symmetric concept baseline F=(1+g)(1+y) stays available behind a labeled toggle
 // (valid when g is read as NATIVE/costless, the pure-concept framing).
-var _wbhState={tY:null,tG:null,bY:10,endPE:null,_peCalib:null,mult:100,ramp:20,scale:'lin'}; // index388: end-multiple is an ABSOLUTE EV/REP PE (endPE); mult retained but unused
+var _wbhState={tY:null,tG:null,tB:null,bY:10,endPE:null,_peCalib:null,mult:100,ramp:20,scale:'log',repLock:null}; // index388: end-multiple is an ABSOLUTE EV/REP PE (endPE); mult retained but unused. index431 (DGP2): scale defaults to LOG. index432 (DGP7): tB = user override of b (null=live). index434 (DGP1-price): repLock = REP fixed at "your y × today's EV" so y\u21c4price move together (null = unlinked, price shows today's).
 function _wbhLive(){
   var L=(typeof _repaFyLast!=='undefined')?_repaFyLast:null;
   if(!L||typeof L.y!=='number'||!isFinite(L.y)) return null;
   var g=(typeof L.growthRate==='number'&&isFinite(L.growthRate))?L.growthRate:((typeof L.k==='number'&&typeof L.b==='number')?(L.k-(1-L.b)*L.y):null);
   if(g===null||!isFinite(g)) return null;
   var b=(typeof L.b==='number'&&isFinite(L.b))?Math.max(0,Math.min(1,L.b)):0;
-  return {y:L.y,g:g,b:b,view:L.view||''};
+  return {y:L.y,g:g,b:b,view:L.view||'',ev:(typeof L.ev==='number'&&isFinite(L.ev))?L.ev:null}; // index435: carry the FTR EV so the y<->price lock always has a valid anchor
 }
 function _wbhFactor(y,g,keep){ return (1+g)*(1+keep*y); }
 function _wbhCum(y,F,T){ var c=0,r=100*y; for(var t=1;t<=T;t++){ c+=r; r*=F; } return c; }
@@ -8920,14 +9022,29 @@ function _wbhModel(){ // index377: one model computation shared by the full rend
   var live=_wbhLive(); if(!live) return null;
   var s=_wbhState;
   var tkr=''; try{ tkr=((document.getElementById('portfolioSelect')||{}).value)||''; }catch(e){}
-  var tY=(s.tY!==null)?s.tY:live.y, tG=(s.tG!==null)?s.tG:live.g;
-  var bY=s.bY/100, keepT=(1-live.b);
+  var tG=(s.tG!==null)?s.tG:live.g, tB=(s.tB!==null)?s.tB:live.b;
+  // index436: y<->price coupling primitives (computed BEFORE tY so a locked REP can drive the opening yield).
+  var _cyk=(typeof currentYearKey!=='undefined')?currentYearKey:null;
+  var _yr=(_cyk&&typeof yearStore!=='undefined')?yearStore[_cyk]:null;
+  var _fd=_yr?_yr.formData:null;
+  var _pxT=(_fd&&typeof getEffectivePrice==='function')?getEffectivePrice(_yr):null;
+  var _sh=_fd?(_fd.shares||0):0;
+  var _nd=_fd?((_fd.debt||0)-(_fd.cash||0)-(_fd.sti||0)):0;
+  var _evT=(_pxT!=null&&_sh>0)?(_pxT*_sh+_nd):((live&&live.ev!=null&&live.ev>0)?live.ev:null);
+  var _lnk=(s.repLock!=null&&isFinite(s.repLock));
+  // index436: when a REP is LOCKED, the opening yield is DERIVED from it at today's EV \u2014 so as price moves, the yield floats (same REP \u00f7 new EV), no reset needed. s.tY overrides only while the user is actively sliding y this session (not saved).
+  var tY=(s.tY!==null)?s.tY:((_lnk&&_evT!=null&&_evT>0)?(s.repLock/_evT):live.y);
+  var bY=s.bY/100, keepT=(1-tB); // index432 (DGP7): keep-fraction rides the (overridable) reinvestment rate b, not live.b directly
   var FT=_wbhFactor(tY,tG,keepT), FB=1+bY;
-  // index388: end-multiple is now an ABSOLUTE PE (EV/REP). R = endPE / today's PE (=1/y). peNow already
-  // lives in the FTR snapshot; reseed endPE to today's multiple on company/view/price change (calib guard),
-  // so a manual entry survives r/b nudges but a company switch re-anchors. Snap R to 1.00x inside a 2% band
-  // so "the multiple holds" keeps the line pure business exactly as before.
-  var peNow=(live.y>0)?(1/live.y):null;
+  // index388: end-multiple is now an ABSOLUTE PE (EV/REP). R = endPE / today's PE (=1/y). index448 (C3 /
+  // DG #18): peNow now rides the ACTIVE y (tY) rather than live.y, so a MANUAL y change (the lever, or a
+  // locked-REP-derived yield) re-flows today's multiple (1/y) in the END MULTIPLE panel below \u2014 previously
+  // it stayed pinned to the live Best-Guess yield and never moved. When y is untouched tY===live.y, so the
+  // default read is byte-identical; only a deliberate y override moves it (as a price change already does).
+  // The calib guard reseeds endPE to today's multiple on company/view/price change AND now on a manual y
+  // (y IS the inverse of the multiple, unlike an r/b nudge, which still leaves endPE alone). Snap R to 1.00x
+  // inside a 2% band so "the multiple holds" keeps the line pure business exactly as before.
+  var peNow=(tY>0)?(1/tY):null;
   var _peCalib=(tkr||'')+'|'+(live.view||'')+'|'+(peNow!=null?peNow.toFixed(2):'na');
   if(peNow!=null && (s.endPE==null || s._peCalib!==_peCalib)){ s.endPE=Math.round(peNow); s._peCalib=_peCalib; }
   var endPE=(s.endPE!=null)?s.endPE:(peNow!=null?Math.round(peNow):null);
@@ -8941,7 +9058,11 @@ function _wbhModel(){ // index377: one model computation shared by the full rend
     for(var t=0.2;t<=HZN;t+=dt){ var d=vt(t)-vb(t); if(prev<0&&d>=0){ tOver=t; break; } prev=d; } })();
   var cross=null,cT=0,cB=0,rT=100*tY,rB=100*bY;
   for(var t=1;t<=40;t++){ cT+=rT; cB+=rB; if(cross===null&&cT>=cB) cross=t; rT*=FT; rB*=FB; }
-  return {live:live,s:s,tName:tkr||'Ticker',tY:tY,tG:tG,bY:bY,keepT:keepT,FT:FT,FB:FB,peNow:peNow,endPE:endPE,R:R,ramp:ramp,held:held,HZN:HZN,vt:vt,vb:vb,tDblT:tDblT,tDblB:tDblB,tOver:tOver,cross:cross,rImpl:(live.b>0.001)?(live.g/live.b):null};
+  // index436: readouts that depend on tY (primitives now computed above so a locked REP drives the opening yield)
+  var _repAnc=_lnk?s.repLock:((_evT!=null&&tY>0)?tY*_evT:null); // $M REP: locked value, or (unlinked) the REP the current y implies at today's EV
+  var _pxImp=(_lnk&&_sh>0&&tY>0)?((s.repLock/tY-_nd)/_sh):_pxT; // price the stock must be for this y, given the fixed REP
+  return {live:live,s:s,tName:tkr||'Ticker',tY:tY,tG:tG,bY:bY,keepT:keepT,FT:FT,FB:FB,peNow:peNow,endPE:endPE,R:R,ramp:ramp,held:held,HZN:HZN,vt:vt,vb:vb,tDblT:tDblT,tDblB:tDblB,tOver:tOver,cross:cross,rImpl:(tB>0.001)?(tG/tB):null,tB:tB,raceOk:(tY>0&&isFinite(FT)&&(window._fyFwdBaseOk!==false)),
+    pxToday:_pxT,shares:_sh,netDebt:_nd,evToday:_evT,linked:_lnk,repLock:s.repLock,repAnchor:_repAnc,pxImplied:_pxImp}; // index430/434: raceOk gates the graph/face; the px* fields drive the y<->price lever.
 }
 // index388: shared END MULTIPLE readouts so the slider's lite repaint and the full render can never disagree.
 // Headline is the absolute EV/REP PE; the "x of today's" ratio rides along as secondary so the old intuition survives.
@@ -8956,6 +9077,8 @@ function _dgMultHint(m){
 }
 function _dgMultCol(m){ return m.held?'var(--text2)':(m.R>1?'var(--green)':'var(--red)'); }
 function _wbhFaceHtml(m){
+  var _yp=_wbhYpBlock(m); // index434: y<->price lever sits above the chips, always shown so y stays adjustable even when the race is undefined
+  if(!m||!m.raceOk) return _yp+_wbhErrHtml();   // index430: no doubling/value figures when y \u2264 0
   var crossColor='var(--text2)'; // index395 (Lou): demoted \u2014 the year cumulative REP draws level with a steady earner is context, not a verdict. The old semaphore painted '>40' RED on growth names (PLTR), emphasizing a number nobody buys a grower for; neutral now, the explanation in the sub-line carries the nuance.
   var multTxt=m.held?('if the multiple holds at today\u2019s '+(m.peNow!=null?Math.round(m.peNow)+'\u00d7':'level')):('with a '+(m.endPE!=null?m.endPE:m.R.toFixed(2))+'\u00d7 EV/REP exit over '+m.ramp+' yr');
   var face='<div class="df-note" style="margin-bottom:7px">$100 in <b>'+m.tName+'</b> at today\u2019s Best Guess vs $100 in a <b>'+pct(m.bY,1)+' steady earner</b> \u2014 three comparisons: how fast it doubles, when its profit draws level, what it\u2019s worth.</div>';
@@ -8964,7 +9087,7 @@ function _wbhFaceHtml(m){
   face+='<div class="df-chip"><div class="df-val" style="color:'+crossColor+'">'+(m.cross===1?'YR 1':(m.cross?('YR '+m.cross):'&gt;40'))+'</div><div class="df-lbl">MY REP FROM '+m.tName.toUpperCase()+' EQUALS MY REP FROM THE STEADY EARNER</div><div class="df-sub">'+(m.cross===1?'ahead on cumulative profit from year 1':'cumulative profit earned for you draws level \u2014 and by then '+m.tName+'\u2019s <b>annual</b> REP is far larger, so its price sits far higher unless the multiple converges down')+'</div></div>';
   face+='<div class="df-chip"><div class="df-val">$'+m.vt(m.HZN).toFixed(0)+' <span style="font-size:.7em;color:var(--text3);font-weight:600">vs $'+m.vb(m.HZN).toFixed(0)+'</span></div><div class="df-lbl">MARKET VALUE AT '+m.HZN+' YEARS</div><div class="df-sub">at your end-multiple setting \u00b7 the graph\u2019s two endpoints</div></div>';
   face+='</div>';
-  return face;
+  return _yp+face;
 }
 function _wbhMultLite(v){ // index388: slider oninput — endPE is an absolute EV/REP PE; repaint readout+graph+face WITHOUT rebuilding the body (slider node survives the drag)
   var pe=parseInt(v); if(isFinite(pe))_wbhState.endPE=pe;
@@ -8976,12 +9099,79 @@ function _wbhMultLite(v){ // index388: slider oninput — endPE is an absolute E
   var faceEl=document.getElementById('wbhFace'); if(faceEl)faceEl.innerHTML=_wbhFaceHtml(m);
   var ht=document.getElementById('wbhHeadTail'); if(ht)ht.textContent='\u2014 doubles in '+(m.tDblT!==null?('~'+m.tDblT.toFixed(1)+' yr'):'>40 yr')+' vs '+(m.tDblB?m.tDblB.toFixed(1):'\u2014')+' for a '+pct(m.bY,1)+' steady earner \u2014 benchmark set inside';
 }
+function _wbhMultResetToday(){ // index431 (DGP4): snap the END MULTIPLE back to today's EV/REP (the origin) \u2014 no more dragging until the chip greys
+  var m=_wbhModel(); if(!m||m.peNow==null) return;
+  _wbhState.endPE=Math.round(m.peNow);
+  _renderWbh();
+}
+function _dgEsc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
+function _dgTicker(){try{return ((document.getElementById('portfolioSelect')||{}).value)||'';}catch(e){return '';}}
+function _dgSavedFor(t){try{var p=getPortfolio();return (t&&p[t]&&p[t].dgSave)?p[t].dgSave:null;}catch(e){return null;}}
+function _wbhSaveScenario(){ // index433 (DGP1-save): persist the QUALITATIVE g/b + a why-note into the portfolio JSON (travels with Share/Backup, auto-restores on load). y is deliberately NOT saved — it tracks price.
+  var t=_dgTicker();
+  if(!t){ alert('Load a company from your portfolio first — the g/b save is stored on that company.'); return; }
+  var p=getPortfolio();
+  if(!p[t]){ alert(t+' is not in your saved portfolio yet. Save the company to the portfolio (the 💾 Save at the top) first, then save its g/b here.'); return; }
+  var m=_wbhModel(); if(!m) return;
+  var noteEl=document.getElementById('wbhNote');
+  p[t].dgSave={g:m.tG,b:m.tB,repLock:(_wbhState&&_wbhState.repLock!=null&&isFinite(_wbhState.repLock))?_wbhState.repLock:null,note:noteEl?noteEl.value:'',date:new Date().toISOString().slice(0,10)}; // index435: repLock (the price-lock / corrected REP) now saves + auto-restores alongside g/b
+  putPortfolio(p);
+  if(_wbhState)_wbhState._noteDraft=undefined;
+  _renderWbh();
+}
+function _wbhClearScenario(){
+  var t=_dgTicker(); if(!t) return;
+  var p=getPortfolio(); if(p[t]&&p[t].dgSave){ delete p[t].dgSave; putPortfolio(p); }
+  if(_wbhState){_wbhState.tG=null;_wbhState.tB=null;_wbhState.repLock=null;_wbhState._noteDraft=undefined;}
+  _renderWbh();
+}
+function _wbhSetY(v){ var f=parseFloat(v); if(_wbhState)_wbhState.tY=isFinite(f)?f/100:null; _renderWbh(); } // index434: y is the lever
+function _wbhLinkPrice(){ var m=_wbhModel(); if(!m||m.evToday==null||!(m.tY>0)) return; _wbhState.repLock=m.tY*m.evToday; _renderWbh(); } // freeze REP = your y × today's EV
+function _wbhUnlinkPrice(){ if(_wbhState)_wbhState.repLock=null; _renderWbh(); }
+// index449 (C4 / DG #19): mobile +/- steppers for the Dollar-Growth y / g / b / benchmark inputs. Each nudges by
+// the input's OWN step and fires that input's existing commit path (a native 'change' event), so state routing is
+// unchanged \u2014 the button is just a keyboard-free way to reach the same onchange. Clamps keep the two yields that
+// must stay positive (y, benchmark \u2014 both feed a 1/y multiple) above zero and hold b in 0-100 (same as its onchange).
+// 28px targets + touch-action:manipulation so the panel is usable on the phone without popping the numeric keyboard.
+function _dgStep(id,dir){
+  var el=document.getElementById(id); if(!el) return;
+  var step=parseFloat(el.step)||0.1, v=parseFloat(el.value); if(!isFinite(v))v=0;
+  var dp=(String(step).split('.')[1]||'').length;
+  var nv=parseFloat((v+dir*step).toFixed(dp));
+  if(id==='wbhBb') nv=Math.max(0,Math.min(100,nv));
+  else if(id==='wbhBy'||id==='wbhYp') nv=Math.max(step,nv);
+  el.value=nv;
+  el.dispatchEvent(new Event('change'));
+}
+function _dgStepBtn(id,dir){
+  var st='background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text2);font:700 .95rem/1 \'JetBrains Mono\',monospace;cursor:pointer;padding:0;width:28px;height:28px;min-width:28px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;touch-action:manipulation;-webkit-user-select:none;user-select:none';
+  return '<button type="button" aria-label="'+(dir<0?'decrease ':'increase ')+id+'" onclick="_dgStep(\''+id+'\','+dir+')" style="'+st+'">'+(dir<0?'\u2212':'+')+'</button>';
+}
+function _wbhYpBlock(m){ // index434 (DGP1-price): the y<->price lever, above the chips
+  if(!m) return '';
+  var yPct=(m.tY*100).toFixed(1), mono='font-family:JetBrains Mono,monospace';
+  var s='<div style="background:var(--card2);border:1px solid var(--accent2);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:.78rem">';
+  s+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">';
+  s+='<span style="font-weight:700;font-size:.62rem;letter-spacing:.4px;color:var(--accent2)">PRICE \u21c4 YIELD</span>';
+  s+='<span style="color:var(--text2);display:inline-flex;align-items:center;gap:4px">y '+_dgStepBtn('wbhYp',-1)+'<input type="number" step="0.1" id="wbhYp" value="'+yPct+'" onchange="_wbhSetY(this.value)" style="width:58px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 6px;color:var(--text);'+mono+'">'+_dgStepBtn('wbhYp',1)+' %</span>';
+  if(m.linked){
+    s+='<span style="color:var(--text3)">\u21c4</span><span style="color:var(--text);font-weight:700;'+mono+'">'+(m.pxImplied!=null?('$'+m.pxImplied.toFixed(2)):'\u2014')+'</span><span style="font-size:.66rem;color:var(--text3)">implied price</span>';
+    s+='<span onclick="_wbhUnlinkPrice()" style="cursor:pointer;color:var(--accent2);font-size:.68rem;margin-left:auto">unlink</span></div>';
+    s+='<div style="font-size:.64rem;color:var(--text3);margin-top:5px;line-height:1.5">\uD83D\uDD12 <b>Locked</b> \u2014 REP fixed at <b>'+(m.repLock!=null?fmtM(m.repLock):'\u2014')+'</b> (your judgment, price-independent). y opens at the yield this REP gives at today\u2019s price and <b>floats as the price moves</b> \u2014 no reset. Slide y and the price above is what the stock must be for that yield at this REP; move y until the grower curve overlaps the benchmark \u2014 that price is your buy/sell trigger.</div>';
+  } else {
+    s+='<span style="color:var(--text3)">\u00b7 today <b style="color:var(--text2);'+mono+'">'+(m.pxToday!=null?('$'+m.pxToday.toFixed(2)):'\u2014')+'</b></span>';
+    s+='<span onclick="_wbhLinkPrice()" style="cursor:pointer;background:var(--accent2);color:var(--bg);border-radius:5px;padding:3px 9px;font-size:.68rem;font-weight:700;margin-left:auto">\uD83D\uDD17 lock y to today\u2019s price</span></div>';
+    s+='<div style="font-size:.64rem;color:var(--text3);margin-top:5px;line-height:1.5">This y at today\u2019s <b>'+(m.pxToday!=null?('$'+m.pxToday.toFixed(2)):'\u2014')+'</b> implies REP <b>'+(m.repAnchor!=null?fmtM(m.repAnchor):'\u2014')+'</b>. Best-Guess sometimes over/understates it (working capital, etc.) \u2014 correct y to your true read, then <b>lock</b>: REP freezes and sliding y moves the implied price (raise y \u2192 the cheaper price you\u2019d demand). Contained here \u2014 nothing migrates.</div>';
+  }
+  s+='</div>';
+  return s;
+}
 function _renderWbh(){
   var card=document.getElementById('wbhCard'); if(!card) return;
   var m=_wbhModel();
   if(!m){ card.style.display='none'; return; }
   card.style.display='block';
-  var s=m.s, tName=m.tName, live=m.live, tY=m.tY, tG=m.tG, bY=m.bY, FT=m.FT, FB=m.FB, R=m.R, held=m.held, peNow=m.peNow, endPE=m.endPE, cross=m.cross;
+  var s=m.s, tName=m.tName, live=m.live, tY=m.tY, tG=m.tG, tB=m.tB, bY=m.bY, FT=m.FT, FB=m.FB, R=m.R, held=m.held, peNow=m.peNow, endPE=m.endPE, cross=m.cross;
   var faceEl=document.getElementById('wbhFace'); if(faceEl)faceEl.innerHTML=_wbhFaceHtml(m);
   var ht=document.getElementById('wbhHeadTail'); if(ht)ht.textContent='\u2014 doubles in '+(m.tDblT!==null?('~'+m.tDblT.toFixed(1)+' yr'):'>40 yr')+' vs '+(m.tDblB?m.tDblB.toFixed(1):'\u2014')+' for a '+pct(m.bY,1)+' steady earner \u2014 benchmark set inside';
   // ---- body ----
@@ -8989,14 +9179,28 @@ function _renderWbh(){
   body+='<div style="font-size:.8rem;color:var(--text2);line-height:1.6;margin-bottom:12px">Both racers start at <b>$100</b> \u2014 no share price needed. '+tName+' runs at today\u2019s Best Guess economics; the steady earner is the fairly priced alternative you\u2019d actually demand. The <b>end-multiple slider</b> is the only thing that can bend '+tName+'\u2019s line off its business: the steady earner never re-rates \u2014 nobody ever bids it up. That is its definition.</div>';
   // source boxes
   body+='<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:.74rem">';
-  body+='<div style="flex:1;min-width:250px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px"><div style="color:var(--accent2);font-weight:700;font-size:.64rem;letter-spacing:.4px;margin-bottom:5px">'+tName.toUpperCase()+' \u2014 TODAY\u2019S BEST GUESS'+((s.tY!==null||s.tG!==null)?' <span style="color:var(--orange)">(edited)</span>':'')+'</div>'
-    +'y% <input type="number" step="0.1" id="wbhTy" value="'+(tY*100).toFixed(1)+'" style="width:58px"> &nbsp;g% <input type="number" step="0.5" id="wbhTg" value="'+(tG*100).toFixed(1)+'" style="width:58px"> <span style="cursor:pointer;color:var(--accent2);font-size:.68rem" onclick="_wbhState.tY=null;_wbhState.tG=null;_renderWbh();">reset to live</span>'
-    +'<div style="font-size:.64rem;color:var(--text3);margin-top:6px;line-height:1.5">'+pct(live.y,1)+' = Best Guess REP yield at today\u2019s price \u00b7 '+pct(live.g,1)+' = the FTR\u2019s <b>forward</b> growth'+(m.rImpl!==null?' (built as retain '+pct(live.b,0)+' \u00d7 reinvest at '+pct(m.rImpl,1)+')':'')+' \u2014 not history, whatever the g-slider above says. Edit freely.</div></div>';
+  body+='<div style="flex:1;min-width:250px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px"><div style="color:var(--accent2);font-weight:700;font-size:.64rem;letter-spacing:.4px;margin-bottom:5px">'+tName.toUpperCase()+' \u2014 TODAY\u2019S BEST GUESS'+((s.tY!==null||s.tG!==null||s.tB!==null)?' <span style="color:var(--orange)">(edited)</span>':'')+'</div>'
+    +'<span style="font-size:.66rem;color:var(--text3)">y is the lever above &nbsp;\u2022&nbsp;</span> <span style="display:inline-flex;align-items:center;gap:4px">g% '+_dgStepBtn('wbhTg',-1)+'<input type="number" step="0.5" id="wbhTg" value="'+(tG*100).toFixed(1)+'" style="width:52px">'+_dgStepBtn('wbhTg',1)+'</span> &nbsp;<span style="display:inline-flex;align-items:center;gap:4px">b% '+_dgStepBtn('wbhBb',-1)+'<input type="number" step="0.5" id="wbhBb" value="'+(tB*100).toFixed(1)+'" style="width:52px">'+_dgStepBtn('wbhBb',1)+'</span> <span style="cursor:pointer;color:var(--accent2);font-size:.68rem" onclick="_wbhState.tY=null;_wbhState.tG=null;_wbhState.tB=null;_renderWbh();">reset to live</span>'
+    +'<div style="font-size:.64rem;color:var(--text3);margin-top:6px;line-height:1.5">'+pct(live.y,1)+' = Best-Guess REP yield \u00b7 '+pct(live.g,1)+' = FTR <b>forward</b> g \u00b7 '+pct(live.b,0)+' = <b>growth-reinvestment b</b> (from the FTR: growth capex + growth WC + after-tax growth R&amp;D \u00f7 REP \u2014 cash hoarding &amp; buybacks are returns, not growth, so they are NOT in b).'+(m.rImpl!==null?' Your g = b \u00d7 <b>r\u2248'+pct(m.rImpl,1)+'</b> (implied return on each reinvested dollar \u2014 sanity-check it).':'')+' Edit y / g / b freely; "reset to live" restores all three. Lower b = more native (you keep more yield); higher b = more of the yield is spent to buy the growth.</div></div>';
   var chipY=function(v){ return '<span style="cursor:pointer;padding:2px 9px;border-radius:6px;border:1px solid var(--border);font-size:.7rem;'+(s.bY===v?'background:var(--card2);font-weight:700;color:var(--text)':'color:var(--text3)')+'" onclick="_wbhState.bY='+v+';_renderWbh();">'+v+'%</span>'; };
   body+='<div style="flex:1;min-width:250px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px"><div style="color:var(--text2);font-weight:700;font-size:.64rem;letter-spacing:.4px;margin-bottom:5px">YOUR BENCHMARK \u2014 STEADY EARNER</div>'
-    +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+chipY(6)+chipY(8)+chipY(10)+chipY(12)+'<span style="font-size:.68rem;color:var(--text3)">or</span> <input type="number" step="0.5" id="wbhBy" value="'+s.bY+'" style="width:58px"> %</div>'
+    +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+chipY(5)+chipY(7)+chipY(10)+chipY(12)+chipY(15)+'<span style="font-size:.68rem;color:var(--text3)">or</span> <span style="display:inline-flex;align-items:center;gap:4px">'+_dgStepBtn('wbhBy',-1)+'<input type="number" step="0.5" id="wbhBy" value="'+s.bY+'" style="width:58px">'+_dgStepBtn('wbhBy',1)+'</span> %</div>'
     +'<div style="font-size:.64rem;color:var(--text3);margin-top:6px;line-height:1.5">The boring alternative you\u2019d actually demand \u2014 a fairly priced earner the market never bids up, compounding at exactly its yield: a flat <b>'+(100/s.bY).toFixed(1)+'\u00d7</b> EV/REP (1\u00f7'+s.bY+'%) that never re-rates. 10% is a default, not a claim: set it to your own target.</div></div>';
   body+='</div>';
+  // index433 (DGP1-save): qualitative g/b save + why-note, right here so the rationale sits with the numbers.
+  var _dgSv=_dgSavedFor(tName);
+  var _noteVal=(_wbhState&&_wbhState._noteDraft!=null)?_wbhState._noteDraft:(_dgSv?(_dgSv.note||''):'');
+  body+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:.72rem">';
+  if(_dgSv){
+    body+='<div style="color:var(--orange);font-weight:700;font-size:.66rem;letter-spacing:.3px;margin-bottom:6px">\u270d\uFE0F g &amp; b MANUALLY SET \u2014 saved '+_dgEsc(_dgSv.date||'')+'. Qualitative judgments, not the app\u2019s live figures (g '+pct(_dgSv.g,1)+' \u00b7 b '+pct(_dgSv.b,1)+(( _dgSv.repLock!=null)?(' \u00b7 \uD83D\uDD12 REP locked '+fmtM(_dgSv.repLock)):'')+').</div>';
+  }
+  body+='<div style="color:var(--text2);font-weight:600;font-size:.62rem;letter-spacing:.3px;margin-bottom:4px">WHY THESE g &amp; b?</div>';
+  body+='<textarea id="wbhNote" rows="2" oninput="if(_wbhState)_wbhState._noteDraft=this.value;" placeholder="Your reasoning \u2014 or a dropped doc summary / reference. Saved to the portfolio alongside g and b, so future-you knows these were chosen, not measured." style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:inherit;font-size:.72rem;line-height:1.5;resize:vertical">'+_dgEsc(_noteVal)+'</textarea>';
+  body+='<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:7px">';
+  body+='<button onclick="_wbhSaveScenario()" style="background:var(--accent2);border:none;border-radius:6px;padding:6px 12px;color:var(--bg);font-weight:700;font-size:.72rem;cursor:pointer">\uD83D\uDCBE Save g / b + note for '+_dgEsc(tName)+'</button>';
+  if(_dgSv) body+='<span onclick="_wbhClearScenario()" style="cursor:pointer;color:var(--text3);font-size:.68rem">clear saved (back to live)</span>';
+  body+='<span style="font-size:.63rem;color:var(--text3)">saves to the portfolio \u00b7 travels with Share/Backup \u00b7 includes the \uD83D\uDD12 price lock if set \u00b7 y itself is the live lever, not saved</span>';
+  body+='</div></div>';
   // multiple control (slider persists across drags: oninput = lite repaint, onchange = full render)
   var multCol=_dgMultCol(m);
   var _dgMax=Math.max(200,Math.ceil((peNow!=null?peNow:100)*1.1)); // index388: adaptive PE ceiling (mirrors fyMultSlider); floor 5x, override for anything beyond
@@ -9008,6 +9212,7 @@ function _renderWbh(){
     body+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 3px">';
     body+='<input type="range" id="wbhMult" min="5" max="'+_dgMax+'" step="1" value="'+(endPE!=null?endPE:Math.round(peNow))+'" style="flex:1;min-width:180px;accent-color:var(--accent);cursor:pointer" oninput="_wbhMultLite(this.value);" onchange="_renderWbh();">';
     body+='<span style="font-size:.66rem;color:var(--text3);white-space:nowrap">or type <input type="number" id="wbhMultInput" step="1" min="0" value="'+(endPE!=null?endPE:Math.round(peNow))+'" style="width:60px"> \u00d7</span>';
+    body+=' <span onclick="_wbhMultResetToday()" title="Snap the end multiple back to today\u2019s EV/REP \u2014 the origin (line stays pure business)" style="color:var(--accent2);cursor:pointer;font-size:.66rem;white-space:nowrap">\u21bb today ('+Math.round(peNow)+'\u00d7)</span>';
     body+='</div>';
     body+='<div style="font-size:.62rem;color:var(--text3);margin:0 0 2px">today\u2019s EV/REP \u2248 <b>'+Math.round(peNow)+'\u00d7</b> \u00b7 set where the multiple lands at the '+s.ramp+'-yr horizon; the typed box takes any value beyond the slider (e.g. a 200\u00d7 grower normalizing to 20\u201330\u00d7)</div>';
   }
@@ -9054,12 +9259,17 @@ function _renderWbh(){
   var race=document.getElementById('wbhRace'); if(race)race.addEventListener('toggle',function(){_wbhState._raceOpen=this.open;});
   var ty=document.getElementById('wbhTy'); if(ty)ty.onchange=function(){var v=parseFloat(this.value);_wbhState.tY=isFinite(v)?v/100:null;_renderWbh();};
   var tg=document.getElementById('wbhTg'); if(tg)tg.onchange=function(){var v=parseFloat(this.value);_wbhState.tG=isFinite(v)?v/100:null;_renderWbh();};
+  var tb=document.getElementById('wbhBb'); if(tb)tb.onchange=function(){var v=parseFloat(this.value);_wbhState.tB=isFinite(v)?Math.max(0,Math.min(100,v))/100:null;_renderWbh();}; // index432 (DGP7): b lever, clamped 0\u2013100% (over-reinvestment/financing cost is the FTR's job, not this simple race)
   var by=document.getElementById('wbhBy'); if(by)by.onchange=function(){var v=parseFloat(this.value);if(isFinite(v))_wbhState.bY=v;_renderWbh();};
   var mi=document.getElementById('wbhMultInput'); if(mi)mi.onchange=function(){var v=parseInt(this.value);if(isFinite(v)&&v>0){_wbhState.endPE=v;_renderWbh();}}; // index388: manual end-multiple override (absolute EV/REP)
 }
 // index377: the graph, now driven by the shared model (10-yr horizon per Lou; the income table still runs to 20).
 // Log gridlines sit at DOUBLINGS ($100 - $200 - $400 ...) so each crossing is a doubling clock and slope is speed.
+function _wbhErrHtml(){ // index430 (LYFT Bug 1, real target): y \u2264 0 has no positive base to compound \u2014 show an error, never a graph.
+  return '<div style="background:var(--card2);border:1px solid var(--orange);border-left:4px solid var(--orange);border-radius:8px;padding:12px 14px;font-size:.78rem;color:var(--text2);line-height:1.6">\u26a0 <strong style="color:var(--orange)">Starting yield (y) is \u2264 0.</strong> The $100 growth race is undefined \u2014 a non-positive REP yield has no positive base to compound. This is the honest read when Real Economic Profit is negative (e.g. LYFT on some bases) or when y is set negative by hand. Raise y above 0, switch to a basis with positive REP, or hit \u201creset to live\u201d to restore the panel.</div>';
+}
 function _wbhGraph(m){
+  if(!m||!m.raceOk) return _wbhErrHtml();   // index430: no race to draw when y \u2264 0
   var tName=m.tName,vt=m.vt,vb=m.vb,tDblT=m.tDblT,tDblB=m.tDblB,tOver=m.tOver,HZN=m.HZN,scale=m.s.scale;
   var W=700,H=250,L=52,Rr=690,T=16,B=222;
   var pts1=[],pts2=[],vmax=0,vmin=Infinity;
@@ -9911,7 +10121,16 @@ function renderRoiicBucketChart(data, opts){
 function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYield,unleverYield,realPE,gap,interest,taxPaid,totalAssets,rating,now,debt,cash,sti){
   var d='# Real Economic Profit Analysis: '+ticker+'\n';
   d+='Generated: '+now+' | Share Price: $'+price+' | Analysis Period: '+years[0].label+(years.length>1?' – '+latest.label:'')+'\n\n---\n\n';
-  d+='## Executive Summary\n\nReal Ownership Yield on Enterprise Value (Full D&A): '+pct(realYield)+' — '+rating+'\n';
+  var _mdND=repaNormDeltaFrom(latest);
+  var _mdRYNorm=ev>0?((latest.realProfit+_mdND)/ev):realYield;
+  var _mdNormRating=yieldRating(_mdRYNorm).text, _mdRepRating=yieldRating(realYield).text;
+  d+='## Executive Summary\n\n';
+  if(repaYieldNormOn()&&_mdND<-0.05){
+    d+='Real Ownership Yield on Enterprise Value (Full D&A, normalized): '+pct(_mdRYNorm)+' — '+_mdNormRating+'\n';
+    d+='Reported (pre-WC-normalization): '+pct(realYield)+' — '+_mdRepRating+'  ·  normalization strips a '+fmtM(-_mdND)+' working-capital windfall (reported REP '+fmtM(latest.realProfit)+' → normalized REP '+fmtM(latest.realProfit+_mdND)+')\n';
+  }else{
+    d+='Real Ownership Yield on Enterprise Value (Full D&A): '+pct(realYield)+' — '+rating+'\n';
+  }
   if(latest.realProfitLight!==null){
     var realYieldLightMD=latest.realProfitLight/ev;
     var ratingLightMD=yieldRating(realYieldLightMD).text;
@@ -9944,7 +10163,9 @@ function generateMarkdown(ticker,price,years,latest,shares,ev,marketCap,realYiel
   var mdEquity=latest.formData.equity||0;
   var mdDE=mdEquity>0?debt/mdEquity:0;
   var mdDETag=mdDE>0?' · D/E '+mdDE.toFixed(1)+'x':'';
-  d+='| **Real Ownership Yield** | **'+pct(realYield)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+mdDETag+' | What you\'d earn buying the whole company, debt and all |\n\n';
+  var _mdActiveRY=repaYieldNormOn()?_mdRYNorm:realYield;
+  d+='| **Real Ownership Yield** | **'+pct(_mdActiveRY)+'** | REP/EV '+(latest.realProfit>0?(ev/latest.realProfit).toFixed(1)+'x':'N/A')+mdDETag+' | What you\'d earn buying the whole company, debt and all |\n\n';
+  if(_mdND<-0.05){ d+='> Real Ownership Yield shown '+(repaYieldNormOn()?'**normalized** (working-capital windfall stripped); reported was '+pct(realYield):'**reported**; normalized is '+pct(_mdRYNorm))+'.\n\n'; }
   // Bridge explanations
   var mdNetDebt=debt-cash-sti;
   var mdNetDebtB=mdNetDebt/1000;
@@ -10145,6 +10366,10 @@ function exportBrief(){
   var debt=latest.debt||0;
   var ev=marketCap+debt-(cash+sti);
   var realYield=ev>0?latest.realProfit/ev:0;
+   var _exND=repaNormDeltaFrom(latest);
+   var _exNormOn=repaYieldNormOn();
+   var realYieldNorm=ev>0?((latest.realProfit+_exND)/ev):realYield;
+   var _exHeadYield=_exNormOn?realYieldNorm:realYield;
   var unleverYield=ev>0?(latest.realProfit+(latest.formData.interest||0))/ev:0;
   var realPE=shares>0?price/(latest.realProfit/shares):0;
   var gap=latest.realProfit-latest.reportedFCF;
@@ -11073,10 +11298,11 @@ function exportBrief(){
   }else if(latest.deprOnly>0&&latest.da>0&&latest.deprOnly>=latest.da*0.95){
     flags.push({type:'ok',text:'<strong>✓ Views Aligned:</strong> Depreciation ≈ D&A. Minimal intangible amortization — Full D&A and All Amortization Added Back views would be nearly identical.'});
   }
-  if(realYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — strong cash generation relative to price.'});
-  else if(realYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(realYield)+' — fair cash generation for the price.'});
-  else if(realYield>=0.02)flags.push({type:'caution',text:'<strong>⚡ Yield:</strong> '+pct(realYield)+' — growth priced in, need earnings growth to justify.'});
-  else flags.push({type:'warn',text:'<strong>⚠ Yield:</strong> '+pct(realYield)+' — expensive, market pricing exceptional growth.'});
+  if(_exHeadYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(_exHeadYield)+' — strong cash generation relative to price.'});
+  else if(_exHeadYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield:</strong> '+pct(_exHeadYield)+' — fair cash generation for the price.'});
+  else if(_exHeadYield>=0.02)flags.push({type:'caution',text:'<strong>⚡ Yield:</strong> '+pct(_exHeadYield)+' — growth priced in, need earnings growth to justify.'});
+  else flags.push({type:'warn',text:'<strong>⚠ Yield:</strong> '+pct(_exHeadYield)+' — expensive, market pricing exceptional growth.'});
+   if(_exNormOn&&_exND<-0.05){flags.push({type:'caution',text:'<strong>◆ Normalized yield:</strong> Headline yield shown normalized at '+pct(realYieldNorm)+' (reported '+pct(realYield)+') — a '+fmtM(-_exND)+' non-recurring working-capital release is stripped. Reported REP '+fmtM(latest.realProfit)+' → normalized '+fmtM(latest.realProfit+_exND)+'.'});}
 
   flags.forEach(function(f){h+='<div class="flag '+f.type+'">'+f.text+'</div>'});
 
@@ -12648,7 +12874,10 @@ var bestGuessNeedsAttention=true; // index30 (B4 2a): raised on every load; clea
 var _currentSavedSettings=null; // index31 (B4): cached portfolio[ticker].settings for the current company so getBgState reads it without parsing localStorage every slider tick; set on load/save, cleared for a new company
 var _bgMode='default'; // index34 (B4): provenance of the live assumptions — 'saved' (loaded-saved / just-saved / reverted), 'default' (loaded-unsaved / reset to default), 'custom' (changed via slider/preset, not yet saved). The highlight follows this, NOT value coincidence.
 function resetFyViewDefault(){if(typeof _fyView!=='undefined')_fyView='fullda';var s=document.getElementById('fyView');if(s)s.value='fullda';var c=document.getElementById('forwardYieldCard');if(c)c.dataset.fySeedSig='';} // index422 (Lou): snap to Full D&A on every company load — the pure (non-mixed) k is the first read. (index396: prevents view leaking ticker-to-ticker; the default is now Full D&A, not Best Guess.)
-function resetDollarGrowthDefault(){var h=document.querySelector('#ddWbh .dd-header'),b=document.querySelector('#ddWbh .dd-body');if(h)h.classList.add('open');if(b)b.classList.add('open');} // index395 (Lou): Dollar Growth defaults EXPANDED. Static DOM, so a collapse would otherwise leak ticker-to-ticker \u2014 same index380 pattern as resetCapAllocDefaults below.
+function resetForwardSlidersDefault(){ // index428 (A3 / LYFT Bug 2): snap the FTR r-slider back to the g÷b anchor on every company load. The reSeed block (fySeedSig) resets the #fyR input, but _fyrState.rVal (the slider's session value) survives and _fyrSync re-applies A's manual r over the seed, so B opened on A's r. Set rVal=null (identical to _fyrSetAnchor's state) without an extra render — the load sequence renders next. b resets via reSeed; the multiple-lever self-recalibrates on its calib key at render (~line 4261); neither carries over.
+  if(typeof _fyrState!=='undefined'&&_fyrState)_fyrState.rVal=null;
+}
+function resetDollarGrowthDefault(){var h=document.querySelector('#ddWbh .dd-header'),b=document.querySelector('#ddWbh .dd-body');if(h)h.classList.add('open');if(b)b.classList.add('open');if(typeof _wbhState!=='undefined'&&_wbhState){_wbhState.tY=null;_wbhState.tG=null;_wbhState.tB=null;_wbhState._noteDraft=undefined;_wbhState.repLock=null;}} // index395 (Lou): Dollar Growth defaults EXPANDED. Static DOM, so a collapse would otherwise leak ticker-to-ticker \u2014 same index380 pattern as resetCapAllocDefaults below. index430 (LYFT Bug 2, real target): also clear the edited y/g overrides (_wbhState.tY/.tG) so they stop carrying company-to-company \u2014 back to the live Best-Guess y and FTR forward g on load. index432 (DGP7): also clear the b override (tB). bY (the steady-earner hurdle) is a standing preference, intentionally NOT reset. endPE self-recalibrates on its _peCalib key.
 function resetCapAllocDefaults(){var w=document.getElementById('roiicWrap');if(w)w.style.display='block';var _cc=document.getElementById('roiicCard');var _ca=_cc?_cc.querySelector('.collapse-arrow'):null;if(_ca)_ca.textContent='\u25bc';document.querySelectorAll('#roiicCard details.ca-card').forEach(function(d){d.open=(d.id!=='caCard3'&&d.id!=='caCard7');});} // index380 (Lou): the CA card and its numbered mini-panels are static DOM, so open/closed toggles leaked from ticker to ticker (loading a company repaints their contents, never their state). Canonical default restored on every company load. index381 (Lou): mini-panels 4 (caCard3, ROIC metrics) and 5 (caCard7, ROIC-over-time) default collapsed, matching their original markup; the rest open. Dropdowns inside capBaseBridge need no reset -- that block is rebuilt (closed) on every calculate().
 function resetBestGuessDefaults(){rdMaintPct=70;adjAmortPct=70;rdCurrentPreset=null;adjAmortPresetId=null;bestGuessNeedsAttention=true;_bgMode='default';var _r=document.getElementById('adjRdSlider');if(_r)_r.value=30;var _a=document.getElementById('adjAmortSlider');if(_a)_a.value=70;var _m=document.getElementById('maintMultiplier');if(_m)_m.value='1.05';} // index28 (B4): generalized default on every ticker load — 70% amortization addback, 30% R&D growth, no preset highlighted (= unconfirmed default). No auto-detect. index29: + D&A multiplier reset to 1.05 (assumption applied to the 10-K D&A; never touches the data). index30: + raise attention flag (unconfirmed until Save). A change never carries across companies.
 function applyBestGuessSettings(s){ // index30 (B4 2a): restore a company's SAVED assumptions on load; flag clears because the analyst decided them earlier
@@ -12977,6 +13206,31 @@ function calculate(opts){opts=opts||{};
   var marketCap=price*shares;
   var ev=marketCap+debt-(cash+sti);
   var realYield=realProfit/ev;
+  // ===== B1 (index437): normalized ownership yield -- the default headline lens. =====
+  // normDelta = min(0, efficiencyWc) <= 0, read inline off the WC record (never touches the engine).
+  // Normalized REP = Full-D&A REP + normDelta; realYieldNorm = (realProfit + normDelta)/EV <= realYield.
+  var _vWcNormDelta=(_vWcRec&&typeof _vWcRec.normDelta==='number'&&isFinite(_vWcRec.normDelta))?Math.min(0,_vWcRec.normDelta):0;
+  var realProfitNormV=realProfit+_vWcNormDelta;
+  var realYieldNorm=ev>0?realProfitNormV/ev:realYield;
+  var _yNormOn=repaYieldNormOn();
+  var ratingYield=_yNormOn?realYieldNorm:realYield; // active ownership yield -- drives headline rating, verdict class, Yield-Assessment + T-bill flags
+  // B2 (index439): reported<->normalized divergence -- one-bit earnings-quality signal (card footnote + a verdict flag).
+  var _wcDivGap=-_vWcNormDelta;                              // $ of non-recurring WC release stripped (>=0)
+  var _wcDivPct=(realProfit>0)?(_wcDivGap/realProfit):null;   // as % of reported Full-D&A REP
+  var _wcDivFull=(realProfit>0&&realYieldNorm<=0);            // normalized flips <=0 => reported yield entirely WC-funded
+  var _wcDivTier=_wcDivFull?'full':((_wcDivPct!=null&&_wcDivPct>=0.25)?'warn':((_wcDivPct!=null&&_wcDivPct>=0.10)?'caution':'none'));
+  var _wcDivPctTxt=(_wcDivPct!=null?pct(_wcDivPct,0):'');
+  // B3 (index443): cumulative lifetime WC-borrowed gap. Sum (reported - normalized) REP over ANNUAL filings only
+  // (skip TTM/Q/H by label -- a TTM overlaps its latest annual and would double-count; same annual-only rule as the
+  // buyback tracker). reported = cumulative reported REP; borrowed = WC-release-sourced; durable = reported - borrowed
+  // (= cumulative NORMALIZED REP). durable can go NEGATIVE (LYFT) when releases exceed cumulative reported -- that is
+  // the signal, so we show reported->durable rather than a % that blows up when cumulative reported is small/negative.
+  var _wcCumBorrow=0,_wcCumRep=0,_wcCumN=0,_wcCumHas=false;
+  try{ enrichYears(getActiveYearKeys()).forEach(function(mm){
+    if(mm.isInterim||/^(TTM|Q|H)/i.test(String(mm.label||'')))return;
+    if(typeof mm.realProfit==='number'){ _wcCumN++; _wcCumRep+=mm.realProfit; if(typeof mm.realProfitNorm==='number'){ _wcCumBorrow+=(mm.realProfit-mm.realProfitNorm); _wcCumHas=true; } }
+  }); }catch(e){}
+  var _wcCumDur=_wcCumRep-_wcCumBorrow;
   var unleverYield=unleverProfit/ev;
   var realPE=price/(realProfit/shares);
   var reportedFCF=cfo-capex;
@@ -12987,7 +13241,7 @@ function calculate(opts){opts=opts||{};
   var investedCapital=equity>0?(equity+debt-cash-sti-verdictNcSec):0;
   var realROIC=investedCapital>0?realProfit/investedCapital:0;
 
-  var yr=yieldRating(realYield);
+  var yr=yieldRating(ratingYield); // B1: verdict class + headline rating follow the ACTIVE (normalized-default) yield
   var rating=yr.text,ratingClass=yr.cls;
 
   document.getElementById('verdict').className='verdict '+ratingClass;
@@ -13010,8 +13264,8 @@ function calculate(opts){opts=opts||{};
   var realPERatio=(repPerShare>0)?price/repPerShare:null;
   var yieldViewLabel=(hasLightView&&realProfitLight!==null)?'excl. acquisition amortization — may not be a real cash cost':'Full D&A';
   var yieldViewShort=(hasLightView&&realProfitLight!==null)?'All Amortization Added Back':'Full D&A';
-  // Real Ownership Yield (REP/EV) — this is the existing main yield
-  var ownershipYield=realYield;
+  // Real Ownership Yield (REP/EV). ownershipYield tracks the ACTIVE lens (normalized by default; index437 B1).
+  var ownershipYield=_yNormOn?realYieldNorm:realYield;
   var netDebt=debt-cash-sti;
 
   // ===== VERDICT ZONE =====
@@ -13106,6 +13360,54 @@ function calculate(opts){opts=opts||{};
 
   // ===== THREE REP PANELS (the hero) =====
 
+    // ===== B1-num (index438): Real Ownership Yield headline card -- TWO normalized lenses side by side (Full D&A | Best Guess). =====
+  // Decision N left the yield-headline numerator open; Lou (2026-07-19): show BOTH in one box. normDelta (efficiency-WC
+  // strip) is identical for both columns; the toggle flips both normalized<->reported. The verdict class + flags follow
+  // the Full D&A column (ratingYield, unchanged). Yield Ladder / three-tier / matrix stay on reported REP by design.
+  var _oyhStrip=((-_vWcNormDelta)>0.05);
+  var _oyhYrBg=(ev>0?p3REP/ev:0);                 // Best Guess reported yield (== p3Yield)
+  var _oyhNormBgRep=p3REP+_vWcNormDelta;          // Best Guess normalized REP
+  var _oyhYnBg=(ev>0?_oyhNormBgRep/ev:_oyhYrBg);  // Best Guess normalized yield
+  function _oyhCol(lbl,yA,yO,ra,repRep,repNorm){
+    var s='<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px 14px">';
+    s+='<div style="font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">'+lbl+'</div>';
+    s+='<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">';
+    s+='<div style="font-family:JetBrains Mono,monospace;font-size:2.1rem;font-weight:800;line-height:1;color:'+ra.cssColor+'">'+pct(yA)+'</div>';
+    s+='<div style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.65rem;font-weight:700;background:'+ra.bg+';color:'+ra.cssColor+'">'+ra.text+'</div>';
+    s+='</div>';
+    s+='<div style="font-size:.72rem;color:var(--text3);margin-top:5px">'+(_yNormOn?'reported':'normalized')+' <strong style="color:var(--text2)">'+pct(yO)+'</strong></div>';
+    s+='<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;color:var(--text3);margin-top:4px">REP '+fmtM(repRep)+(_oyhStrip?' <span style="color:var(--orange)">\u2192</span> '+fmtM(repNorm):'')+'</div>';
+    return s+'</div>';
+  }
+  verdictHTML+='<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px">';
+  verdictHTML+='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">';
+  verdictHTML+='<div style="font-size:.8rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Real Ownership Yield <span style="color:var(--text3);text-transform:none;font-weight:600">\u00b7 '+(_yNormOn?'normalized ':'')+'REP \u00f7 EV</span></div>';
+  verdictHTML+='<button onclick="repaYieldNormToggle()" title="Toggle the ownership-yield lens for both columns: normalized strips a non-recurring working-capital cash release; reported is raw REP over EV." style="font-size:.66rem;font-weight:700;letter-spacing:.3px;background:'+(_yNormOn?'rgba(52,152,219,.14)':'var(--card2)')+';color:'+(_yNormOn?'var(--blue)':'var(--text2)')+';border:1px solid '+(_yNormOn?'rgba(52,152,219,.5)':'var(--border)')+';border-radius:20px;padding:4px 12px;cursor:pointer;font-family:DM Sans,sans-serif">'+(_yNormOn?'NORMALIZED \u2713':'REPORTED')+' \u00b7 toggle</button>';
+  verdictHTML+='</div>';
+  verdictHTML+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">';
+  verdictHTML+=_oyhCol('Full D&A', _yNormOn?realYieldNorm:realYield, _yNormOn?realYield:realYieldNorm, yieldRating(_yNormOn?realYieldNorm:realYield), realProfit, realProfitNormV);
+  verdictHTML+=_oyhCol('Best Guess', _yNormOn?_oyhYnBg:_oyhYrBg, _yNormOn?_oyhYrBg:_oyhYnBg, yieldRating(_yNormOn?_oyhYnBg:_oyhYrBg), p3REP, _oyhNormBgRep);
+  verdictHTML+='</div>';
+  if(_wcDivTier!=='none'){
+    var _divCol=(_wcDivTier==='caution')?'var(--orange)':'var(--red)';
+    var _divBg=(_wcDivTier==='caution')?'rgba(230,126,34,.13)':'rgba(231,76,60,.13)';
+    var _divIcon=(_wcDivTier==='caution')?'\u26a1':'\u26a0';
+    var _divWord=(_wcDivTier==='full')?'fully WC-funded':((_wcDivTier==='warn')?'heavily WC-inflated':'WC-inflated');
+    var _divBody=(_wcDivTier==='full')?('reported REP '+fmtM(realProfit)+' is entirely a non-recurring working-capital release; normalized REP is '+fmtM(realProfitNormV)+' (\u2264 0), so the durable ownership yield is \u2264 0.'):(_wcDivPctTxt+' of reported REP ('+fmtM(_wcDivGap)+') is a non-recurring working-capital release \u2014 normalized '+pct(realYieldNorm)+' vs reported '+pct(realYield)+'.');
+    verdictHTML+='<div style="display:flex;align-items:flex-start;gap:9px;margin-top:11px;padding:9px 11px;border-radius:9px;background:'+_divBg+';border:1px solid '+_divCol+'">';
+    verdictHTML+='<span style="font-size:.92rem;line-height:1.15;color:'+_divCol+'">'+_divIcon+'</span>';
+    verdictHTML+='<div style="font-size:.72rem;color:var(--text2);line-height:1.5"><strong style="color:'+_divCol+'">Reported yield '+_divWord+'</strong> \u2014 '+_divBody+' Non-recurring / not extrapolable; it does not change k, b or r.</div>';
+    verdictHTML+='</div>';
+  }else if(_oyhStrip){
+    verdictHTML+='<div style="font-family:JetBrains Mono,monospace;font-size:.7rem;color:var(--text3);margin-top:10px;line-height:1.5"><span style="color:var(--orange)">\u2212 '+fmtM(_wcDivGap)+'</span> working-capital release stripped from both columns (below the divergence threshold).</div>';
+  }else{
+    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:9px;line-height:1.45">No working-capital release this period \u2014 normalized equals reported (both columns).</div>';
+  }
+  if(_wcCumHas&&_wcCumBorrow>0.5){
+    var _durCol=(_wcCumDur<0)?'var(--red)':'var(--text2)';
+    verdictHTML+='<div style="font-size:.68rem;color:var(--text3);margin-top:8px;line-height:1.5;border-top:1px solid var(--border);padding-top:8px"><strong style="color:var(--text2)">Lifetime</strong> ('+_wcCumN+' annual filings): reported REP <strong style="color:var(--text2)">'+fmtM(_wcCumRep)+'</strong> \u00b7 working-capital-release-sourced <strong style="color:var(--orange)">'+fmtM(_wcCumBorrow)+'</strong> \u2192 durable <strong style="color:'+_durCol+'">'+fmtM(_wcCumDur)+'</strong>'+((_wcCumRep>0&&_wcCumDur<=0)?' \u2014 cumulative reported REP is entirely working-capital-financed':'')+'.</div>';
+  }
+  verdictHTML+='</div>';
   verdictHTML+='<div style="font-size:.82rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Yield Ladder</div>';
   verdictHTML+='<div id="yieldLadder" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">';
 
@@ -13773,17 +14075,26 @@ function calculate(opts){opts=opts||{};
     var growthPct=growthCapex/capex;
     flags.push({type:'growth',text:'<strong>🚀 Growth Investment:</strong> '+fmtM(growthCapex)+' ('+pct(growthPct,0)+' of total CapEx) is growth spending beyond maintenance. See the Future Total Return section to model return scenarios.'});
   }
-  if(realYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield Assessment:</strong> '+pct(realYield)+' real yield is strong — business generating substantial cash relative to its price.'});
-  else if(realYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield Assessment:</strong> '+pct(realYield)+' real yield is fair — reasonable cash generation for the price.'});
-  else if(realYield>=0.02)flags.push({type:'caution',text:'<strong>⚡ Yield Assessment:</strong> '+pct(realYield)+' real yield means growth is priced in — need significant earnings growth to justify.'});
-  else flags.push({type:'warn',text:'<strong>⚠ Yield Assessment:</strong> '+pct(realYield)+' real yield is expensive — market pricing in exceptional future growth.'});
+  if(ratingYield>=0.07)flags.push({type:'ok',text:'<strong>✓ Yield Assessment:</strong> '+pct(ratingYield)+' real yield is strong — business generating substantial cash relative to its price.'});
+  else if(ratingYield>=0.04)flags.push({type:'ok',text:'<strong>✓ Yield Assessment:</strong> '+pct(ratingYield)+' real yield is fair — reasonable cash generation for the price.'});
+  else if(ratingYield>=0.02)flags.push({type:'caution',text:'<strong>⚡ Yield Assessment:</strong> '+pct(ratingYield)+' real yield means growth is priced in — need significant earnings growth to justify.'});
+  else flags.push({type:'warn',text:'<strong>⚠ Yield Assessment:</strong> '+pct(ratingYield)+' real yield is expensive — market pricing in exceptional future growth.'});
 
   // T-bill relative yield flag (#55)
   var tBillRef=TBILL_REF;
-  if(realYield>0&&realYield<tBillRef){
-    flags.push({type:'warn',text:'<strong>⚠ Below Risk-Free:</strong> Real yield of '+pct(realYield)+' is below the ~'+pct(tBillRef,1)+' T-bill rate. You\'re accepting equity risk for less than risk-free return at current prices.'});
-  }else if(realYield>0&&realYield<tBillRef+0.02){
-    flags.push({type:'caution',text:'<strong>⚡ Thin Spread Over Risk-Free:</strong> Real yield of '+pct(realYield)+' is only '+(Math.round((realYield-tBillRef)*10000))+'bp above the ~'+pct(tBillRef,1)+' T-bill rate. Minimal compensation for equity risk.'});
+  if(ratingYield>0&&ratingYield<tBillRef){
+    flags.push({type:'warn',text:'<strong>⚠ Below Risk-Free:</strong> Real yield of '+pct(ratingYield)+' is below the ~'+pct(tBillRef,1)+' T-bill rate. You\'re accepting equity risk for less than risk-free return at current prices.'});
+  }else if(ratingYield>0&&ratingYield<tBillRef+0.02){
+    flags.push({type:'caution',text:'<strong>⚡ Thin Spread Over Risk-Free:</strong> Real yield of '+pct(ratingYield)+' is only '+(Math.round((ratingYield-tBillRef)*10000))+'bp above the ~'+pct(tBillRef,1)+' T-bill rate. Minimal compensation for equity risk.'});
+  }
+
+  // B2 (index439): reported<->normalized divergence flag (earnings quality) -- mirrors the headline-card signal.
+  if(_wcDivTier==='full'){
+    flags.push({type:'warn',text:'<strong>\u26a0 Ownership Yield Fully WC-Funded:</strong> reported REP '+fmtM(realProfit)+' is entirely a non-recurring working-capital release \u2014 normalized REP is '+fmtM(realProfitNormV)+' (\u2264 0). The reported ownership yield reflects borrowed working capital, not durable earning power.'});
+  }else if(_wcDivTier==='warn'){
+    flags.push({type:'warn',text:'<strong>\u26a0 Ownership Yield WC-Inflated:</strong> '+_wcDivPctTxt+' of reported REP ('+fmtM(_wcDivGap)+') is a non-recurring working-capital release. Normalized ownership yield '+pct(realYieldNorm)+' vs reported '+pct(realYield)+' \u2014 the durable read is materially lower.'});
+  }else if(_wcDivTier==='caution'){
+    flags.push({type:'caution',text:'<strong>\u26a1 Ownership Yield WC-Inflated:</strong> '+_wcDivPctTxt+' of reported REP ('+fmtM(_wcDivGap)+') is a non-recurring working-capital release. Normalized ownership yield '+pct(realYieldNorm)+' vs reported '+pct(realYield)+'.'});
   }
 
   // SBC trend context in flag (#54)
